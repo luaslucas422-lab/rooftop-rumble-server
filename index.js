@@ -57,7 +57,7 @@ let nextId = 1;
 const send = (p, o) => { if (p && p.ws && p.ws.readyState === 1) p.ws.send(JSON.stringify(o)); };
 const clean = (s, n) => String(s == null ? '' : s).replace(/[<>]/g, '').slice(0, n);
 const partyOf = p => p && p.party ? parties.get(p.party) : null;
-function partyInfo(pt) { return { t: 'party', leader: pt ? pt.leader : null, members: pt ? pt.members.map(id => players.get(id)).filter(Boolean).map(q => ({ pid: q.pid, name: q.name, rumbler: q.rumbler, skin: q.skin })) : [] }; }
+function partyInfo(pt) { return { t: 'party', leader: pt ? pt.leader : null, members: pt ? pt.members.map(id => players.get(id)).filter(Boolean).map(q => ({ pid: q.pid, name: q.name, rumbler: q.rumbler, skin: q.skin, icon: q.icon, profile: q.profile || null })) : [] }; }
 function sendParty(pt) { if (!pt) return; const info = partyInfo(pt); for (const id of pt.members) send(players.get(id), info); }
 function leaveParty(p) { const pt = partyOf(p); if (!pt) return; pt.members = pt.members.filter(x => x !== p.pid); p.party = null; send(p, partyInfo(null));
   if (pt.members.length <= 1) { for (const id of pt.members) { const q = players.get(id); if (q) { q.party = null; send(q, partyInfo(null)); } } parties.delete(pt.id); }
@@ -72,12 +72,14 @@ function onMessage(ws, m) {
     if (!p) { const old = players.get(pid); if (old && old.ws !== ws) { try { old.ws.close(); } catch (e) {} } p = old || { pid, party: null, match: null, queued: null, invitesSent: 0 }; p.ws = ws; ws.player = p; players.set(pid, p); }
     p.name = clean(m.name, 14) || 'Player'; p.lower = p.name.toLowerCase(); p.rumbler = clean(m.rumbler, 20); p.skin = clean(m.skin, 30); p.trophies = Math.max(0, m.trophies | 0); p.invites = m.invites !== false;
     if (m.load) p.load = m.load;
+    p.code = clean(m.code, 8).toUpperCase(); p.findByName = !!m.findByName; p.icon = clean(m.icon, 40);
+    if (m.profile && typeof m.profile === 'object') { const q = m.profile; p.profile = { name: p.name, icon: p.icon, code: p.code, trophies: q.trophies | 0, best: q.best | 0, coins: q.coins | 0, pp: q.pp | 0, wins: q.wins | 0, rank: clean(q.rank, 20), rumblers: q.rumblers | 0, pres: Array.isArray(q.pres) ? q.pres.slice(0, 8).map(x => [clean(x && x[0], 20), (x && x[1]) | 0]) : [] }; }
     const pt = partyOf(p); if (pt) sendParty(pt); else send(p, partyInfo(null));
     return;
   }
   if (!p) return;
   if (m.t === 'search') { const q = clean(m.q, 20).toLowerCase(); if (q.length < 2) return send(p, { t: 'search', list: [] });
-    const list = []; for (const o of players.values()) { if (o === p || !o.ws || o.ws.readyState !== 1 || !o.lower.includes(q)) continue; list.push({ pid: o.pid, name: o.name, rumbler: o.rumbler, skin: o.skin, trophies: o.trophies, invites: o.invites }); if (list.length >= 20) break; }
+    const list = []; for (const o of players.values()) { if (o === p || !o.ws || o.ws.readyState !== 1) continue; const byCode = !!o.code && o.code.toLowerCase() === q, byName = o.findByName && o.lower.includes(q); if (!byCode && !byName) continue; list.push({ pid: o.pid, name: o.name, rumbler: o.rumbler, skin: o.skin, trophies: o.trophies, invites: o.invites, icon: o.icon }); if (list.length >= 20) break; }
     return send(p, { t: 'search', list }); }
   if (m.t === 'invite') { const o = players.get(clean(m.to, 40)); if (!o || o === p || !o.invites) return; const now = Date.now(); if (now - (p.lastInvite || 0) < 1500) return; p.lastInvite = now;
     const pt = partyOf(p); if (pt && pt.members.length >= 3) return send(p, { t: 'toast', msg: 'Your party is full (3 players)' });
@@ -88,6 +90,7 @@ function onMessage(ws, m) {
     if (p.party !== pt.id) { leaveParty(p); unqueue(p); unqueue(host); pt.members.push(p.pid); p.party = pt.id; }
     sendParty(pt); send(host, { t: 'toast', msg: p.name + ' joined your party!' }); return; }
   if (m.t === 'leaveParty') { leaveParty(p); return; }
+  if (m.t === 'pchat') { const i = m.i | 0; if (i < 0 || i > 40) return; const now = Date.now(); if (now - (p.lastChat || 0) < 1500) return; p.lastChat = now; const pt = partyOf(p); if (!pt) return; for (const id of pt.members) if (id !== p.pid) send(players.get(id), { t: 'pchat', name: p.name, i }); return; }
   if (m.t === 'queue') { const mode = clean(m.mode, 20); if (!CAPS[mode] || p.match) return; const pt = partyOf(p);
     if (pt && pt.leader !== p.pid) return send(p, { t: 'toast', msg: 'Only your party leader can start a match' }) || send(p, { t: 'queue', mode, n: 0, need: 0, cancel: true });
     if (m.load) p.load = m.load; unqueue(p);
