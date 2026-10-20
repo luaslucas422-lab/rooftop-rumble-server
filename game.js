@@ -345,6 +345,7 @@ const RANK_SETS=[
  {key:'diamond',name:'Diamond',idx:9,pin:'rk_diamond',pal:['#e6fdff','#2fa9d8'],ink:'#13719e',skin:{id:'rk_diamond',name:'Diamond Rank',tier:'rank',body:'#56cfee',belly:'#e3fbff',accent:'#ffffff',proj:'#9ff0ff',hat:'icecrown',frost:true,shine:true,glow:'#7fe9fb'}},
  {key:'mythic',name:'Mythic',idx:12,pin:'rk_mythic',pal:['#f0dcff','#8a4ff0'],ink:'#5a2cc0',skin:{id:'rk_mythic',name:'Mythic Rank',tier:'rank',body:'#8a5cf5',belly:'#e3d4ff',accent:'#ff9bf0',proj:'#c79bff',hat:'horns',glow:'#c79bff'}},
  {key:'legendary',name:'Legendary',idx:15,pin:'rk_legendary',pal:['#ffd1dc','#e83a6a'],ink:'#b81f4f',skin:{id:'rk_legendary',name:'Legendary Rank',tier:'rank',body:'#ff4f7e',belly:'#ffd1dc',accent:'#ffd23f',proj:'#ff9bb5',hat:'starcrest',glow:'#ff7aa8',shine:true}},
+ {key:'ultra',name:'Ultra',idx:18,pin:'rk_ultra',pal:['#e6fdff','#7df9ff'],ink:'#1a6a8a',skin:{id:'rk_ultra',name:'Ultra Rank',tier:'rank',body:'#141a4a',belly:'#7df9ff',accent:'#ff9bf0',proj:'#7df9ff',eye:'#e6fdff',hat:'starcrest',glow:'#7df9ff',shine:true,starry:true,ultraFx:true}},
  {key:'master',name:'Masters',idx:18,pin:'master',pal:['#ffd23f','#9d7bff'],ink:'#b8336a',skin:MASTER_SKIN},
 ];
 /* Ghost Lantern set: a Juggler skin that comes with its own pin */
@@ -384,9 +385,9 @@ const TROLL_SKINS=[{id:'disco',name:'Disco Fever',tier:'troll',troll:'disco',bod
 /* Every skin better than the basic ones comes with a 3-pin set (happy, angry, sad) */
 const skinPinFaces=sk=>sk.tier!==0?['happy','angry','sad','cool','love']:null;
 const isSkinPin=id=>{const m=/^sk:([a-z]+):([a-z_0-9]+)(?::(happy|angry|sad|cool|love))?$/.exec(id);return!!(m&&BY_ID[m[1]]&&skinsOf(BY_ID[m[1]]).some(k=>k.id===m[2]));};
-const skinHasPin=sk=>sk.tier!==0;
+const skinHasPin=sk=>sk.tier!==0&&sk.tier!=='master';
 /* How flashy a skin's takedown and spawn effects are: 0 none, 1 small, 2 medium, 3 big */
-const skinFx=sk=>sk.tier==='halloween'?3:sk.supercharged?0:sk.tier==='power'?4:sk.tier==='golden'?3:sk.tier==='troll'?2:sk.charged||sk.tier===3||sk.tier==='sig'||sk.tier==='pass'||sk.tier==='master'?3:sk.tier===2||sk.tier==='rank'?2:sk.tier===1||sk.tier==='prestige'?1:0;
+const skinFx=sk=>sk.ultraFx?4:sk.tier==='halloween'?3:sk.supercharged?0:sk.tier==='power'?4:sk.tier==='golden'?3:sk.tier==='troll'?2:sk.charged||sk.tier===3||sk.tier==='sig'||sk.tier==='pass'||sk.tier==='master'?3:sk.tier===2||sk.tier==='rank'?2:sk.tier===1||sk.tier==='prestige'?1:0;
 /* skins you can only earn, never buy */
 const earnOnly=sk=>sk.tier==='halloween'||sk.tier==='pass'||sk.tier==='master'||sk.tier==='rank'||sk.tier==='prestige';
 const SKIN_PRICE={1:{gems:30,coins:1500,pp:600},2:{gems:60,coins:3000,pp:1200},3:{gems:120,coins:6000,pp:2400},sig:{gems:90,coins:4500,pp:1800}};
@@ -449,7 +450,7 @@ const MODES=[
  {id:'duel',name:'Duel',desc:'Just you and one opponent. First to 5 takedowns wins.',map:'pit',goal:5,time:120,ranked:false,col:'#9fe8ff',tag:'1 vs 1'},
  {id:'rush',name:'Takedown Rush',desc:'Pure 3v3 brawling. First team to 15 takedowns wins.',map:'yard',goal:15,time:150,ranked:false,col:'#46b4ff'},
  {id:'knockout',name:'Knockout',desc:'Best of 3 rounds with no respawns. Knock out the whole enemy team to win a round. Drag a round out and a storm closes in.',map:'yard',goal:2,time:300,ranked:true,col:'#ff7a5c',tag:'3 vs 3 \u00b7 best of 3'},
- {id:'hunt',name:'Bounty',desc:'Everyone has a bounty over their head: it starts at 2 stars and grows with every takedown. Knock someone out to take their whole bounty. Most stars after 2 minutes wins.',map:'yard',goal:0,time:120,ranked:true,col:'#ffb547'},
+ {id:'hunt',name:'Bounty',desc:'Everyone has a bounty over their head: it starts at 2 stars and grows with every takedown. Knock someone out to take their whole bounty. First team to 25 stars wins.',map:'yard',goal:25,time:150,ranked:true,col:'#ffb547'},
  {id:'showdown',name:'Solo Showdown',desc:'Every rumbler for themselves with no respawns. Break boxes for energy cubes and be the last one standing. Finish in the top 3 and it counts as a win.',map:'grove',goal:0,time:150,ranked:false,ffa:true,players:8,size:1,teams:8,sd:true,group:'sd',col:'#46d0ff'},
  {id:'duo',name:'Duo Showdown',desc:'Teams of 2. Knocked out? You come back next to your teammate 10 seconds later with no cubes, as long as they\u2019re still standing. When either of you grabs a cube, you both get one. Your team is out when you\u2019re both down at once. Finish in the top 3 and it counts as a win.',map:'grove',goal:0,time:150,ranked:false,ffa:true,players:10,size:2,teams:5,sd:true,group:'sd',col:'#46d0ff'},
  {id:'trio',name:'Trio Showdown',desc:'Teams of 3. Knocked-out rumblers come back next to a standing teammate 10 seconds later with no cubes. Every cube a teammate grabs goes to everyone on the team who\u2019s standing. Your team is out when all three of you are down at once. Finish in the top 3 and it counts as a win.',map:'grove',goal:0,time:150,ranked:false,ffa:true,players:12,size:3,teams:4,sd:true,group:'sd',col:'#46d0ff'},
@@ -513,7 +514,7 @@ function mapPool(m){m=MODE_BY[m]||m;return m.id==='core'?MAP_POOLS.core:m.sd?MAP
 function dailyMap(modeId,day){const pool=mapPool(modeId);let h=2166136261;for(const ch of (day||todayKey())+modeId)h=Math.imul(h^ch.charCodeAt(0),16777619)>>>0;return pool[h%pool.length];}
 
 /* Ranked ladder */
-const TIERS=[['Bronze','#e7a36b'],['Silver','#d6dbe8'],['Gold','#ffd23f'],['Diamond','#7fe9fb'],['Mythic','#c79bff'],['Legendary','#ff7aa8']];
+const TIERS=[['Bronze','#e7a36b'],['Silver','#d6dbe8'],['Gold','#ffd23f'],['Diamond','#7fe9fb'],['Mythic','#c79bff'],['Legendary','#ff7aa8'],['Ultra','#7df9ff']];
 const DIVS=['I','II','III'];
 const RANK_STEPS=TIERS.length*3+1;
 function rankInfo(rp){
@@ -522,9 +523,10 @@ function rankInfo(rp){
   const t=Math.floor(i/3);return{i,name:TIERS[t][0]+' '+DIVS[i%3],col:TIERS[t][1],tier:t,div:DIVS[i%3],into:rp-i*100,need:100};
 }
 /* Ranked rewards: every division gives a bundle with guaranteed drops; Master gives a huge one */
-const RR_DROP=['rare','epic','mythic','legendary','legendary','legendary'];
+const RR_DROP=['rare','epic','mythic','legendary','legendary','legendary','legendary'];
 const MASTER_REWARD={master:true,chromos:15000,gems:500,coins:10000,pp:5000,drops:[{r:'ultra',n:3},{r:'legendary',n:5}]};
-function rankReward(i){if(i>=RANK_STEPS-1)return MASTER_REWARD;const t=Math.floor(i/3);return{chromos:250+i*150,gems:10+i*4,coins:200+i*120,pp:100+i*60,drops:[{r:RR_DROP[t],n:i%3===0?2:1}]};}
+function rankReward(i){if(i>=RANK_STEPS-1)return MASTER_REWARD;const t=Math.floor(i/3);
+  if(t===6){const d=i%3;return{chromos:[3000,4500,5000][d],gems:[80,90,100][d],coins:200+i*120,pp:100+i*60,drops:d<2?[{r:'legendary',n:d+1}]:[{r:'legendary',n:3},{r:'ultra',n:1}]};}return{chromos:250+i*150,gems:10+i*4,coins:200+i*120,pp:100+i*60,drops:[{r:RR_DROP[t],n:i%3===0?2:1}]};}
 RANK_SETS[RANK_SETS.length-1].idx=RANK_STEPS-1;
 /* Which rumbler a player's rank set is for: Grandmaster is always Ember, every lower rank is a random rumbler picked per player (never repeats) */
 function rankSetRumbler(k,seed){if(k>=RANK_SETS.length-1)return STARTER;const pool=RUMBLERS.filter(b=>b.id!==STARTER&&!b.random&&!b.eventOnly).map(b=>b.id),used=[STARTER];let h=((seed>>>0)||1)^0x5bd1e995;
@@ -534,6 +536,7 @@ const SEASON_MAX_FIXED={'2026-10':['zapper','juggler','perk']};
 function seasonMaxed(d){d=d||new Date();const k=d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0');if(SEASON_MAX_FIXED[k])return SEASON_MAX_FIXED[k];
   let h=0;for(const ch of k)h=Math.imul(h^ch.charCodeAt(0),2654435761)>>>0;const pool=RUMBLERS.filter(b=>!b.random&&b.rarity!=='common').map(b=>b.id),out=[];
   while(out.length<3&&pool.length){h=Math.imul(h^(h>>>13),2246822519)>>>0;out.push(pool.splice(h%pool.length,1)[0]);}return out;}
+const rankSeed=o=>(((o&&o.seed)>>>0)+((o&&o.rankCycle)|0)*7919)>>>0;
 const RANK_PINS=RANK_SETS.map(rs=>[rs.pin,'I reached '+rs.name]);
 
 /* ---------- Rumble Pass: Season 1 · Starfall ---------- */
@@ -552,8 +555,8 @@ const bonusAvail=xp=>Math.max(0,Math.floor((xp-PASS_TIERS*PASS_STEP)/PASS_BONUS_
 /* ---------- Rumble Drops ---------- */
 const DROP_RAR=['rare','epic','mythic','legendary','ultra'];
 /* A drop starts at Rare (or the pass's guaranteed rarity). Each tap has this chance to upgrade one step. */
-const DROP_UP=[.55,32/55,17/32,5/17];
-const DROP_ODDS=[45,23,15,12,5]; // final rarity odds for a drop that starts at Rare
+const DROP_UP=[.55,.35,.12,.05];
+const DROP_ODDS=[45,35.75,16.94,2.19,.12]; // final rarity odds for a drop that starts at Rare
 const DROP_LOOT={
  rare:[['coins',45,[40,80]],['pp',35,[20,40]],['chromos',19,[50,100]],['gems',1,[3,5]]],
  epic:[['coins',38,[150,250]],['pp',32,[80,140]],['chromos',26,[250,400]],['gems',2,[5,10]],['rumbler',2,['rare']]],
@@ -639,6 +642,8 @@ function drawFighter(c,x,y,R,b,sk,aim,t,o){
   if(sk.powered&&!o.flat){c.save();c.globalCompositeOperation='lighter';glow(c,0,0,R*1.7,'#9d7bff',.45+.15*Math.sin(t*5));c.restore();c.save();c.strokeStyle='rgba(217,184,255,.9)';c.lineWidth=R*.08;for(let k=0;k<4;k++){const a=t*6+k*1.6+Math.sin(t*11+k);c.beginPath();let px=Math.cos(a)*R*1.05,py=Math.sin(a)*R*1.05;c.moveTo(px,py);for(let j=1;j<5;j++){const aa=a+j*.25,rr=R*(1.08+((j+Math.floor(t*14))%2?.25:0));c.lineTo(Math.cos(aa)*rr,Math.sin(aa)*rr);}c.stroke();}
     c.fillStyle='#e6d9ff';for(let k=0;k<5;k++){const f=(t*.9+k*.2)%1;c.globalAlpha=1-f;ell(c,Math.cos(k*1.3)*R*.8,R*.6-f*R*2,R*.07,R*.07);c.fill();}c.restore();}
   if(sk.charged&&!o.flat){c.save();c.strokeStyle='rgba(94,242,255,.85)';c.lineWidth=R*.07;for(let k=0;k<3;k++){const a=t*5+k*2.1+Math.sin(t*13+k);c.beginPath();let px=Math.cos(a)*R*1.1,py=Math.sin(a)*R*1.1;c.moveTo(px,py);for(let j=1;j<5;j++){const aa=a+j*.22;const rr=R*(1.1+((j+Math.floor(t*12))%2?.18:0));c.lineTo(Math.cos(aa)*rr,Math.sin(aa)*rr);}c.stroke();}c.restore();}
+  if(sk.ultraFx&&!o.flat){c.save();c.globalCompositeOperation='lighter';const h=(t*90)%360;c.strokeStyle='hsla('+h+',95%,65%,.8)';c.lineWidth=R*.09;c.beginPath();c.arc(0,0,R*1.28,t*2,t*2+Math.PI*1.3);c.stroke();c.strokeStyle='hsla('+((h+180)%360)+',95%,65%,.7)';c.beginPath();c.arc(0,0,R*1.42,-t*1.6,-t*1.6+Math.PI);c.stroke();
+    for(let k=0;k<3;k++){const a=t*2.2+k*TAU/3,px=Math.cos(a)*R*1.35,py=Math.sin(a)*R*.95;c.fillStyle='hsl('+((h+k*120)%360)+',95%,70%)';c.beginPath();c.moveTo(px,py-R*.18);c.lineTo(px+R*.11,py);c.lineTo(px,py+R*.18);c.lineTo(px-R*.11,py);c.closePath();c.fill();}c.restore();}
   if(sk.glow&&!o.flat){c.shadowColor=sk.glow;c.shadowBlur=R*(sk.supercharged?1.4:.8);}
   bodyPath(c,R,sk.boxy);c.fillStyle=sk.body;c.fill();
   c.shadowBlur=0;c.shadowColor='transparent';
@@ -876,7 +881,7 @@ function drawRankPin(c,R,lw,rs){
   const m=rs.key==='master',g=c.createLinearGradient(-R,-R,R,R);
   if(m){g.addColorStop(0,'#ffd23f');g.addColorStop(.5,'#ff7aa8');g.addColorStop(1,'#9d7bff');}else{g.addColorStop(0,rs.pal[0]);g.addColorStop(1,rs.pal[1]);}
   c.beginPath();c.arc(0,0,R*.92,0,TAU);c.fillStyle=g;c.fill();c.stroke();
-  const eb=BY_ID[rankSetRumbler(RANK_SETS.indexOf(rs),S.seed)]||BY_ID[STARTER],esk=m?getSkin(eb,'master'):getSkin(eb,rs.skin.id);
+  const eb=BY_ID[rankSetRumbler(RANK_SETS.indexOf(rs),rankSeed(S))]||BY_ID[STARTER],esk=m?getSkin(eb,'master'):getSkin(eb,rs.skin.id);
   c.save();c.beginPath();c.arc(0,0,R*.92,0,TAU);c.clip();
   c.fillStyle='rgba(255,255,255,.3)';for(let k=0;k<8;k++){const a=k*TAU/8;c.beginPath();c.moveTo(0,-R*.2);c.arc(0,-R*.2,R*1.2,a,a+.22);c.closePath();c.fill();}
   drawFighter(c,0,-R*.12,R*.46,eb,esk,Math.PI/2,0,{still:true,noShadow:true,happy:true});c.restore();
@@ -1279,6 +1284,8 @@ function loadSave(given){
   if(!s||typeof s!=='object')return d;
   const o={...d,...s};
   for(const k of['trophies','best','coins','gems','pp','chromos','rp','rpBest','rankClaimed','road','streak','matches','wins','nameChanges','nameLockUntil']){const n=Number(s[k]);o[k]=isFinite(n)&&n>=0?Math.floor(n):d[k];}
+  if(!s.rankV){o.rankV=2;if(o.rp>=1800)o.rp+=300;if(o.rpBest>=1800)o.rpBest+=300;if(o.rankClaimed>=18)o.rankClaimed+=3;}else o.rankV=2;
+  o.rankPeak=Math.max(o.rankClaimed|0,Number.isFinite(+s.rankPeak)?+s.rankPeak|0:0,rankInfo(o.rp).i);o.rankCycle=Math.max(0,s.rankCycle|0);o.masterAll=!!s.masterAll;
   o.owned={};
   if(halloweenOn()&&!o.hwDef){o.hwDef=1;o.musicTrack='spooky';o.theme='halloween';}if(o.theme!=='halloween'&&o.theme!=='default')o.theme=halloweenOn()?'halloween':'default';
   o.hw={wins:0,used:0,spent:null,knocks:0,opened:0,doors:null,...(s.hw&&typeof s.hw==='object'?s.hw:{})};o.hw.wins=Math.max(0,o.hw.wins|0);o.hw.used=Math.max(0,Math.min(o.hw.used|0,Math.floor(o.hw.wins/KNOCK_EVERY)));if(o.hw.spent==null)o.hw.spent=o.hw.used;o.hw.spent=Math.max(0,o.hw.spent|0);o.hw.knocks=Math.max(0,o.hw.knocks|0);o.hw.opened=Math.max(0,o.hw.opened|0);if(!Array.isArray(o.hw.doors)||o.hw.doors.length!==6||!o.hw.doors.every(id=>BY_ID[id]))o.hw.doors=null;
@@ -1305,7 +1312,7 @@ function loadSave(given){
    if(em){em.skins=em.skins.filter(x=>!lowRk.includes(x));if(lowRk.includes(em.skin))em.skin='classic';if(Array.isArray(em.pinSlots))em.pinSlots=em.pinSlots.map(p=>p&&lowRk.some(r=>p.startsWith('sk:'+STARTER+':'+r))?null:p);}
    o.pins=o.pins.filter(p=>!lowRk.some(r=>p===('sk:'+STARTER+':'+r)||p.startsWith('sk:'+STARTER+':'+r+':')));
    o.pendingSkins=o.pendingSkins.filter(x=>!lowRk.some(r=>x===STARTER+':'+r));}
-  for(const[k,rs]of RANK_SETS.entries()){const got=rs.idx===0?(o.rpBest>0||o.rankClaimed>0):o.rankClaimed>=rs.idx;if(got){if(!o.pins.includes(rs.pin))o.pins.push(rs.pin);const rid=rankSetRumbler(k,o.seed),e=o.owned[rid];if(e){if(!e.skins.includes(rs.skin.id))e.skins.push(rs.skin.id);}else if(!o.pendingSkins.includes(rid+':'+rs.skin.id))o.pendingSkins.push(rid+':'+rs.skin.id);}}o.onboarded=!!s.onboarded;o.sound=s.sound!==false;o.music=s.music!==false;o.voice=s.voice!==false;o.shake=s.shake!==false;
+  for(const[k,rs]of RANK_SETS.entries()){const got=rs.idx===0?(o.rpBest>0||o.rankClaimed>0):o.rankClaimed>=rs.idx;if(got){if(!o.pins.includes(rs.pin))o.pins.push(rs.pin);const rid=rankSetRumbler(k,rankSeed(o)),e=o.owned[rid];if(e){if(!e.skins.includes(rs.skin.id))e.skins.push(rs.skin.id);}else if(!o.pendingSkins.includes(rid+':'+rs.skin.id))o.pendingSkins.push(rid+':'+rs.skin.id);}}o.onboarded=!!s.onboarded;o.sound=s.sound!==false;o.music=s.music!==false;o.voice=s.voice!==false;o.shake=s.shake!==false;
   return o;
 }
 let S=loadSave();
@@ -1368,7 +1375,8 @@ function oppSkill(t){
 /* Ranked: each rank tier is harder. Master is meant to be brutal. */
 const SKILL_GODLIKE={aimErr:.025,react:.09,dodge:.93,lead:1,fire:[.15,.3],retreat:.38,sight:800,focus:1.5,strafe:1,sup:25,gad:4};
 const SKILL_HELL={aimErr:.012,react:.06,dodge:.97,lead:1,fire:[.12,.24],retreat:.4,sight:850,focus:1.6,strafe:1,sup:40,gad:5};
-const RANK_FOES=()=>[OPP_TIERS[0].sk,OPP_TIERS[1].sk,OPP_TIERS[2].sk,OPP_TIERS[3].sk,SKILL.insane,SKILL_GODLIKE,SKILL_HELL];
+const SKILL_ULTRA={aimErr:.018,react:.075,dodge:.95,lead:1,fire:[.13,.27],retreat:.39,sight:820,focus:1.55,strafe:1,sup:32,gad:4.5};
+const RANK_FOES=()=>[OPP_TIERS[0].sk,OPP_TIERS[1].sk,OPP_TIERS[2].sk,OPP_TIERS[3].sk,SKILL.insane,SKILL_GODLIKE,SKILL_ULTRA,SKILL_HELL];
 const RANK_FOE_NAMES=['Easy','Easy-ish','Kind of hard','Hard','Pretty hard','Really hard','Complete hell'];
 /* small per-bot differences so a lobby doesn't feel like clones */
 function varySkill(sk){const m=rand(.88,1.12);return{...sk,aimErr:sk.aimErr*m,react:sk.react*rand(.9,1.1),dodge:clamp(sk.dodge*(2-m),0,.95),fire:sk.fire.slice()};}
@@ -1421,7 +1429,7 @@ function steer(u,gx,gy){
 
 /* ---------- Granting & Rumble Drops ---------- */
 function grantRumbler(id){
-  if(S.owned[id])return false;S.owned[id]=newRumbler();const keep=[];
+  if(S.owned[id])return false;S.owned[id]=newRumbler();if(S.masterAll&&!S.owned[id].skins.includes('master'))S.owned[id].skins.push('master');const keep=[];
   for(const k of S.pendingSkins){const[rid,skid]=k.split(':');if(rid===id){if(!S.owned[id].skins.includes(skid))S.owned[id].skins.push(skid);}else keep.push(k);}
   S.pendingSkins=keep;return true;
 }
@@ -1436,7 +1444,7 @@ function grantPrestige(id,m,r){const rw=PRESTIGE_REWARDS[m],me=S.owned[id];if(!r
 /* Skin and prestige pins only work for their own rumbler; set pins only for the rumbler whose skin they came with */
 const SET_PIN_OWNER={lantern:'juggler',wildcard:'trick'};
 function pinAllowedFor(pid,id){if(/^(sk|pr):/.test(pid))return pid.split(':')[1]===id;if(SET_PIN_OWNER[pid])return SET_PIN_OWNER[pid]===id;return true;}
-function grantRankSet(k){const rs=RANK_SETS[k];grantSkin(rankSetRumbler(k,S.seed),rs.skin.id);if(!S.pins.includes(rs.pin))S.pins.push(rs.pin);}
+function grantRankSet(k){const rs=RANK_SETS[k];grantSkin(rankSetRumbler(k,rankSeed(S)),rs.skin.id);if(!S.pins.includes(rs.pin))S.pins.push(rs.pin);}
 function skinPinIds(id,sk){const f=skinPinFaces(sk);return f?f.map(x=>'sk:'+id+':'+sk.id+':'+x):['sk:'+id+':'+sk.id];}
 function grantSkinPin(id,skid){const sk=getSkin(BY_ID[id],skid);if(sk&&sk.id===skid&&skinHasPin(sk))for(const pid of skinPinIds(id,sk))if(!S.pins.includes(pid))S.pins.push(pid);}
 function grantSkin(id,skid){grantSkinPin(id,skid);const me=S.owned[id];if(me){if(!me.skins.includes(skid))me.skins.push(skid);}else if(!S.pendingSkins.includes(id+':'+skid))S.pendingSkins.push(id+':'+skid);}
@@ -1490,7 +1498,10 @@ function grantBoxRumbler(){const w=[['rare',35],['epic',35],['mythic',22],['lege
   if(!avail.length){const n=Math.round(randi(2000,6000)/50)*50;S.chromos+=n;return{kind:'chromos',n,note:'You own every rumbler, so it became chromos'};}
   const r=pickWeighted(avail)[0],b=pick(RUMBLERS.filter(x=>x.rarity===r&&free(x)));grantRumbler(b.id);return{kind:'rumbler',id:b.id};}
 function openBox(kind){const items=[],R=[['coins',[300,900]],['pp',[200,600]],['gems',[10,30]],['chromos',[500,1500]]];
-  for(const[k,[a,b]]of shuffle(R.slice()).slice(0,kind==='rbox'?3:2)){let n=randi(a,b);if(n>=50)n=Math.round(n/10)*10;S[k]+=n;items.push({kind:k,n});}
+  /* Rumbler Box: 7 rewards guaranteed, and each lucky roll adds one more (up to 10). Skin Box: 4 rewards. */
+  let extra=kind==='rbox'?6:2;if(kind==='rbox')while(extra<9&&Math.random()<.35)extra++;
+  for(let i=0;i<extra;i++){const[k,[a,b]]=R[Math.floor(Math.random()*R.length)];let n=randi(a,b);if(n>=50)n=Math.round(n/10)*10;S[k]+=n;items.push({kind:k,n});}
+  if(kind==='rbox'&&Math.random()<.3){const it={};if(grantAnySkin(it))items.push(it);}
   if(kind==='rbox')items.push(grantBoxRumbler());
   else for(let i=0;i<2;i++){const it={};if(grantAnySkin(it))items.push(it);else{S.gems+=40;items.push({kind:'gems',n:40,note:'You own every skin, so it became gems'});}}
   persist();return{rar:kind,start:kind,kind:'box',items,idx:0};}
@@ -1573,7 +1584,7 @@ function newMatch(opts){
   if(dr)M.maxed=!!dr.maxed;
   const plvl=me.lvl,names=shuffle(BOT_NAMES.slice());M.trial=!!trial;
   let eskill,elvl,mskill='hard';M.opp=null;
-  if(M.ranked){const ri=rankInfo(S.rp).i,rt=ri>=RANK_STEPS-1?6:Math.floor(ri/3);M.rankTier=rt;eskill=RANK_FOES()[rt];if(rt>=3)mskill=OPP_TIERS[3].sk;M.hell=rt===6;
+  if(M.ranked){const ri=rankInfo(S.rp).i,rt=ri>=RANK_STEPS-1?TIERS.length:Math.floor(ri/3);M.rankTier=rt;eskill=RANK_FOES()[rt];if(rt>=3)mskill=OPP_TIERS[3].sk;M.hell=rt===TIERS.length;
     elvl=()=>clamp(plvl+randi(-1,1),1,MAX_LVL);}
   else{const t=Math.max(0,S.trophies|0);eskill=oppSkill(t);M.opp=oppTier(t);if(t>=OPP_TIERS[3].at)mskill=oppSkill(t);if(t>=HELL_AT&&!opts.netHumans&&!trial){eskill=SKILL_HELL;mskill=OPP_TIERS[3].sk;M.hell=true;}
     elvl=()=>randi(1,MAX_LVL);}
@@ -1932,7 +1943,7 @@ function own(team,arr){return arr[team===0?0:1];}
 function modeOnKill(t,c){const id=M.mode.id;if(M.state!=='play')return;
   if(id==='ring')M.score[c.team]=Math.min(M.mode.goal,M.score[c.team]+5);
   else if(id==='rush'||id==='frenzy'||id==='try'||id==='chaos'||id==='duel')M.score[c.team]++;
-  else if(id==='hunt'){const v=t.bounty||2;M.score[c.team]+=v;if(!c.shadow&&!c.isStruct)c.bounty=Math.min(7,(c.bounty||2)+1);t.bounty=2;textFx(t.x,t.y-t.rad-40,'+'+v+'\u2605',c.team===MYT?'#8fd3ff':'#ffa6a2',16);}
+  else if(id==='hunt'){const v=t.bounty||2;M.score[c.team]=Math.min(M.mode.goal,M.score[c.team]+v);if(!c.shadow&&!c.isStruct)c.bounty=Math.min(7,(c.bounty||2)+1);t.bounty=2;textFx(t.x,t.y-t.rad-40,'+'+v+'\u2605',c.team===MYT?'#8fd3ff':'#ffa6a2',16);}
   else if(id==='bounty'){const v=1;M.score[c.team]=Math.min(M.mode.goal,M.score[c.team]+v);c.streak=(c.streak||0)+1;t.streak=0;if(c===P||t===P)textFx(t.x,t.y-t.rad-40,'+'+v+'\u2605',c.team===0?'#8fd3ff':'#ffa6a2',16);}
 }
 function modeOnDeath(t){
@@ -1960,7 +1971,7 @@ function endIf(){
   if(id==='knockout'){const a=alive(0),b=alive(1);
     if(!a||!b){if(a)s[0]++;else if(b)s[1]++;if(s[0]>=m.goal||s[1]>=m.goal)return endMatch(s[0]>s[1]?0:1);if(out)return endMatch(s[0]>s[1]?0:s[1]>s[0]?1:-1);return nextRound(!a&&!b?null:a?0:1);}
     if(out)return endMatch(s[0]>s[1]?0:s[1]>s[0]?1:a>b?0:b>a?1:-1);return;}
-  if(id==='hunt'){if(out)return endMatch(s[0]>s[1]?0:s[1]>s[0]?1:-1);return;}
+  if(id==='hunt'){if(s[0]>=m.goal||s[1]>=m.goal||out)return endMatch(s[0]>s[1]?0:s[1]>s[0]?1:-1);return;}
   if(id==='stand'){const a=alive(0),b=alive(1);if(!a||!b)return endMatch(!a&&!b?-1:a?0:1);
     if(out){if(a!==b)return endMatch(a>b?0:1);const h=t=>M.units.filter(u=>u.team===t&&!u.dead).reduce((n,u)=>n+u.hp/u.maxHp,0);const ha=h(0),hb=h(1);return endMatch(Math.abs(ha-hb)<.05?-1:ha>hb?0:1);}return;}
   if(s[0]>=m.goal||s[1]>=m.goal||out)return endMatch(s[0]>s[1]?0:s[1]>s[0]?1:-1);
@@ -2023,7 +2034,7 @@ function modeHud(){
   if(id==='boss'){const g=M.units.find(u=>u.boss),pg=g?Math.max(0,g.hp/g.maxHp):0;return{l:alive(MYT)/3,r:pg,lt:alive(MYT)+' standing',rt:'Giant '+Math.ceil(pg*100)+'%',msg:'Take down the '+(g?g.name:'giant')+'!'};}
   if(id==='duel')return{l:s[0]/m.goal,r:s[1]/m.goal,lt:'You '+s[0],rt:s[1]+' Them',msg:'First to '+m.goal+' takedowns'};
   if(id==='knockout'){const a=alive(MYT),b=alive(1-MYT);return{l:s[0]/m.goal,r:s[1]/m.goal,lt:'Rounds '+s[0],rt:s[1]+' Rounds',msg:'Round '+(M.round||1)+' \u00b7 '+a+' vs '+b+' left'+((M.roundT||0)>25?' \u00b7 storm!':'')};}
-  if(id==='hunt')return{l:Math.min(1,s[0]/Math.max(10,s[0]+s[1])),r:Math.min(1,s[1]/Math.max(10,s[0]+s[1])),lt:s[0]+' \u2605',rt:s[1]+' \u2605',msg:'Take bounties! Bigger stars are worth more'};
+  if(id==='hunt')return{l:s[0]/m.goal,r:s[1]/m.goal,lt:s[0]+' / '+m.goal+' \u2605',rt:s[1]+' / '+m.goal+' \u2605',msg:'First to '+m.goal+' stars \u00b7 bigger bounties are worth more'};
   if(id==='stand'){const a=alive(MYT),b=alive(1-MYT),el=m.time-M.time;return{l:a/3,r:b/3,lt:a+' left',rt:b+' left',msg:el<40?'Storm in '+Math.ceil(40-el)+'s':'The storm is closing in'};}
   const g=m.goal,base={l:s[0]/g,r:s[1]/g,lt:String(s[0]),rt:String(s[1])};
   if(id==='ring')base.msg={blue:'Your team holds the ring',red:'Enemies hold the ring',contested:'Ring contested',empty:'Grab the ring'}[MYT&&M.zone==='blue'?'red':MYT&&M.zone==='red'?'blue':M.zone];
@@ -2362,8 +2373,7 @@ function applyRewards(){
     if(w===0){S.streak++;r.rp=25+Math.min(15,(S.streak-1)*5);r.coins=100;r.pp=50;r.gems=3;}else if(w===1){S.streak=0;r.rp=-15;r.coins=30;r.pp=15;}else{r.coins=50;r.pp=25;}
     S.rp=Math.max(0,S.rp+r.rp);S.rpBest=Math.max(S.rpBest,S.rp);const after=rankInfo(S.rp).i;
     if(after>=RANK_STEPS-1&&w===0){const k=1+Math.floor(Math.max(0,S.rp-(RANK_STEPS-1)*100)/100);r.coins+=60*k;r.pp+=30*k;r.gems+=Math.min(25,2*k);r.chromos+=100*k;r.masterBonus=k;}
-    if(after>S.rankClaimed){r.rankBundle={chromos:0,gems:0,coins:0,pp:0,drops:0};for(let i=S.rankClaimed+1;i<=after;i++)giveRankReward(i,r);S.rankClaimed=after;r.rank=after;}
-    r.rankSets=[];RANK_SETS.forEach((rs,k)=>{if(rs.idx<=S.rankClaimed&&!S.pins.includes(rs.pin)){grantRankSet(k);r.rankSets.push(k);}});
+    if(after>(S.rankPeak|0)){S.rankPeak=after;r.rank=after;r.rankWaiting=true;}
   }else if(M.mode.sd){const n=M.nTeams,i=clamp(M.place,1,n)-1,TT={8:[10,5,2,0,-1,-2,-3,-4],5:[10,5,2,-1,-3],4:[10,5,2,-3]}[n]||[10,5,2,0,-1,-2,-3,-4],CC={8:[50,40,32,25,18,14,12,10],5:[50,38,26,16,10],4:[50,34,20,12]}[n]||[50,40,32,25,18,14,12,10],PT={8:[30,25,20,15,12,10,8,6],5:[30,22,15,10,6],4:[30,20,12,8]}[n]||[30,25,20,15,12,10,8,6],t=TT[i];r.trophies=S.trophies<50?Math.max(0,t):t;r.coins=CC[i];r.pp=PT[i];if(i===0)r.gems=2;
   }else if(M.mode.ffa){const i=M.place-1;const t=[10,7,3,0,-2,-4][i];r.trophies=S.trophies<50?Math.max(0,t):t;r.coins=[45,35,25,15,12,10][i];r.pp=[25,20,15,10,8,6][i];if(i===0)r.gems=2;}
   else{const tr=S.trophies;if(w===0){r.trophies=tr<500?8:tr<1000?6:4;r.coins=40;r.pp=25;r.gems=Math.random()<.5?2:1;}else if(w===1){r.trophies=tr<50?0:tr<500?-3:-5;r.coins=15;r.pp=10;}else{r.coins=25;r.pp=15;}}
@@ -2384,7 +2394,13 @@ function applyRewards(){
 function giveRankReward(i,r){const rw=rankReward(i),b=r.rankBundle;
   r.chromos+=rw.chromos;r.gems+=rw.gems;r.coins+=rw.coins;r.pp+=rw.pp;b.chromos+=rw.chromos;b.gems+=rw.gems;b.coins+=rw.coins;b.pp+=rw.pp;
   for(const d of rw.drops)for(let k=0;k<d.n;k++){S.drops.push({r:d.r,min:null});b.drops++;}
-  if(rw.master){grantSkin(rankSetRumbler(RANK_SETS.length-1,S.seed),'master');if(!S.pins.includes('master'))S.pins.push('master');r.master=true;}}
+  if(rw.master){S.masterAll=true;for(const id in S.owned)grantSkin(id,'master');if(!S.pins.includes('master'))S.pins.push('master');r.master=true;}}
+/* Claim: collect every rank reward reached this climb, then go back to Bronze I. Rank sets get new random rumblers next climb (Master stays Ember). */
+function claimRanked(){const r={chromos:0,gems:0,coins:0,pp:0,rankBundle:{chromos:0,gems:0,coins:0,pp:0,drops:0},rankSets:[]};const peak=S.rankPeak|0;if(peak<=(S.rankClaimed|0))return null;
+  for(let i=(S.rankClaimed|0)+1;i<=peak;i++)giveRankReward(i,r);
+  RANK_SETS.forEach((rs,k)=>{if(rs.idx<=peak){const rid=rankSetRumbler(k,rankSeed(S));if(!hasSkin(rid,rs.skin.id)||!S.pins.includes(rs.pin)){grantRankSet(k);r.rankSets.push(k);}}});
+  S.coins+=r.coins;S.pp+=r.pp;S.gems+=r.gems;S.chromos+=r.chromos;
+  S.rp=0;S.rankPeak=0;S.rankClaimed=0;S.streak=0;S.rankCycle=(S.rankCycle|0)+1;persist();return r;}
 
 /* ---------- Rendering ---------- */
 const gameEl=$('#game'),canvas=$('#world'),ctx=canvas.getContext('2d');
@@ -2523,7 +2539,7 @@ function drawAim(c){
 }
 function drawUnit(c,u){
   const ally=u.team===MYT,alpha=((ally&&u.hidden)?.5:1)*(u.dive?.45:1),col=u.isPlayer?OKC:ally?BLUE:RED;
-  if(M.mode.id==='hunt'&&u.bounty){const by=u.y-u.rad*2.3;c.save();c.fillStyle=u.bounty>=5?'#ff7a1a':'#ffd23f';c.strokeStyle=OUT;c.lineWidth=2.5;star(c,u.x,by,11,5,5);c.fill();c.stroke();c.fillStyle='#120f26';c.font='900 11px system-ui, sans-serif';c.textAlign='center';c.textBaseline='middle';c.fillText(String(u.bounty),u.x,by+1);c.restore();}
+  if(M.mode.id==='hunt'&&u.bounty){const by=u.y-u.rad*1.65-50;c.save();c.fillStyle=u.bounty>=5?'#ff7a1a':'#ffd23f';c.strokeStyle=OUT;c.lineWidth=2.5;star(c,u.x,by,11,5,5);c.fill();c.stroke();c.fillStyle='#120f26';c.font='900 11px system-ui, sans-serif';c.textAlign='center';c.textBaseline='middle';c.fillText(String(u.bounty),u.x,by+1);c.restore();}
   if(u.darkT>0){c.save();c.strokeStyle='rgba(20,10,36,.9)';c.lineWidth=5;c.setLineDash([6,5]);c.lineDashOffset=-M.now*20;c.beginPath();c.arc(u.x,u.y,u.rad*1.25,0,TAU);c.stroke();c.restore();}
   if(u.darkX>0&&(u.darkT>0||u.poisonT>0)){const yx=u.y-u.rad*2.4;c.save();c.lineCap='round';for(const[w,col2]of[[9,'#ffffff'],[5,'#120a20']]){c.strokeStyle=col2;c.lineWidth=w;c.beginPath();c.moveTo(u.x-9,yx-9);c.lineTo(u.x+9,yx+9);c.moveTo(u.x+9,yx-9);c.lineTo(u.x-9,yx+9);c.stroke();}c.restore();}
   for(const g of u.ghosts){drawFighter(c,g.x,g.y,u.rad,u.b,u.sk,u.aim,M.now,{alpha:.35*(1-g.t/.3),still:true,noShadow:true,flat:true,tint:'rgba(255,255,255,.35)'});}
@@ -3027,7 +3043,7 @@ let catId=null;
 function skinHow(b,sk){const me=S.owned[b.id];if(me&&me.skins.includes(sk.id))return['Owned','#6be39a'];if(sk.tier===0)return['Starter look','#9aa3c7'];
   if(sk.tier==='golden')return['20,000 coins, any time','#ffd23f'];if(sk.tier==='power')return['10,000 power points, any time','#c79bff'];
   const dm=dailySkinMult(b.id,sk.id);if(dm)return[dm<1?'In the shop today · 50% off':'In the shop today','#ffd23f'];
-  if(sk.tier==='pass')return['Rumble Pass','#ffd36b'];if(sk.tier==='master')return['Reach Master','#ff7aa8'];if(sk.tier==='rank'||sk.tier==='master'){const k=RANK_SETS.findIndex(x=>x.skin.id===sk.id),rs=RANK_SETS[k],mine=rankSetRumbler(k,S.seed)===b.id,when=rs.key==='master'?'Reach Master':rs.idx===0?'First ranked match':'Reach '+rs.name+' I';return[mine?when+' (yours!)':'Ranked reward for other players','#c79bff'];}
+  if(sk.tier==='pass')return['Rumble Pass','#ffd36b'];if(sk.tier==='master')return['Reach Master','#ff7aa8'];if(sk.tier==='rank'||sk.tier==='master'){const k=RANK_SETS.findIndex(x=>x.skin.id===sk.id),rs=RANK_SETS[k],mine=rankSetRumbler(k,rankSeed(S))===b.id,when=rs.key==='master'?'Reach Master':rs.idx===0?'First ranked match':'Reach '+rs.name+' I';return[mine?when+' (yours!)':'Ranked reward for other players','#c79bff'];}
   if(sk.tier==='prestige')return['Prestige '+sk.prestige,'#e7a36b'];return['Daily skins (rotates)','#8fd3ff'];}
 function openCatalog(id){catId=id||catId||S.selected;openSheet(card=>{const b=BY_ID[catId];
   card.insertAdjacentHTML('beforeend','<h2>Skin catalog</h2><p class="sub">Every skin in the game. Try any of them in training, even for rumblers you haven\u2019t unlocked.</p>');
@@ -3146,7 +3162,7 @@ function openRumbler(id){
     }
     const ss=document.createElement('div');ss.className='sec-title';ss.innerHTML='<h2>Skins</h2><span>'+me.skins.length+' / '+skinsOf(b).length+' owned</span>';card.append(ss);
     const sr=document.createElement('div');sr.className='skinrow';
-    for(const sk of skinsOf(b)){const owned=me.skins.includes(sk.id);if(!owned&&(sk.tier==='rank'||sk.tier==='master')){const k=RANK_SETS.findIndex(x=>x.skin.id===sk.id);if(rankSetRumbler(k,S.seed)!==id)continue;}const el=document.createElement('button');el.className='card'+(me.skin===sk.id?' sel':'')+(owned?'':' ');el.style.setProperty('--r',owned?'#3a3380':'#2a2560');
+    for(const sk of skinsOf(b)){const owned=me.skins.includes(sk.id);if(!owned&&(sk.tier==='rank'||sk.tier==='master')){const k=RANK_SETS.findIndex(x=>x.skin.id===sk.id);if(rankSetRumbler(k,rankSeed(S))!==id)continue;}const el=document.createElement('button');el.className='card'+(me.skin===sk.id?' sel':'')+(owned?'':' ');el.style.setProperty('--r',owned?'#3a3380':'#2a2560');
       el.append(thumb(b,sk,72));const dm=owned?null:ALWAYS_SKIN(sk)?1:dailySkinMult(id,sk.id),pr=dm?skinPrice(sk):null;
       el.insertAdjacentHTML('beforeend','<span class="nm">'+esc(sk.name)+'</span>'+(me.skin===sk.id?'<span class="tag on">On</span>':owned?'<span class="tag own">Owned</span>':(pr?'<span class="tag">'+(pr.gems!=null?ICON.gems+Math.ceil(pr.gems*dm):pr.coins!=null?ICON.coins+fmt(pr.coins):ICON.pp+fmt(pr.pp))+'</span>':!earnOnly(sk)&&sk.tier!==0?'<span class="tag" style="opacity:.75">Not in shop</span>':'<span class="tag on">'+(sk.tier==='master'?'Master':sk.tier==='rank'?'Ranked':sk.tier==='prestige'?'★'+sk.prestige:'Pass')+'</span>')));
       el.addEventListener('click',()=>{if(owned){me.skin=sk.id;persist();sfx('click');openRumbler(id);}else if(pr)buySkin(id,sk.id,dm,()=>openRumbler(id));
@@ -3545,7 +3561,7 @@ function renderShop(){
    body.append(pg);body.insertAdjacentHTML('beforeend','<p class="hint" style="margin:0">Every rumbler already has 3 free pins of its own. Tap a rumbler, then Pins, to choose its 2 custom pins.</p>');const pcb=document.createElement('button');pcb.className='btn';pcb.textContent='Open the pin catalog';pcb.addEventListener('click',()=>openPinCatalog());body.append(pcb);}
   body.append(sectionTitle('Boxes','Gems only \u00b7 open them from the Play screen'));
   {const bg=document.createElement('div');bg.className='grid';
-   for(const[k,desc]of[['rbox','A guaranteed new rumbler (usually Rare to Mythic, sometimes Legendary) + 3 rewards'],['sbox','2 guaranteed skins for your rumblers + 2 rewards']]){const el=document.createElement('button');el.className='card boxcard';el.style.setProperty('--r',RARITY[k].col);
+   for(const[k,desc]of[['rbox','A guaranteed new rumbler (usually Rare to Mythic, sometimes Legendary) + 7 or more rewards'],['sbox','2 guaranteed skins for your rumblers + 2 rewards']]){const el=document.createElement('button');el.className='card boxcard';el.style.setProperty('--r',RARITY[k].col);
      el.append(dropCanvas(k,80));el.insertAdjacentHTML('beforeend','<span class="nm">'+RARITY[k].name+'</span><span class="sm">'+desc+'</span><span class="tag">'+ICON.gems+BOX_PRICE[k]+'</span>');
      el.addEventListener('click',()=>confirmBuy(RARITY[k].name,dropCanvas(k,110),[['gems',BOX_PRICE[k]]],()=>{S.drops.push({r:k,min:null});persist();sfx('unlock');toast(RARITY[k].name+' added! Opening it now','gems');renderShop();openDrops();}));bg.append(el);}
    body.append(bg);}
@@ -3559,9 +3575,9 @@ function renderShop(){
 /* ---------- Ranked ---------- */
 let embN=0;
 function starPath(cx,cy,r1,r2,n){let d='';for(let k=0;k<n*2;k++){const a=k*Math.PI/n-Math.PI/2,r=k%2?r2:r1;d+=(k?'L':'M')+(cx+Math.cos(a)*r).toFixed(1)+' '+(cy+Math.sin(a)*r).toFixed(1);}return d+'Z';}
-const EMB_PAL=[['#ffd2a8','#c77a43'],['#ffffff','#a9b3c9'],['#fff1a0','#e9a521'],['#e6fdff','#45c4ef'],['#f0dcff','#9a5cf5'],['#ffd1dc','#ff4f7e'],['#fff7c2','#ff7aa8']];
+const EMB_PAL=[['#ffd2a8','#c77a43'],['#ffffff','#a9b3c9'],['#fff1a0','#e9a521'],['#e6fdff','#45c4ef'],['#f0dcff','#9a5cf5'],['#ffd1dc','#ff4f7e'],['#e6fdff','#7df9ff'],['#fff7c2','#ff7aa8']];
 function emblem(i,size){
-  const master=i>=RANK_STEPS-1,t=master?6:Math.floor(i/3),dv=master?-1:i%3,id='em'+(embN++),[c1,c2]=EMB_PAL[t];
+  const master=i>=RANK_STEPS-1,t=master?7:Math.floor(i/3),dv=master?-1:i%3,id='em'+(embN++),[c1,c2]=EMB_PAL[t];
   const O='stroke="#120f26" stroke-width="5" stroke-linejoin="round"';
   const SH='M60 12 100 26v28c0 27-17 45-40 56C37 99 20 81 20 54V26z',HI='M60 22 90 33v21c0 20-12 33-30 42-18-9-30-22-30-42V33z';
   let back='',body='',front='';
@@ -3574,27 +3590,33 @@ function emblem(i,size){
   if(t===4){back=mirror('<path d="M32 32C14 24 8 10 12 2c6 10 16 16 28 18z" fill="#3a2266" '+O.replace('5','4')+'/>');body='<path d="'+SH+'" fill="url(#'+id+')" '+O+'/>';}
   if(t===5){back=mirror('<path d="M28 34C12 30 2 18 2 6c8 8 16 10 26 12-10 2-16 0-22-2 6 8 14 12 24 12-8 4-14 4-20 2 6 6 12 8 20 8z" fill="#ffb347" '+O.replace('5','3.5')+'/>');
     body='<path d="'+SH+'" fill="url(#'+id+')" '+O+'/>';front='<path d="M42 22 45 6l8 8 7-11 7 11 8-8 3 16z" fill="#ffd23f" '+O.replace('5','4')+'/>';}
-  if(t===6){let rays='';for(let k=0;k<16;k++){const a2=k*22.5;rays+='<path d="M60 60 L'+(60+Math.cos((a2-4)*Math.PI/180)*62).toFixed(1)+' '+(60+Math.sin((a2-4)*Math.PI/180)*62).toFixed(1)+' L'+(60+Math.cos((a2+4)*Math.PI/180)*62).toFixed(1)+' '+(60+Math.sin((a2+4)*Math.PI/180)*62).toFixed(1)+'z" fill="'+(k%2?'rgba(255,210,63,.55)':'rgba(255,122,168,.45)')+'"/>';}
+  if(t===6){/* Ultra: a glowing prism crystal with a spinning halo and orbiting shards */
+    let sh='';for(let k=0;k<3;k++){const a2=k*120;sh+='<path d="M60 0l5 9-5 9-5-9z" fill="#fff" transform="rotate('+a2+' 60 60)"/>';}
+    back='<circle cx="60" cy="60" r="58" fill="url(#'+id+'h)"><animate attributeName="r" values="52;58;52" dur="2s" repeatCount="indefinite"/></circle><g><circle cx="60" cy="60" r="54" fill="none" stroke="#7df9ff" stroke-width="3" stroke-dasharray="14 9" opacity=".8"/><animateTransform attributeName="transform" type="rotate" from="0 60 60" to="360 60 60" dur="8s" repeatCount="indefinite"/></g>';
+    body='<path d="M60 6 102 30v60L60 114 18 90V30z" fill="url(#'+id+')" '+O+'/><path d="M60 6v108M18 30l84 60M102 30 18 90" stroke="rgba(18,15,38,.25)" stroke-width="2"/><path d="M60 18 90 36v26L60 46 30 62V36z" fill="rgba(255,255,255,.28)"/><path d="M28 44 40 56 30 70M92 44 80 56 90 70" fill="none" stroke="#e6fdff" stroke-width="3" stroke-linecap="round"><animate attributeName="opacity" values="1;.2;1" dur=".9s" repeatCount="indefinite"/></path>';
+    front='<g>'+sh+'<animateTransform attributeName="transform" type="rotate" from="0 60 60" to="-360 60 60" dur="5s" repeatCount="indefinite"/></g><path d="M44 18 48 4l7 7 5-9 5 9 7-7 4 14z" fill="#e6fdff" '+O.replace('5','3.5')+'/>';}
+  if(t===7){let rays='';for(let k=0;k<16;k++){const a2=k*22.5;rays+='<path d="M60 60 L'+(60+Math.cos((a2-4)*Math.PI/180)*62).toFixed(1)+' '+(60+Math.sin((a2-4)*Math.PI/180)*62).toFixed(1)+' L'+(60+Math.cos((a2+4)*Math.PI/180)*62).toFixed(1)+' '+(60+Math.sin((a2+4)*Math.PI/180)*62).toFixed(1)+'z" fill="'+(k%2?'rgba(255,210,63,.55)':'rgba(255,122,168,.45)')+'"/>';}
     let sp='';for(let k=0;k<4;k++){const a2=k*Math.PI/2;sp+='<path d="'+starPath(60+Math.cos(a2)*52,60+Math.sin(a2)*52,5,2,4)+'" fill="#fff"/>';}
     back='<circle cx="60" cy="60" r="58" fill="url(#'+id+'g)"/><g>'+rays+'<animateTransform attributeName="transform" type="rotate" from="0 60 60" to="360 60 60" dur="14s" repeatCount="indefinite"/></g>';
     body='<path d="'+starPath(60,60,52,38,12)+'" fill="url(#'+id+')" '+O+'/><circle cx="60" cy="60" r="31" fill="url(#'+id+'c)" stroke="#120f26" stroke-width="4"/><circle cx="60" cy="60" r="25" fill="none" stroke="rgba(255,255,255,.35)" stroke-width="2"/>';
     front='<path d="M38 24 41 6l10 9 9-12 9 12 10-9 3 18z" fill="#ffd23f" '+O.replace('5','4')+'/><circle cx="60" cy="10" r="3.5" fill="#ff4d6d"/><circle cx="46" cy="14" r="2.5" fill="#5ef2ff"/><circle cx="74" cy="14" r="2.5" fill="#6be39a"/>'+
-      '<g>'+sp+'<animateTransform attributeName="transform" type="rotate" from="360 60 60" to="0 60 60" dur="6s" repeatCount="indefinite"/></g>';}
+      '<g>'+sp+'<animateTransform attributeName="transform" type="rotate" from="360 60 60" to="0 60 60" dur="6s" repeatCount="indefinite"/></g>'+'<g>'+[0,1,2,3,4,5].map(k=>'<circle cx="'+(60+Math.cos(k*Math.PI/3)*44).toFixed(1)+'" cy="'+(60+Math.sin(k*Math.PI/3)*44).toFixed(1)+'" r="3" fill="'+['#ff5e87','#ffd23f','#7df9ff','#b48cff','#6be39a','#ff9a3d'][k]+'" stroke="#120f26" stroke-width="1.5"/>').join('')+'<animateTransform attributeName="transform" type="rotate" from="0 60 60" to="360 60 60" dur="9s" repeatCount="indefinite"/></g>'+'<circle cx="60" cy="60" r="40" fill="none" stroke="#ffd23f" stroke-width="2" opacity=".6"><animate attributeName="r" values="36;56;36" dur="2.2s" repeatCount="indefinite"/><animate attributeName="opacity" values=".8;0;.8" dur="2.2s" repeatCount="indefinite"/></circle>';}
   let mid;
   if(t===4)mid='<ellipse cx="60" cy="56" rx="17" ry="11" fill="#fff" stroke="#120f26" stroke-width="3.5"/><circle cx="60" cy="56" r="7" fill="#7b2fe0"/><circle cx="58" cy="54" r="2.4" fill="#fff"/>';
   else if(t===5)mid='<path d="M60 36c10 10 14 18 10 28-2 6-6 9-10 10-4-1-8-4-10-10-3-8 0-14 6-20 0 6 2 9 4 10 1-6 0-12 0-18z" fill="#fff1a6" stroke="#120f26" stroke-width="3.5" stroke-linejoin="round"/>';
-  else mid='<path d="'+starPath(60,t===3?44:56,t===6?24:15,t===6?10:6.8,5)+'" fill="#fff" stroke="#120f26" stroke-width="3.5" stroke-linejoin="round"/>';
-  const hi=t===3||t===6?'':'<path d="'+HI+'" fill="rgba(255,255,255,.2)"/><path d="'+HI+'" fill="none" stroke="rgba(255,255,255,.45)" stroke-width="2"/>'+(t>=2&&t!==3?'<path d="M60 92l6 6-6 6-6-6z" fill="'+c1+'" stroke="#120f26" stroke-width="2.5"/>':'');
+  else if(t===6)mid='<path d="M60 40l14 18-14 22-14-22z" fill="#fff" stroke="#120f26" stroke-width="3.5" stroke-linejoin="round"><animate attributeName="fill" values="#fff;#ffe9fb;#e6fdff;#fff" dur="2s" repeatCount="indefinite"/></path>';
+  else mid='<path d="'+starPath(60,t===3?44:56,t===7?24:15,t===7?10:6.8,5)+'" fill="#fff" stroke="#120f26" stroke-width="3.5" stroke-linejoin="round"/>';
+  const hi=t===3||t>=6?'':'<path d="'+HI+'" fill="rgba(255,255,255,.2)"/><path d="'+HI+'" fill="none" stroke="rgba(255,255,255,.45)" stroke-width="2"/>'+(t>=2&&t!==3&&t<6?'<path d="M60 92l6 6-6 6-6-6z" fill="'+c1+'" stroke="#120f26" stroke-width="2.5"/>':'');
   let pips='';if(dv>=0)for(let k=0;k<3;k++){const x=46+k*14;pips+='<path d="M'+x+' 80l5 5-5 5-5-5z" fill="'+(k<=dv?'#fff':'rgba(18,15,38,.35)')+'" stroke="#120f26" stroke-width="2"/>';}
-  const grad=t===6?'<linearGradient id="'+id+'" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#ffd23f"/><stop offset=".35" stop-color="#ff7aa8"/><stop offset=".7" stop-color="#9d7bff"/><stop offset="1" stop-color="#7df9ff"/></linearGradient><radialGradient id="'+id+'g"><stop offset=".3" stop-color="#ff7aa8" stop-opacity=".55"/><stop offset="1" stop-color="#9d7bff" stop-opacity="0"/></radialGradient><radialGradient id="'+id+'c" cx=".4" cy=".35"><stop offset="0" stop-color="#5a3ad8"/><stop offset="1" stop-color="#140f3a"/></radialGradient>'
+  const grad=t===6?'<linearGradient id="'+id+'" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#7df9ff"><animate attributeName="stop-color" values="#7df9ff;#ff7ad9;#ffe98a;#7df9ff" dur="3s" repeatCount="indefinite"/></stop><stop offset=".5" stop-color="#2f6bff"><animate attributeName="stop-color" values="#2f6bff;#8a3bff;#2fd0ff;#2f6bff" dur="3s" repeatCount="indefinite"/></stop><stop offset="1" stop-color="#7a1fd8"><animate attributeName="stop-color" values="#7a1fd8;#1f9bd8;#d81f9b;#7a1fd8" dur="3s" repeatCount="indefinite"/></stop></linearGradient><radialGradient id="'+id+'h"><stop offset=".4" stop-color="#7df9ff" stop-opacity=".6"/><stop offset="1" stop-color="#7df9ff" stop-opacity="0"/></radialGradient>':t===7?'<linearGradient id="'+id+'" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#ffd23f"/><stop offset=".35" stop-color="#ff7aa8"/><stop offset=".7" stop-color="#9d7bff"/><stop offset="1" stop-color="#7df9ff"/></linearGradient><radialGradient id="'+id+'g"><stop offset=".3" stop-color="#ff7aa8" stop-opacity=".55"/><stop offset="1" stop-color="#9d7bff" stop-opacity="0"/></radialGradient><radialGradient id="'+id+'c" cx=".4" cy=".35"><stop offset="0" stop-color="#5a3ad8"/><stop offset="1" stop-color="#140f3a"/></radialGradient>'
     :'<linearGradient id="'+id+'" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="'+c1+'"/><stop offset="1" stop-color="'+c2+'"/></linearGradient>';
   /* extra flair: glowing aura, a shine that sweeps across, and twinkling sparkles on higher ranks */
-  const shape=t===3?'M60 6 104 42 60 114 16 42z':t===6?starPath(60,60,52,38,12):SH,big=size>=40;
+  const shape=t===3?'M60 6 104 42 60 114 16 42z':t===7?starPath(60,60,52,38,12):t===6?'M60 6 102 30v60L60 114 18 90V30z':SH,big=size>=40;
   const aura=t>=1?'<circle cx="60" cy="60" r="56" fill="url(#'+id+'a)"><animate attributeName="opacity" values=".5;1;.5" dur="'+(3-t*.3).toFixed(1)+'s" repeatCount="indefinite"/></circle>':'';
   const auraG='<radialGradient id="'+id+'a"><stop offset=".45" stop-color="'+c2+'" stop-opacity=".7"/><stop offset="1" stop-color="'+c2+'" stop-opacity="0"/></radialGradient><clipPath id="'+id+'k"><path d="'+shape+'"/></clipPath>';
   const sheen=big?'<g clip-path="url(#'+id+'k)"><rect x="-80" y="-10" width="26" height="150" fill="#fff" opacity=".45" transform="skewX(-22)"><animate attributeName="x" values="-80;170;170" dur="'+(4-t*.3).toFixed(1)+'s" repeatCount="indefinite"/></rect></g>':'';
   let tw='';if(big&&t>=2){const P=[[18,22],[102,30],[98,96],[22,90],[60,4]];for(let k=0;k<Math.min(5,t);k++){const[x,y]=P[k];tw+='<path d="'+starPath(x,y,6,2,4)+'" fill="#fff" opacity="0"><animate attributeName="opacity" values="0;1;0" dur="2s" begin="'+(k*.4).toFixed(1)+'s" repeatCount="indefinite"/></path>';}}
-  const rim=t>=3&&t<6?'<path d="'+shape+'" fill="none" stroke="'+c1+'" stroke-width="2" stroke-dasharray="8 10" opacity=".9"><animate attributeName="stroke-dashoffset" values="0;-36" dur="1.6s" repeatCount="indefinite"/></path>':'';
+  const rim=t>=3&&t<=6?'<path d="'+shape+'" fill="none" stroke="'+c1+'" stroke-width="2" stroke-dasharray="8 10" opacity=".9"><animate attributeName="stroke-dashoffset" values="0;-36" dur="1.6s" repeatCount="indefinite"/></path>':'';
   return '<svg viewBox="0 0 120 120" width="'+size+'" height="'+size+'" aria-hidden="true"><defs>'+grad+auraG+'</defs>'+aura+back+body+hi+sheen+rim+mid+pips+front+tw+'</svg>';
 }
 function renderRanked(){
@@ -3604,17 +3626,22 @@ function renderRanked(){
   h+=ri.need?'<div class="rp-bar"><i style="width:'+Math.round(ri.into/ri.need*100)+'%"></i></div><p class="hint">'+ri.into+' / '+ri.need+' RP to the next division · win streak '+S.streak+'</p>':'<p class="hint">Top of the ladder.</p>';
   h+=locked?'<p class="hint" style="color:#ffd1dc">Unlock 3 rumblers to play ranked ('+ownedCount()+' / 3). Earn chromos from takedowns to unlock more.</p>':'<p class="hint">Each match picks a random mode. Wins give 25 RP plus a streak bonus, 100 coins, 50 power points and 3 gems; losses cost 15 RP. Ranked matches also earn 1.5× pass tokens. Opponents now: <b>'+RANK_FOE_NAMES[ri.i>=RANK_STEPS-1?6:Math.floor(ri.i/3)]+'</b>. In Master every win pays extra, more the higher your RP.</p>';
   h+='<button class="play ranked" id="rankedPlay"'+(locked?' disabled style="filter:grayscale(.7) brightness(.7)"':'')+'>Play ranked<small>Random mode · 3 vs 3</small></button></div>';
-  {const got=S.rankClaimed>=RANK_STEPS-1;h+='<div class="panel master-panel"><div class="mp-head">'+emblem(RANK_STEPS-1,64)+'<div><span class="of-kick">Reach Master</span><h2>Master bundle</h2><p class="hint" style="margin:0">'+(got?'Claimed. You\u2019re a Master!':'Everything below, all at once, the moment you reach Master.')+'</p></div></div><ul class="mp-list">'+
+  {const got=!!S.masterAll;h+='<div class="panel master-panel"><div class="mp-head">'+emblem(RANK_STEPS-1,64)+'<div><span class="of-kick">Reach Master</span><h2>Master bundle</h2><p class="hint" style="margin:0">'+(got?'Claimed. You\u2019re a Master!':'Everything below, all at once, the moment you reach Master.')+'</p></div></div><ul class="mp-list">'+
     '<li>'+ICON.chromos+'<span>15,000 chromos</span></li><li>'+ICON.gems+'<span>500 gems</span></li><li>'+ICON.coins+'<span>10,000 coins</span></li><li>'+ICON.pp+'<span>5,000 power points</span></li>'+
-    '<li>'+DI('ultra')+'<span>3 Amazing Drops</span></li><li>'+DI('legendary')+'<span>5 Legendary Drops</span></li><li>'+ICON.rp+'<span>Grandmaster '+esc(BY_ID[rankSetRumbler(RANK_SETS.length-1,S.seed)].name)+' skin</span></li><li>'+ICON.rp+'<span>Master pin with an “I reached Masters” sign</span></li></ul><div class="mp-art"></div></div>';}
-  h+='<div class="sec-title"><h2>Rank sets</h2><span>A skin and pin for every rank, for a rumbler picked just for you</span></div><div class="rsets">'+RANK_SETS.map((rs,k)=>{const got=S.pins.includes(rs.pin);
+    '<li>'+DI('ultra')+'<span>3 Amazing Drops</span></li><li>'+DI('legendary')+'<span>5 Legendary Drops</span></li><li>'+ICON.rp+'<span>Grandmaster skin on <b>every</b> rumbler</span></li><li>'+ICON.rp+'<span>Master pin with an “I reached Masters” sign</span></li></ul><div class="mp-art"></div></div>';}
+  h+='<div class="sec-title"><h2>Rank sets</h2><span>A skin and pin for every rank, for a rumbler picked just for you</span></div><div class="rsets">'+RANK_SETS.map((rs,k)=>{const got=hasSkin(rankSetRumbler(k,rankSeed(S)),rs.skin.id)&&S.pins.includes(rs.pin);
     return '<button class="rset'+(got?' got':'')+'" data-k="'+k+'" style="--rc:'+rs.pal[1]+'"><span class="rs-art"></span><b>'+(rs.key==='master'?'Master':rs.name)+'</b><small>'+(got?'Owned':rs.idx===0?'Play ranked':'Reach '+(rs.key==='master'?'Master':rs.name+' I'))+'</small></button>';}).join('')+'</div>';
   h+='<div class="sec-title"><h2>Ladder</h2><span>Tap a division to see its rewards</span></div><ol class="ladder">';
-  for(let i=RANK_STEPS-1;i>=1;i--){const r=i===RANK_STEPS-1?{name:'Master',col:'#ff5e87'}:rankInfo(i*100),rw=rankReward(i),cls=i===ri.i?'cur':i<=S.rankClaimed?'done':'';
+  for(let i=RANK_STEPS-1;i>=1;i--){const r=i===RANK_STEPS-1?{name:'Master',col:'#ff5e87'}:rankInfo(i*100),rw=rankReward(i),cls=i===ri.i?'cur':i<=S.rankClaimed?'done':i<=(S.rankPeak|0)?'ready':'';
     h+='<li class="'+cls+'" data-i="'+i+'" tabindex="0" role="button">'+emblem(i,42)+'<span>'+r.name+'</span><small>'+(i<=S.rankClaimed?'Claimed':rw.master?ICON.rp+'Master bundle':(RANK_SETS.some(rs=>rs.idx===i)?'<span class="setchip">+ set</span> ':'')+ICON.chromos+fmt(rw.chromos)+' '+ICON.gems+rw.gems+' '+DI(rw.drops[0].r,18)+'×'+rw.drops[0].n)+'</small></li>';}
-  h+='</ol>';body.innerHTML=h;
-  {const art=body.querySelector('.mp-art');if(art){const sb=BY_ID[rankSetRumbler(RANK_SETS.length-1,S.seed)];art.append(thumb(sb,getSkin(sb,'master'),110));art.insertAdjacentHTML('beforeend','<small>Grandmaster '+esc(sb.name)+'</small>');const pc=pinCanvas('b:master',84);pc.classList.add('mp-pin');art.append(pc);art.insertAdjacentHTML('beforeend','<small>Master pin</small>');}}
-  const rsb=rs=>BY_ID[rankSetRumbler(RANK_SETS.indexOf(rs),S.seed)];
+  h+='</ol>';
+  {const n=Math.max(0,(S.rankPeak|0)-(S.rankClaimed|0));h+='<div class="panel claim-panel"><h2>Claim rank rewards</h2><p class="hint" style="margin:0">'+(n?'You have <b>'+n+'</b> rank reward'+(n>1?'s':'')+' waiting, up to <b>'+(S.rankPeak>=RANK_STEPS-1?'Master':rankInfo(S.rankPeak*100).name)+'</b>. Claiming pays them all out and sends you back to Bronze I to climb again. Rank sets get new random rumblers each climb (Master stays Ember).':'Climb the ladder, then come back here to claim every reward you reached at once.')+'</p><button class="btn gold claim-btn" id="rankClaim"'+(n?'':' disabled')+'>Claim'+(n?' '+n+' reward'+(n>1?'s':''):'')+'</button></div>';}
+  body.innerHTML=h;
+  {const cb=$('#rankClaim');if(cb)cb.addEventListener('click',()=>{const ask=(msg,yes)=>openSheet(card=>{card.insertAdjacentHTML('beforeend','<h2>Are you sure?</h2><p class="sub">'+msg+'</p>');const y=document.createElement('button');y.className='btn gold';y.textContent='Yes';y.addEventListener('click',yes);const n=document.createElement('button');n.className='btn';n.textContent='No';n.addEventListener('click',closeSheet);card.append(y,n);});
+    ask('By claiming this reward, this resets you to Bronze I. Are you sure?',()=>ask('Really sure? You go back to Bronze I and climb again. This can\u2019t be undone.',()=>{const r=claimRanked();closeSheet();if(!r)return;sfx('unlock');
+      openSheet(card=>{card.insertAdjacentHTML('beforeend','<h2>Rewards claimed!</h2><ul class="mp-list"><li>'+ICON.chromos+'<span>+'+fmtFull(r.chromos)+' chromos</span></li><li>'+ICON.gems+'<span>+'+r.gems+' gems</span></li><li>'+ICON.coins+'<span>+'+fmtFull(r.coins)+' coins</span></li><li>'+ICON.pp+'<span>+'+fmtFull(r.pp)+' power points</span></li><li>'+ICON.drop+'<span>'+r.rankBundle.drops+' drops (open them from Play)</span></li>'+(r.rankSets.length?'<li>'+ICON.rp+'<span>'+r.rankSets.length+' rank set'+(r.rankSets.length>1?'s':'')+'</span></li>':'')+(r.master?'<li>'+ICON.rp+'<span>Grandmaster skin on every rumbler!</span></li>':'')+'</ul><p class="sub">You\u2019re back at Bronze I. Good luck on the next climb!</p>');const x=document.createElement('button');x.className='btn gold';x.textContent='Nice!';x.addEventListener('click',()=>{closeSheet();renderRanked();});card.append(x);});renderRanked();}));});}
+  {const art=body.querySelector('.mp-art');if(art){const sb=BY_ID[rankSetRumbler(RANK_SETS.length-1,rankSeed(S))];art.append(thumb(sb,getSkin(sb,'master'),110));art.insertAdjacentHTML('beforeend','<small>Grandmaster '+esc(sb.name)+'</small>');const pc=pinCanvas('b:master',84);pc.classList.add('mp-pin');art.append(pc);art.insertAdjacentHTML('beforeend','<small>Master pin</small>');}}
+  const rsb=rs=>BY_ID[rankSetRumbler(RANK_SETS.indexOf(rs),rankSeed(S))];
   const setPreview=rs=>{const eb=rsb(rs);const d=document.createElement('div');d.className='d-set';d.append(thumb(eb,getSkin(eb,rs.skin.id),110));const pc=pinCanvas('b:'+rs.pin,96);pc.className='mp-pin';d.append(pc);return d;};
   body.querySelectorAll('.rset').forEach(bt=>{const rs=RANK_SETS[+bt.dataset.k],eb=rsb(rs),art=bt.querySelector('.rs-art');art.append(thumb(eb,getSkin(eb,rs.skin.id),64));const pc=pinCanvas('b:'+rs.pin,34);pc.className='rs-pin';art.append(pc);
     bt.addEventListener('click',()=>openSheet(card=>{const got=S.pins.includes(rs.pin),nm=rs.key==='master'?'Master':rs.name;
@@ -3645,7 +3672,7 @@ function clearDraft(){draftTimers.forEach(clearTimeout);draftTimers.forEach(clea
 function openRankedDraft(){audio();sfx('click');clearMM();closeSheet();clearDraft();
   const mode=pick(MODES.filter(m=>m.ranked)),pool=RUMBLERS.filter(b=>!b.random),smx=seasonMaxed(),RANK_MIN_LVL=4;
   const party=[...new Set((S.party||[]).map(f=>f.rumbler).filter(id=>BY_ID[id]))].slice(0,2);
-  const picks={m0:null,m1:null,me:null,f0:null,f1:null,f2:null},taken=()=>new Set(Object.values(picks).filter(Boolean));
+  const picks={m0:null,m1:null,me:null,f0:null,f1:null,f2:null},bans=[],taken=()=>new Set(Object.values(picks).filter(Boolean).concat(bans)),banOn=rankInfo(S.rp).tier>=2;
   const choices=smx.map(id=>({id,maxed:true})).concat(Object.keys(S.owned).filter(id=>BY_ID[id]&&!smx.includes(id)).map(id=>({id,maxed:false})));
   const okLvl=c=>c.maxed||(S.owned[c.id]&&S.owned[c.id].lvl>=RANK_MIN_LVL);
   const fn=shuffle(BOT_NAMES.slice()),names={me:S.name,m0:(S.party||[])[0]?safeName(S.party[0].name):fn[0],m1:(S.party||[])[1]?safeName(S.party[1].name):fn[1],f0:fn[2],f1:fn[3],f2:fn[4]};
@@ -3653,7 +3680,7 @@ function openRankedDraft(){audio();sfx('click');clearMM();closeSheet();clearDraf
   const el=$('#draft');el.hidden=false;const card=el.querySelector('.draft-card');card.classList.add('rk-draft');
   const slot=k=>'<div class="dslot '+(k[0]==='f'?'red':'blue')+(k==='me'?' you':'')+'" data-k="'+k+'"><span class="ds-pic"></span><span class="ds-txt"><b>'+esc(names[k])+'</b><small>Waiting…</small></span></div>';
   card.innerHTML='<div class="dr-top"><p class="mm-k">Ranked · '+rankInfo(S.rp).name+'</p><h2>'+esc(mode.name)+'</h2><p class="small">'+'Random map every ranked game'+'</p></div>'+
-    '<div class="dr-turn" id="drTurn">Getting ready…</div>'+
+    '<div class="dr-turn" id="drTurn">Getting ready…</div>'+(banOn?'<div class="dr-bans" id="drBans"><small>Bans</small></div>':'')+
     '<div class="dr-board"><div class="dr-col">'+['m0','me','m1'].map(slot).join('')+'</div><div class="dr-vs">VS</div><div class="dr-col">'+['f0','f1','f2'].map(slot).join('')+'</div></div>'+
     '<p class="small">Your rumbler must be level '+RANK_MIN_LVL+'+. Season Max rumblers are free for everyone this month at max level with a gadget and star power.</p><div class="dr-grid"></div><button class="btn" id="draftCancel">Leave</button>';
   const grid=card.querySelector('.dr-grid'),turnEl=card.querySelector('#drTurn');let myTurn=false;
@@ -3679,7 +3706,14 @@ function openRankedDraft(){audio();sfx('click');clearMM();closeSheet();clearDraf
     draftTimers.push(setTimeout(()=>{clearInterval(iv);picks[k]=final;setSlot(k,final,'lock');sfx('pin');drawGrid();draftTimers.push(setTimeout(next,450));},rand(1600,3400)));};
   function lockMe(c){if(!myTurn||!c)return;myTurn=false;if(lockMe.iv)clearInterval(lockMe.iv);picks.me=c.id;mineMax=!!c.maxed;setSlot('me',c.id,'lock');sfx('unlock');drawGrid();turnEl.textContent='Locked in '+BY_ID[c.id].name+'!';draftTimers.push(setTimeout(next,600));}
   drawGrid();card.querySelector('#draftCancel').addEventListener('click',()=>{clearDraft();el.hidden=true;card.classList.remove('rk-draft');});
-  draftTimers.push(setTimeout(next,700));}
+  /* Gold and up: each team bans one rumbler first. Your bot teammates always agree with your ban. */
+  const showBan=(id,mine)=>{const bx=card.querySelector('#drBans');const s=document.createElement('span');s.className='dr-ban '+(mine?'blue':'red');s.append(thumb(BY_ID[id],getSkin(BY_ID[id],'classic'),40));s.insertAdjacentHTML('beforeend','<i>\u2715</i><small>'+esc(BY_ID[id].name)+'</small>');bx.append(s);};
+  const banPhase=()=>{let done=false,left=15;turnEl.innerHTML='<b>Ban a rumbler!</b> Nobody can play it this game <span class="dr-clock">'+left+'</span>';grid.innerHTML='';
+    const doBan=id=>{if(done)return;done=true;clearInterval(iv);bans.push(id);showBan(id,true);sfx('thud');turnEl.textContent='Your team agreed: '+BY_ID[id].name+' is banned!';
+      draftTimers.push(setTimeout(()=>{const strong=pool.filter(b=>!bans.includes(b.id)).sort(()=>Math.random()-.5).sort((a,b)=>DROP_RAR.indexOf(b.rarity)-DROP_RAR.indexOf(a.rarity));const eb=(Math.random()<.6?strong[0]:pick(strong)).id;bans.push(eb);showBan(eb,false);turnEl.textContent='Opponents banned '+BY_ID[eb].name+'!';sfx('thud');drawGrid();draftTimers.push(setTimeout(next,1200));},1400));};
+    for(const b of pool){const d=document.createElement('button');d.className='dr-pick banpick';d.style.setProperty('--r',RARITY[b.rarity].col);d.append(thumb(b,getSkin(b,'classic'),50));d.insertAdjacentHTML('beforeend','<b>'+esc(b.name)+'</b>');d.addEventListener('click',()=>doBan(b.id));grid.append(d);}
+    const iv=setInterval(()=>{left--;const ck=turnEl.querySelector('.dr-clock');if(ck)ck.textContent=left;if(left<=0)doBan(pick(pool).id);},1000);draftTimers.push(iv);};
+  draftTimers.push(setTimeout(banOn?banPhase:next,700));}
 function startMatchmaking(ranked,pre){
   if(!ranked&&!pre&&netCanPlay()){if(NETC)netLeave();netQueue(S.mode);return;}
   if(ranked&&!pre){openRankedDraft();return;}
@@ -3776,9 +3810,10 @@ function showEnd(){
   for(const rw of r.road)rows+='<li>'+ICON.trophies+'<span>Trophy road: '+roadLabel(rw)+'</span><b></b></li>';
   if(r.rank!=null){const bb=r.rankBundle;rows+='<li>'+emblem(r.rank,24)+'<span>Reached '+rankInfo(r.rank*100).name+'!</span><b></b></li>';
     if(bb)rows+='<li>'+ICON.rp+'<span>Rank rewards: +'+fmtFull(bb.chromos)+' chromos, +'+bb.gems+' gems, +'+fmtFull(bb.coins)+' coins, +'+fmtFull(bb.pp)+' power points, '+bb.drops+' Rumble Drop'+(bb.drops===1?'':'s')+'</span><b></b></li>';
-    if(r.master)rows+='<li>'+ICON.rp+'<span><b style="color:#ffd23f">MASTER!</b> the Grandmaster skin and the Master pin are yours</span><b></b></li>';}
+    if(r.master)rows+='<li>'+ICON.rp+'<span><b style="color:#ffd23f">MASTER!</b> the Grandmaster skin and the Master pin are yours</span><b></b></li>';
+    if(r.rankWaiting)rows+='<li>'+ICON.rp+'<span>New rank rewards are waiting. <b>Claim them at the bottom of Ranked</b></span><b></b></li>';}
   if(r.prestigeReward){const pr=r.prestigeReward,tn=prestigeTier(pr.m);rows+='<li class="set-row" style="border-color:'+tn.col+'"'+(pr.pin?' data-pin="pr:'+pr.id+':'+pr.pin+'"':'')+'>'+(pr.pin?'<span class="set-pin"></span>':DI(pr.drops[0].r,30))+'<span><b style="color:'+tn.col+'">Prestige '+pr.m+'!</b> '+(pr.skin?esc(getSkin(b,pr.skin).name+' '+b.name)+' skin + pin, ':'')+'+'+fmtFull(pr.coins)+' coins, +'+fmtFull(pr.pp)+' PP, '+pr.drops.map(d=>d.n+' '+dropName(d.r)+(d.n>1?'s':'')).join(', ')+'</span><b></b></li>';}
-  if(r.rankSets)for(const k of r.rankSets){const rs=RANK_SETS[k];rows+='<li class="set-row" data-pin="'+rs.pin+'"><span class="set-pin"></span><span>New rank set! '+esc(rs.skin.name)+' '+esc(BY_ID[rankSetRumbler(k,S.seed)].name)+' skin + \u201cI reached '+rs.name+'\u201d pin</span><b></b></li>';}
+  if(r.rankSets)for(const k of r.rankSets){const rs=RANK_SETS[k];rows+='<li class="set-row" data-pin="'+rs.pin+'"><span class="set-pin"></span><span>New rank set! '+esc(rs.skin.name)+' '+esc(BY_ID[rankSetRumbler(k,rankSeed(S))].name)+' skin + \u201cI reached '+rs.name+'\u201d pin</span><b></b></li>';}
   const sheet=$('#endSheet');
   const score=M.mode.sd?'<p class="end-score">'+P.kills+' knockout'+(P.kills===1?'':'s')+' · '+P.cubes+' cube'+(P.cubes===1?'':'s')+'</p>'+(w===0&&M.place>1?'<p class="end-top3">Top '+SD_WIN_PLACES+' finish · counts as a win</p>':''):M.mode.ffa?'<p class="end-score">You scored '+M.score[0]+'</p>':M.mode.id==='core'?'':'<p class="end-score"><span class="t-blue">'+M.score[0]+'</span> – <span class="t-red">'+M.score[1]+'</span></p>';
   const starLine=M.star?(M.star===P?'<p class="end-star me">★ You’re the Star Player!</p>':'<p class="end-star">★ Star Player: '+esc(M.star.name)+' · '+M.star.kills+' takedown'+(M.star.kills===1?'':'s')+'</p>'):'';
