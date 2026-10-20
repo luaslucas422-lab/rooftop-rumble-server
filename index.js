@@ -55,6 +55,14 @@ const matches = new Map();   // id -> match
 let nextId = 1;
 
 const send = (p, o) => { if (p && p.ws && p.ws.readyState === 1) p.ws.send(JSON.stringify(o)); };
+/* Party chat filter (server side too, so nobody can skip it): 15+ only, no links, emails, phone numbers or rude words */
+const CHAT_BAD = ['sex','fuck','fuk','fck','shit','bitch','btch','cunt','dick','cock','pussy','asshole','dumbass','bastard','slut','whore','nigg','niga','fag','retard','rape','rapist','penis','vagina','porn','sexy','nude','boob','tits','nazi','hitler','twat','wank','piss','kys','killyourself','suicide','jizz','cum','dildo','anal','pedo','molest','kkk'];
+const CHAT_OK = ['essex','sussex','wessex','middlesex','sextant','sexton','sextet','scum','cumber','cucumber','document','circum','peacock','hancock','hitchcock','dickens','analys','canal','banal','grape','drape','scrape','therapist','skyscraper','cockpit','shitake','shiitake','cumul','accum'];
+function chatBadWord(w) { let t = String(w).toLowerCase(); for (const ok of CHAT_OK) t = t.split(ok).join('_'); t = t.replace(/[0@4]/g, m => m === '0' ? 'o' : 'a').replace(/[1!|]/g, 'i').replace(/3/g, 'e').replace(/[5$]/g, 's').replace(/7/g, 't').replace(/8/g, 'b').replace(/[^a-z_]/g, '').replace(/(.)\1{2,}/g, '$1$1'); const tc = t.replace(/(.)\1+/g, '$1'); return CHAT_BAD.some(b => t.includes(b) || tc.includes(b)); }
+function chatClean(s) { s = String(s || '').replace(/[\u0000-\u001f<>]/g, ' ').replace(/\s+/g, ' ').trim().slice(0, 80);
+  s = s.replace(/(https?:\/\/|www\.)\S*/gi, '***').replace(/\S+\.(com|net|org|gg|io|co|uk|ie|me|tv|app|xyz|ly|be|link)\b\S*/gi, '***').replace(/\S+@\S+/g, '***').replace(/\d[\d ().+-]{5,}\d/g, '***');
+  const w = s.split(' '); for (let i = 0; i < w.length;) { if (w[i].length === 1) { let j = i, acc = ''; while (j < w.length && w[j].length === 1) { acc += w[j]; j++; } if (acc.length >= 3 && chatBadWord(acc)) for (let k = i; k < j; k++) w[k] = '*'; i = j; } else i++; }
+  return w.map(x => x !== '*' && x !== '***' && chatBadWord(x) ? '*'.repeat(Math.min(6, x.length)) : x).join(' '); }
 const clean = (s, n) => String(s == null ? '' : s).replace(/[<>]/g, '').slice(0, n);
 const partyOf = p => p && p.party ? parties.get(p.party) : null;
 function partyInfo(pt) { return { t: 'party', leader: pt ? pt.leader : null, members: pt ? pt.members.map(id => players.get(id)).filter(Boolean).map(q => ({ pid: q.pid, name: q.name, rumbler: q.rumbler, skin: q.skin, icon: q.icon, profile: q.profile || null })) : [] }; }
@@ -72,7 +80,7 @@ function onMessage(ws, m) {
     if (!p) { const old = players.get(pid); if (old && old.ws !== ws) { try { old.ws.close(); } catch (e) {} } p = old || { pid, party: null, match: null, queued: null, invitesSent: 0 }; p.ws = ws; ws.player = p; players.set(pid, p); }
     p.name = clean(m.name, 14) || 'Player'; p.lower = p.name.toLowerCase(); p.rumbler = clean(m.rumbler, 20); p.skin = clean(m.skin, 30); p.trophies = Math.max(0, m.trophies | 0); p.invites = m.invites !== false;
     if (m.load) p.load = m.load;
-    p.code = clean(m.code, 8).toUpperCase(); p.findByName = !!m.findByName; p.icon = clean(m.icon, 40);
+    p.ageBand = ['u7', 'kid', 'teen'].includes(m.ageBand) ? m.ageBand : 'kid'; p.code = clean(m.code, 8).toUpperCase(); p.findByName = !!m.findByName; p.icon = clean(m.icon, 40);
     if (m.profile && typeof m.profile === 'object') { const q = m.profile; p.profile = { name: p.name, icon: p.icon, code: p.code, trophies: q.trophies | 0, best: q.best | 0, coins: q.coins | 0, pp: q.pp | 0, wins: q.wins | 0, rank: clean(q.rank, 20), rumblers: q.rumblers | 0, pres: Array.isArray(q.pres) ? q.pres.slice(0, 8).map(x => [clean(x && x[0], 20), (x && x[1]) | 0]) : [] }; }
     const pt = partyOf(p); if (pt) sendParty(pt); else send(p, partyInfo(null));
     return;
@@ -90,7 +98,9 @@ function onMessage(ws, m) {
     if (p.party !== pt.id) { leaveParty(p); unqueue(p); unqueue(host); pt.members.push(p.pid); p.party = pt.id; }
     sendParty(pt); send(host, { t: 'toast', msg: p.name + ' joined your party!' }); return; }
   if (m.t === 'leaveParty') { leaveParty(p); return; }
-  if (m.t === 'pchat') { const i = m.i | 0; if (i < 0 || i > 40) return; const now = Date.now(); if (now - (p.lastChat || 0) < 1500) return; p.lastChat = now; const pt = partyOf(p); if (!pt) return; for (const id of pt.members) if (id !== p.pid) send(players.get(id), { t: 'pchat', name: p.name, i }); return; }
+  if (m.t === 'pchat') { const now = Date.now(); if (now - (p.lastChat || 0) < 1100) return; const pt = partyOf(p); if (!pt) return;
+    if (typeof m.txt === 'string') { if (p.ageBand !== 'teen') return; const txt = chatClean(m.txt); if (!txt.replace(/[\s*]/g, '')) return; p.lastChat = now; for (const id of pt.members) { if (id === p.pid) continue; const q = players.get(id); if (q && q.ageBand === 'teen') send(q, { t: 'pchat', pid: p.pid, name: p.name, txt }); } return; }
+    const i = m.i | 0; if (i < 0 || i > 40) return; p.lastChat = now; for (const id of pt.members) if (id !== p.pid) send(players.get(id), { t: 'pchat', pid: p.pid, name: p.name, i }); return; }
   if (m.t === 'queue') { const mode = clean(m.mode, 20); if (!CAPS[mode] || p.match) return; const pt = partyOf(p);
     if (pt && pt.leader !== p.pid) return send(p, { t: 'toast', msg: 'Only your party leader can start a match' }) || send(p, { t: 'queue', mode, n: 0, need: 0, cancel: true });
     if (m.load) p.load = m.load; unqueue(p);
