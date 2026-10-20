@@ -1,0 +1,9 @@
+{
+  "name": "rooftop-rumble-server",
+  "version": "1.0.0",
+  "description": "Online game server for Rooftop Rumble",
+  "main": "index.js",
+  "scripts": { "start": "node index.js" },
+  "engines": { "node": ">=18" },
+  "dependencies": { "ws": "^8.18.0" }
+}
