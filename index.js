@@ -67,6 +67,11 @@ const clean = (s, n) => String(s == null ? '' : s).replace(/[<>]/g, '').slice(0,
 const partyOf = p => p && p.party ? parties.get(p.party) : null;
 function partyInfo(pt) { return { t: 'party', leader: pt ? pt.leader : null, members: pt ? pt.members.map(id => players.get(id)).filter(Boolean).map(q => ({ pid: q.pid, name: q.name, rumbler: q.rumbler, skin: q.skin, icon: q.icon, profile: q.profile || null })) : [] }; }
 function sendParty(pt) { if (!pt) return; const info = partyInfo(pt); for (const id of pt.members) send(players.get(id), info); }
+function addToParty(host, p) { if (p.match || host.match) return send(p, { t: 'toast', msg: 'They are in a match right now, try again soon' });
+  let pt = partyOf(host); if (!pt) { pt = { id: 'pt' + (nextId++), leader: host.pid, members: [host.pid] }; parties.set(pt.id, pt); host.party = pt.id; }
+  if (pt.members.length >= 3) return send(p, { t: 'toast', msg: 'That party is full' });
+  if (p.party !== pt.id) { leaveParty(p); unqueue(p); unqueue(host); pt.members.push(p.pid); p.party = pt.id; }
+  sendParty(pt); send(host, { t: 'toast', msg: p.name + ' joined your party!' }); }
 function leaveParty(p) { const pt = partyOf(p); if (!pt) return; pt.members = pt.members.filter(x => x !== p.pid); p.party = null; send(p, partyInfo(null));
   if (pt.members.length <= 1) { for (const id of pt.members) { const q = players.get(id); if (q) { q.party = null; send(q, partyInfo(null)); } } parties.delete(pt.id); }
   else { if (pt.leader === p.pid) pt.leader = pt.members[0]; sendParty(pt); } }
@@ -92,11 +97,12 @@ function onMessage(ws, m) {
   if (m.t === 'invite') { const o = players.get(clean(m.to, 40)); if (!o || o === p || !o.invites) return; const now = Date.now(); if (now - (p.lastInvite || 0) < 1500) return; p.lastInvite = now;
     const pt = partyOf(p); if (pt && pt.members.length >= 3) return send(p, { t: 'toast', msg: 'Your party is full (3 players)' });
     send(o, { t: 'invite', from: p.pid, name: p.name, rumbler: p.rumbler, skin: p.skin }); return send(p, { t: 'toast', msg: 'Invite sent to ' + o.name }); }
-  if (m.t === 'accept') { const host = players.get(clean(m.from, 40)); if (!host || host === p) return; if (p.match || host.match) return send(p, { t: 'toast', msg: 'They are in a match right now, try again soon' });
-    let pt = partyOf(host); if (!pt) { pt = { id: 'pt' + (nextId++), leader: host.pid, members: [host.pid] }; parties.set(pt.id, pt); host.party = pt.id; }
-    if (pt.members.length >= 3) return send(p, { t: 'toast', msg: 'That party is full' });
-    if (p.party !== pt.id) { leaveParty(p); unqueue(p); unqueue(host); pt.members.push(p.pid); p.party = pt.id; }
-    sendParty(pt); send(host, { t: 'toast', msg: p.name + ' joined your party!' }); return; }
+  if (m.t === 'accept') { const host = players.get(clean(m.from, 40)); if (!host || host === p) return; return addToParty(host, p); }
+  if (m.t === 'letin') { const j2 = players.get(clean(m.who, 40)); if (!j2 || j2 === p) return; return addToParty(p, j2); }
+  if (m.t === 'joinreq') { const o = players.get(clean(m.to, 40)); if (!o || o === p || !o.invites || !o.ws || o.ws.readyState !== 1) return send(p, { t: 'toast', msg: 'They are not online right now' }); const now = Date.now(); if (now - (p.lastInvite || 0) < 1500) return; p.lastInvite = now;
+    if (o.match) return send(p, { t: 'toast', msg: o.name + ' is in a match, try again soon' });
+    send(o, { t: 'joinreq', from: p.pid, name: p.name, rumbler: p.rumbler, skin: p.skin, icon: p.icon }); return send(p, { t: 'toast', msg: 'Asked ' + o.name + ' to let you in' }); }
+  if (m.t === 'presence') { const ids = Array.isArray(m.pids) ? m.pids.slice(0, 30) : []; const list = []; for (const id of ids) { const o = players.get(clean(id, 40)); if (o && o.ws && o.ws.readyState === 1) list.push({ pid: o.pid, name: o.name, icon: o.icon, trophies: o.trophies, invites: o.invites, inMatch: !!o.match }); } return send(p, { t: 'presence', list }); }
   if (m.t === 'leaveParty') { leaveParty(p); return; }
   if (m.t === 'pchat') { const now = Date.now(); if (now - (p.lastChat || 0) < 1100) return; const pt = partyOf(p); if (!pt) return;
     if (typeof m.txt === 'string') { if (p.ageBand !== 'teen') return; const txt = chatClean(m.txt); if (!txt.replace(/[\s*]/g, '')) return; p.lastChat = now; for (const id of pt.members) { if (id === p.pid) continue; const q = players.get(id); if (q && q.ageBand === 'teen') send(q, { t: 'pchat', pid: p.pid, name: p.name, txt }); } return; }
