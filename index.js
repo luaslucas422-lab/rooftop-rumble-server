@@ -107,7 +107,7 @@ function onMessage(ws, m) {
   if (m.t === 'pchat') { const now = Date.now(); if (now - (p.lastChat || 0) < 1100) return; const pt = partyOf(p); if (!pt) return;
     if (typeof m.txt === 'string') { if (p.ageBand !== 'teen') return; const txt = chatClean(m.txt); if (!txt.replace(/[\s*]/g, '')) return; p.lastChat = now; for (const id of pt.members) { if (id === p.pid) continue; const q = players.get(id); if (q && q.ageBand === 'teen') send(q, { t: 'pchat', pid: p.pid, name: p.name, txt }); } return; }
     const i = m.i | 0; if (i < 0 || i > 40) return; p.lastChat = now; for (const id of pt.members) if (id !== p.pid) send(players.get(id), { t: 'pchat', pid: p.pid, name: p.name, i }); return; }
-  if (m.t === 'queue') { const mode = clean(m.mode, 20); if (!CAPS[mode] || p.match) return; const pt = partyOf(p);
+  if (m.t === 'queue') { const mode = clean(m.mode, 20); if (!CAPS[mode] || p.match) return; unwatch(p); const pt = partyOf(p);
     if (pt && pt.leader !== p.pid) return send(p, { t: 'toast', msg: 'Only your party leader can start a match' }) || send(p, { t: 'queue', mode, n: 0, need: 0, cancel: true });
     if (m.load) p.load = m.load; unqueue(p);
     const teamCap = Math.max(...CAPS[mode]);
@@ -117,6 +117,11 @@ function onMessage(ws, m) {
     if (!queues.has(mode)) queues.set(mode, []); queues.get(mode).push({ pids, since: Date.now() }); return; }
   if (m.t === 'cancel') { unqueue(p); return; }
   if (m.t === 'in') { const mt = p.match && matches.get(p.match); if (mt) mt.inputs.push([p.pid, m]); return; }
+  if (m.t === 'watch') { if (p.match || p.queued) return send(p, { t: 'watch', none: true }); unwatch(p);
+    const live = [...matches.values()].filter(mt => !mt.done && ['countdown', 'play'].includes(mt.world.state()) && mt.world.timeLeft() > 10);
+    if (!live.length) return send(p, { t: 'watch', none: true });
+    const mt = live[Math.floor(Math.random() * live.length)]; (mt.spect || (mt.spect = new Set())).add(p.pid); p.watching = mt.id; p.watchNew = true; return; }
+  if (m.t === 'unwatch') { unwatch(p); return; }
   if (m.t === 'leave') { const mt = p.match && matches.get(p.match); if (mt) { try { mt.world.leave(p.pid); } catch (e) {} } p.match = null; return; }
 }
 
@@ -161,7 +166,8 @@ function stepMatch(mt) {
     for (const [pid, m] of mt.inputs.splice(0)) mt.world.input(pid, m);
     const t0 = Date.now(); mt.world.step(1 / TICK); mt.tick++; if (process.env.DEBUG && mt.tick % 90 === 0) console.log('step ms', Date.now() - t0, 'time left', mt.world.timeLeft && mt.world.timeLeft());
     const watchers = mt.seats.map(([pid]) => players.get(pid)).filter(q => q && q.match === mt.id && q.ws && q.ws.readyState === 1);
-    if (mt.tick % SNAP_EVERY === 0 && watchers.length) { const msg = JSON.stringify({ t: 'snap', s: mt.world.snap(false) }); for (const q of watchers) q.ws.send(msg); if (process.env.DEBUG && mt.tick % 60 === 0) console.log('snapshot bytes', msg.length); }
+    const specs = specsOf(mt);
+    if (mt.tick % SNAP_EVERY === 0 && (watchers.length || specs.length)) { const sn = mt.world.snap(false), msg = JSON.stringify({ t: 'snap', s: sn }); for (const q of watchers) q.ws.send(msg); for (const q of specs) { if (q.watchNew) { q.watchNew = false; send(q, { t: 'start', watch: 'live', id: mt.id, mode: mt.mode, team: 0, unit: null, s: sn }); } else q.ws.send(msg); } if (process.env.DEBUG && mt.tick % 60 === 0) console.log('snapshot bytes', msg.length); }
     mt.emptyT = watchers.length ? 0 : mt.emptyT + 1 / TICK;
     const st = mt.world.state();
     if (st === 'ended' && mt.world.endT() > 1.2 && !mt.done) { mt.done = true; const res = mt.world.results();
@@ -170,7 +176,9 @@ function stepMatch(mt) {
     if (mt.emptyT > 15 || Date.now() - mt.born > 8 * 60 * 1000) stopMatch(mt);
   } catch (e) { console.log('match error', mt.id, e); for (const [pid] of mt.seats) { const q = players.get(pid); if (q && q.match === mt.id) { send(q, { t: 'toast', msg: 'The match hit a problem and ended' }); send(q, { t: 'end', r: { w: -1, place: 0, kills: 0 } }); q.match = null; } } stopMatch(mt); }
 }
-function stopMatch(mt) { clearInterval(mt.timer); matches.delete(mt.id); }
+function specsOf(mt) { return mt.spect ? [...mt.spect].map(id => players.get(id)).filter(q => q && q.watching === mt.id && q.ws && q.ws.readyState === 1) : []; }
+function unwatch(p) { if (!p.watching) return; const mt = matches.get(p.watching); if (mt && mt.spect) mt.spect.delete(p.pid); p.watching = null; p.watchNew = false; }
+function stopMatch(mt) { clearInterval(mt.timer); matches.delete(mt.id); for (const q of specsOf(mt)) { send(q, { t: 'watchEnd' }); q.watching = null; } }
 
 setInterval(() => { for (const mode of queues.keys()) tryMatch(mode); }, 500);
 
@@ -188,7 +196,7 @@ wss.on('connection', ws => {
     let m; try { m = JSON.parse(data); } catch (e) { return; } if (!m || typeof m !== 'object') return;
     try { onMessage(ws, m); } catch (e) { console.log('message error', e); }
   });
-  ws.on('close', () => { const p = ws.player; if (!p || p.ws !== ws) return; unqueue(p);
+  ws.on('close', () => { const p = ws.player; if (!p || p.ws !== ws) return; unqueue(p); unwatch(p);
     const mt = p.match && matches.get(p.match); if (mt) { try { mt.world.leave(p.pid); } catch (e) {} } p.match = null; leaveParty(p); p.ws = null;
     setTimeout(() => { if (!p.ws) players.delete(p.pid); }, 60000); });
 });
