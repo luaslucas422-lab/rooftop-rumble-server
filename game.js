@@ -387,9 +387,9 @@ const skinPinFaces=sk=>sk.tier!==0?['happy','angry','sad','cool','love']:null;
 const isSkinPin=id=>{const m=/^sk:([a-z]+):([a-z_0-9]+)(?::(happy|angry|sad|cool|love))?$/.exec(id);return!!(m&&BY_ID[m[1]]&&skinsOf(BY_ID[m[1]]).some(k=>k.id===m[2]));};
 const skinHasPin=sk=>sk.tier!==0&&sk.tier!=='master';
 /* How flashy a skin's takedown and spawn effects are: 0 none, 1 small, 2 medium, 3 big */
-const skinFx=sk=>sk.ultraFx?4:sk.tier==='halloween'?3:sk.supercharged?0:sk.tier==='power'?4:sk.tier==='golden'?3:sk.tier==='troll'?2:sk.charged||sk.tier===3||sk.tier==='sig'||sk.tier==='pass'||sk.tier==='master'?3:sk.tier===2||sk.tier==='rank'?2:sk.tier===1||sk.tier==='prestige'?1:0;
+const skinFx=sk=>sk.ultraFx?4:sk.tier==='halloween'||sk.tier==='exclusive'?3:sk.supercharged?0:sk.tier==='power'?4:sk.tier==='golden'?3:sk.tier==='troll'?2:sk.charged||sk.tier===3||sk.tier==='sig'||sk.tier==='pass'||sk.tier==='master'?3:sk.tier===2||sk.tier==='rank'?2:sk.tier===1||sk.tier==='prestige'?1:0;
 /* skins you can only earn, never buy */
-const earnOnly=sk=>sk.tier==='halloween'||sk.tier==='pass'||sk.tier==='master'||sk.tier==='rank'||sk.tier==='prestige';
+const earnOnly=sk=>sk.tier==='exclusive'||sk.tier==='halloween'||sk.tier==='pass'||sk.tier==='master'||sk.tier==='rank'||sk.tier==='prestige';
 const SKIN_PRICE={1:{gems:30,coins:1500,pp:600},2:{gems:60,coins:3000,pp:1200},3:{gems:120,coins:6000,pp:2400},sig:{gems:90,coins:4500,pp:1800}};
 SKIN_PRICE.troll={gems:80,coins:4000,pp:1600};
 /* Golden skins: coins only, always for sale. Power skins: the best rarity, power points only, always for sale. */
@@ -403,7 +403,7 @@ const canQuickChat=()=>S.ageBand&&S.ageBand!=='u7';
 /* Profile icons: rumbler faces you own, trophy milestones, special skins, and rare icons from Rumbler Boxes */
 const TROPHY_ICONS=[250,500,1000,1500,2000,2500,3000,3500,4000,4500,5000];
 const SPECIAL_ICONS=[['crown','\ud83d\udc51','#ffd23f'],['skull','\ud83d\udc80','#c9cfe0'],['star','\u2b50','#ffb547'],['flame','\ud83d\udd25','#ff7a1a'],['heart','\ud83d\udc96','#ff7aa8'],['ghost','\ud83d\udc7b','#b48cff'],['bolt','\u26a1','#5ec8ff'],['moon','\ud83c\udf19','#3b3399'],['dino','\ud83e\udd96','#6be39a'],['alien','\ud83d\udc7d','#7ed957'],['gem','\ud83d\udc8e','#7df9ff'],['cool','\ud83d\ude0e','#ffd23f']];
-const ICON_SKIN_TIERS=['golden','power','halloween','rank','master'];
+const ICON_SKIN_TIERS=['golden','power','halloween','rank','master','exclusive'];
 const SPOOKY=['pumpkin','skeleton','zombie'],BOXES=['rbox','sbox'],isSpecialDrop=r=>r==='season'||SPOOKY.includes(r)||BOXES.includes(r),KNOCK_EVERY=5;
 const dropName=r=>RARITY[r]?(RARITY[r].box?RARITY[r].name:RARITY[r].name+' Drop'):'Drop';
 const BOX_PRICE={rbox:70,sbox:80};
@@ -427,6 +427,20 @@ const DEAD_PITY=50,DEAD_CHANCE=.05,HAPPY_KNOCKS=100;
 const SPOOKY_LOOT=[['hskin',24],['skin',10],['hpin',16],['pp',16,[300,700]],['pass',14,[80,200]],['coins',12,[500,1200]],['gems',8,[20,60]]];
 const KNOCK_LOOT=[['skin',13],['drop',18],['gdrop',12],['hskin',14],['hpin',12],['spooky',10],['coins',7],['pp',7],['trick',20]];
 const DARK_DROPS=15;
+/* Exclusive skins: never in the shop or boxes. Each one is earned by doing something special. */
+const EX_COL='#2de0b0';
+const EXCLUSIVE_SKINS=[
+ {rid:'ember',stat:'pins',goal:100,how:'Send 100 pins in matches',skin:{id:'ex_emoji',name:'Emoji',tier:'exclusive',body:'#ffd23f',belly:'#fff3a6',accent:'#ff8a1f',proj:'#ffd23f',hat:'party',grin:true,sprinkles:true}},
+ {rid:'boulder',stat:'sims',goal:10,how:'Run 10 simulations (\u2630 menu)',skin:{id:'ex_robo',name:'Robo',tier:'exclusive',body:'#8fa3b8',belly:'#dce6ef',accent:'#ff3b5c',proj:'#46e0ff',eye:'#46e0ff',hat:'antenna',glow:'#46e0ff',rivets:true,scan:true}},
+ {rid:'luna',stat:'replays',goal:5,how:'Watch 5 replays (\u2630 menu)',skin:{id:'ex_noir',name:'Film Noir',tier:'exclusive',body:'#2d2d33',belly:'#e9e9ec',accent:'#ffffff',proj:'#f2f2f2',eye:'#ffffff',hat:'fedora',rim:'#ffffff',grain:true}},
+ {rid:'gus',stat:'rbox',goal:10,how:'Open 10 Rumbler Boxes',skin:{id:'ex_unbox',name:'Unboxer',tier:'exclusive',body:'#c89a5e',belly:'#f0d9a8',accent:'#ff5e87',proj:'#ff5e87',hat:'hardhat',tape:true}},
+ {rid:'quill',stat:'secrets',goal:10,how:'Find 10 secrets',skin:{id:'ex_sleuth',name:'Sleuth',tier:'exclusive',body:'#9a7148',belly:'#efdcb4',accent:'#5a3a1e',proj:'#ffd23f',hat:'deerstalker',plaid:true}},
+ {rid:'fang',stat:'sdWins',goal:10,how:'Finish 1st in Solo Showdown 10 times',skin:{id:'ex_lone',name:'Last One Standing',tier:'exclusive',body:'#3a1f24',belly:'#ffb000',accent:'#ff3b5c',proj:'#ff6a00',eye:'#ffd23f',hat:'bandana',glow:'#ff6a00',warpaint:true}},
+ {rid:'rook',stat:'kills',goal:500,how:'Get 500 takedowns',skin:{id:'ex_warlord',name:'Warlord',tier:'exclusive',body:'#5a1418',belly:'#ffd23f',accent:'#ffd23f',proj:'#ff3b5c',eye:'#ffd23f',hat:'spikes',glow:'#ff3b5c',shine:true,warpaint:true}},
+ {rid:'pip',stat:'matches',goal:300,how:'Play 300 matches',skin:{id:'ex_marathon',name:'Marathon',tier:'exclusive',body:'#2ad19a',belly:'#ffffff',accent:'#ff5ad1',proj:'#ffd23f',hat:'visor',checker:true}},
+ {rid:'zapper',stat:'pass',goal:45,how:'Reach Rumble Pass tier 45',skin:{id:'ex_passmaster',name:'Pass Master',tier:'exclusive',body:'#1b2a6b',belly:'#ffd23f',accent:'#ffd23f',proj:'#7ad7ff',eye:'#7ad7ff',hat:'laurel',glow:'#7ad7ff',starry:true}},
+ {rid:'echo',stat:'best',goal:3000,how:'Reach 3,000 trophies',skin:{id:'ex_diamond',name:'Diamond',tier:'exclusive',body:'#bfefff',belly:'#ffffff',accent:'#46b4ff',proj:'#9be8ff',eye:'#2a7fd0',hat:'icecrown',glow:'#9be8ff',facets:true,shine:true}}];
+const EX_BY_SKIN={};for(const e of EXCLUSIVE_SKINS)EX_BY_SKIN[e.skin.id]=e;
 function skinsOf(b){
   if(b._skins)return b._skins;
   const base={...b.look,boxy:!!b.boxy};
@@ -442,6 +456,7 @@ function skinsOf(b){
   for(const ts of TROLL_SKINS)list.push({...base,...ts,boxy:!!b.boxy});
   list.push({...base,...POWER_SKIN,boxy:!!b.boxy});
   if(b.id==='juggler')list.push({...base,...MAID_SKIN,boxy:!!b.boxy});
+  for(const e of EXCLUSIVE_SKINS)if(e.rid===b.id)list.push({...base,...e.skin,boxy:!!b.boxy});
   list.push({...base,...b.sig,id:'sig',tier:'sig'});
   return(b._skins=list);
 }
@@ -554,16 +569,75 @@ const RANK_PINS=RANK_SETS.map(rs=>[rs.pin,'I reached '+rs.name]);
 /* ---------- Rumble Pass: Season 1 · Starfall ---------- */
 const PASS_TIERS=45,PASS_STEP=100,PASS_GEMS=150,PASS_BONUS_STEP=100,PASS_WIN_EVERY=5;
 const PASS_FREE=[{coins:100},{drop:'rare'},{pp:50},{chromos:200},{drop:'rare'},{gems:10},{coins:150},{drop:'rare'},{pp:80},{drop:'epic'},
- {coins:200},{chromos:400},{pp:100},{gems:15},{drop:'season'},{chromos:500},{coins:250},{drop:'rare'},{pp:120},{drop:'season'},
- {chromos:600},{drop:'epic'},{coins:300},{pp:150},{drop:'mythic'},{chromos:800},{gems:25},{drop:'season'},{pp:200},{drop:'season'},
- {coins:300},{drop:'season'},{pp:200},{chromos:900},{gems:15},{drop:'season'},{coins:400},{drop:'season'},{pp:250},{chromos:1100},{drop:'mythic'},{gems:20},{drop:'season'},{coins:500},{drop:'legendary',n:3}];
+ {coins:200},{chromos:400},{pp:100},{gems:15},{drop:'season'},{chromos:500},{coins:250},{drop:'rare'},{pp:120},{drop:'rbox'},
+ {chromos:600},{drop:'epic'},{coins:300},{pp:150},{drop:'mythic'},{chromos:800},{gems:25},{drop:'season'},{pp:200},{drop:'sbox'},
+ {coins:300},{drop:'season'},{pp:200},{chromos:900},{gems:15},{drop:'season'},{coins:400},{drop:'rbox'},{pp:250},{chromos:1100},
+ {drop:'mythic'},{gems:20},{drop:'season'},{coins:500},{drop:'legendary',n:3}];
 const PASS_PREM=[{skin:'ember'},{gems:10},{drop:'season'},{coins:300},{pin:'comet'},{pp:150},{chromos:600},{skin:'bolt'},{drop:'mythic'},{gems:20},
- {coins:400},{drop:'season'},{pp:200},{chromos:800},{skin:'pip'},{drop:'season',n:2},{gems:25},{pin:'galaxy'},{coins:500},{drop:'legendary'},
- {pp:250},{skin:'woodrow'},{chromos:1000},{drop:'mythic'},{drop:'season'},{coins:600},{drop:'legendary'},{skin:'zenith'},{drop:'ultra'},{drop:'season',n:2},
- {drop:'season'},{gems:30},{pin:'nebula'},{chromos:1200},{drop:'season'},{coins:700},{drop:'legendary'},{pin:'meteorshower'},{drop:'season',n:2},{pp:400},{gems:40},{drop:'ultra'},{pin:'supernova'},{drop:'season',n:3},{rumbler:'orion'}];
+ {coins:400},{drop:'rbox'},{pp:200},{chromos:800},{skin:'pip'},{drop:'season',n:2},{drop:'sbox'},{pin:'galaxy'},{coins:500},{drop:'legendary'},
+ {pp:250},{skin:'woodrow'},{chromos:1000},{drop:'mythic'},{drop:'rbox'},{coins:600},{drop:'legendary'},{skin:'zenith'},{drop:'ultra'},{drop:'season',n:2},
+ {drop:'rbox'},{gems:30},{pin:'nebula'},{chromos:1200},{drop:'sbox'},{coins:700},{drop:'legendary'},{pin:'meteorshower'},{drop:'season',n:2},{drop:'rbox'},
+ {gems:40},{drop:'ultra'},{pin:'supernova'},{drop:'season',n:3},{rumbler:'orion'}];
 const passTier=xp=>Math.min(PASS_TIERS,Math.floor(xp/PASS_STEP));
 const bonusAvail=xp=>Math.max(0,Math.floor((xp-PASS_TIERS*PASS_STEP)/PASS_BONUS_STEP));
 
+/* ---------- Profile customization: banners, frames, titles, name colors ---------- */
+const RB_LINE='#ff5d57,#ffb000,#ffe66b,#6be39a,#46b4ff,#9d7bff,#ff5ad1';
+const isMaster=()=>(S.rankPeak|0)>=RANK_STEPS-1;
+const PF_BANNERS=[
+ {id:'b_sky',name:'Sky',css:'linear-gradient(135deg,#1f3b8f,#46b4ff)'},
+ {id:'b_sunset',name:'Sunset',css:'linear-gradient(135deg,#c4366f,#ff5e87 45%,#ffb000)'},
+ {id:'b_mint',name:'Mint',css:'linear-gradient(135deg,#0f4b5c,#2de0b0)'},
+ {id:'b_grape',name:'Grape',css:'linear-gradient(135deg,#2a1458,#b56cff)'},
+ {id:'b_city',name:'Rooftops',css:'linear-gradient(180deg,#1b1546 0%,#3a2d7a 55%,#ff8a5c 100%)',ok:()=>S.best>=250,how:'Reach 250 trophies'},
+ {id:'b_robo',name:'Circuit',css:'repeating-linear-gradient(90deg,transparent 0 22px,rgba(70,224,255,.35) 22px 24px),repeating-linear-gradient(0deg,transparent 0 22px,rgba(70,224,255,.25) 22px 24px),linear-gradient(135deg,#0b1a2e,#123a5a)',ok:()=>(S.st.sims|0)>=1,how:'Run a simulation'},
+ {id:'b_secret',name:'Mystery',css:'repeating-linear-gradient(45deg,#1b1046 0 12px,#2a1a66 12px 24px)',ok:()=>secretsFound()>=5,how:'Find 5 secrets'},
+ {id:'b_pumpkin',name:'Pumpkin Patch',css:'radial-gradient(circle at 80% 20%,#ffe9a8 0 10px,transparent 11px),linear-gradient(180deg,#1a0f08,#5a2a08 60%,#ff8a1f)',ok:()=>(S.hw.knocked|0)>=10,how:'Knock on 10 Halloween doors'},
+ {id:'b_lava',name:'Lava',css:'radial-gradient(circle at 30% 130%,#ffd23f,#ff3b5c 45%,#3a0a14 100%)',ok:()=>S.best>=1000,how:'Reach 1,000 trophies'},
+ {id:'b_galaxy',name:'Galaxy',css:'radial-gradient(circle at 18% 30%,#fff 0 1.5px,transparent 2.5px),radial-gradient(circle at 72% 62%,#fff 0 1.5px,transparent 2.5px),radial-gradient(circle at 46% 84%,#fffa 0 1px,transparent 2px),radial-gradient(circle at 88% 18%,#fffa 0 1px,transparent 2px),linear-gradient(135deg,#0b0b2e,#3b1f6b 60%,#7a3fb5)',ok:()=>passTier(S.pass.xp|0)>=20,how:'Reach Rumble Pass tier 20'},
+ {id:'b_exclusive',name:'Exclusive',css:'linear-gradient(135deg,#053a30,#1a9c80 55%,#7dffd9)',ok:()=>exCount()>=3,how:'Earn 3 exclusive skins'},
+ {id:'b_gold',name:'Gold Rush',css:'linear-gradient(135deg,#7a4a00,#ffd23f 50%,#fff3a6)',ok:()=>S.best>=3000,how:'Reach 3,000 trophies'},
+ {id:'b_rainbow',name:'Rainbow',css:'linear-gradient(135deg,'+RB_LINE+')',ok:isMaster,how:'Reach Master in ranked'}];
+const PF_FRAMES=[
+ {id:'f_none',name:'None',css:''},
+ {id:'f_silver',name:'Silver',css:'linear-gradient(135deg,#ffffff,#9aa3c7)'},
+ {id:'f_sun',name:'Sunny',css:'linear-gradient(135deg,#fff3a6,#ffd23f)'},
+ {id:'f_gold',name:'Gold',css:'linear-gradient(135deg,#fff3a6,#ffb000 50%,#a86b00)',glow:'#ffb000',ok:()=>S.best>=1000,how:'Reach 1,000 trophies'},
+ {id:'f_flame',name:'Flame',css:'linear-gradient(0deg,#ff3b5c,#ff8a1f 50%,#ffd23f)',glow:'#ff6a00',ok:()=>(S.wins|0)>=50,how:'Win 50 matches'},
+ {id:'f_pumpkin',name:'Pumpkin',css:'repeating-linear-gradient(45deg,#ff8a1f 0 6px,#1a0f08 6px 12px)',ok:()=>ownsSkinTier('halloween'),how:'Get a Halloween skin'},
+ {id:'f_secret',name:'Mystery',css:'linear-gradient(135deg,#d6b8ff,#8a5cf5 50%,#1b1046)',glow:'#8a5cf5',ok:()=>secretsFound()>=10,how:'Find 10 secrets'},
+ {id:'f_star',name:'Starfall',css:'linear-gradient(135deg,#7ad7ff,#ffffff 45%,#ffd23f)',glow:'#7ad7ff',ok:()=>passTier(S.pass.xp|0)>=30,how:'Reach Rumble Pass tier 30'},
+ {id:'f_exclusive',name:'Exclusive',css:'linear-gradient(135deg,#c8fff0,#2de0b0 50%,#0b5a4a)',glow:'#2de0b0',ok:()=>exCount()>=5,how:'Earn 5 exclusive skins'},
+ {id:'f_diamond',name:'Diamond',css:'linear-gradient(135deg,#e8fbff,#7ad7ff 30%,#ffffff 55%,#46b4ff)',glow:'#9be8ff',ok:()=>S.best>=3000,how:'Reach 3,000 trophies'},
+ {id:'f_rainbow',name:'Rainbow',css:'conic-gradient('+RB_LINE+',#ff5d57)',glow:'#ff5ad1',ok:isMaster,how:'Reach Master in ranked'}];
+const PF_TITLES=[
+ {id:'t_rookie',name:'Rookie'},{id:'t_runner',name:'Rooftop Runner'},{id:'t_friendly',name:'Good Sport'},
+ {id:'t_hunter',name:'Trophy Hunter',ok:()=>S.best>=1000,how:'Reach 1,000 trophies'},
+ {id:'t_breaker',name:'Box Breaker',ok:()=>((S.st.drops&&S.st.drops.rbox)|0)>=5,how:'Open 5 Rumbler Boxes'},
+ {id:'t_secret',name:'Secret Keeper',ok:()=>secretsFound()>=5,how:'Find 5 secrets'},
+ {id:'t_director',name:'Director',ok:()=>(S.st.sims|0)>=10,how:'Run 10 simulations'},
+ {id:'t_buff',name:'Movie Buff',ok:()=>(S.st.replays|0)>=5,how:'Watch 5 replays'},
+ {id:'t_knocker',name:'Door Knocker',ok:()=>(S.hw.knocked|0)>=100,how:'Knock on 100 Halloween doors'},
+ {id:'t_collector',name:'Collector',ok:()=>Object.keys(S.owned).length>=20,how:'Unlock 20 rumblers'},
+ {id:'t_lone',name:'Last One Standing',ok:()=>(S.st.sdWins|0)>=10,how:'Finish 1st in Solo Showdown 10 times'},
+ {id:'t_king',name:'Takedown King',ok:()=>(S.st.kills|0)>=500,how:'Get 500 takedowns'},
+ {id:'t_marathon',name:'Marathoner',ok:()=>stMatches()>=300,how:'Play 300 matches'},
+ {id:'t_pass',name:'Pass Master',ok:()=>passTier(S.pass.xp|0)>=45,how:'Reach Rumble Pass tier 45'},
+ {id:'t_trend',name:'Trendsetter',ok:()=>exCount()>=5,how:'Earn 5 exclusive skins'},
+ {id:'t_legend',name:'Legend',ok:()=>S.best>=3000,how:'Reach 3,000 trophies'},
+ {id:'t_master',name:'Master',ok:isMaster,how:'Reach Master in ranked'}];
+const GRAD_TXT=g=>'background:'+g+';-webkit-background-clip:text;background-clip:text;color:transparent;text-shadow:none;filter:drop-shadow(0 2px 0 rgba(0,0,0,.55))';
+const PF_NCOLS=[
+ {id:'n_white',name:'White',css:'color:#ffffff'},{id:'n_sun',name:'Sunny',css:'color:#ffd23f'},{id:'n_pink',name:'Pink',css:'color:#ff8ad8'},{id:'n_sky',name:'Sky',css:'color:#8fdcff'},
+ {id:'n_mint',name:'Mint',css:'color:#2de0b0',ok:()=>exCount()>=1,how:'Earn an exclusive skin'},
+ {id:'n_pumpkin',name:'Pumpkin',css:'color:#ff8a1f;text-shadow:0 0 8px rgba(255,106,0,.7),0 2px 0 #000',ok:()=>ownsSkinTier('halloween'),how:'Get a Halloween skin'},
+ {id:'n_fire',name:'Fire',css:GRAD_TXT('linear-gradient(0deg,#ff3b5c,#ff8a1f 50%,#ffd23f)'),ok:()=>(S.wins|0)>=50,how:'Win 50 matches'},
+ {id:'n_ghost',name:'Ghost Green',css:'color:#7dffb0;text-shadow:0 0 10px #2bd46a,0 2px 0 #000',ok:()=>hasSkin('dark','hw_grim'),how:'Get Grim Dark'},
+ {id:'n_gold',name:'Gold',css:GRAD_TXT('linear-gradient(180deg,#fff3a6,#ffb000 60%,#c47a00)'),ok:()=>S.best>=2000,how:'Reach 2,000 trophies'},
+ {id:'n_rainbow',name:'Rainbow',css:GRAD_TXT('linear-gradient(90deg,'+RB_LINE+')'),ok:()=>isMaster()||hasSkin('dark','hw_surged'),how:'Reach Master or get Surged Dark'}];
+const PF_KINDS={banner:PF_BANNERS,frame:PF_FRAMES,title:PF_TITLES,ncol:PF_NCOLS};
+const PF_DEF={banner:'b_sky',frame:'f_none',title:'t_rookie',ncol:'n_white'};
+const pfItem=(k,id)=>PF_KINDS[k].find(x=>x.id===id)||PF_KINDS[k].find(x=>x.id===PF_DEF[k]);
 /* ---------- Rumble Drops ---------- */
 const DROP_RAR=['rare','epic','mythic','legendary','ultra'];
 /* A drop starts at Rare (or the pass's guaranteed rarity). Each tap has this chance to upgrade one step. */
@@ -738,6 +812,17 @@ function drawPatterns(c,sk,R){
   if(sk.shine){c.fillStyle='rgba(255,255,255,.42)';c.beginPath();c.moveTo(-R*.95,-R*.15);c.lineTo(-R*.25,-R);c.lineTo(R*.02,-R*.92);c.lineTo(-R*.78,R*.08);c.closePath();c.fill();}
   if(sk.tape){c.fillStyle='rgba(240,214,160,.85)';c.fillRect(-R*1.1,R*.12,R*2.2,R*.22);c.fillStyle='rgba(93,64,38,.5)';c.fillRect(-R*1.1,R*.12,R*2.2,R*.03);c.fillRect(-R*1.1,R*.31,R*2.2,R*.03);}
   if(sk.sprinkles){const cols=['#ffffff','#6fe0d0','#ffd23f','#8c7cf5'];[[-.6,-.55,.4],[.5,-.65,-.6],[.75,0,1.1],[-.8,.05,-.3],[.15,-.85,.9],[-.3,-.75,-1.2]].forEach(([px,py,a],i)=>{c.save();c.translate(px*R,py*R);c.rotate(a);c.fillStyle=cols[i%4];c.fillRect(-R*.1,-R*.035,R*.2,R*.07);c.restore();});}
+  if(sk.rivets){c.strokeStyle='rgba(20,30,45,.35)';c.lineWidth=R*.05;c.beginPath();c.moveTo(-R*1.1,-R*.05);c.lineTo(R*1.1,-R*.05);c.moveTo(R*.15,-R*1.1);c.lineTo(R*.15,-R*.05);c.stroke();
+    for(const[px,py]of[[-.72,-.4],[.72,-.4],[-.8,.25],[.8,.25],[-.32,-.78],[.48,-.72]]){c.fillStyle='rgba(20,30,45,.45)';ell(c,px*R,py*R+R*.02,R*.075,R*.075);c.fill();c.fillStyle='#eef4fa';ell(c,px*R,py*R,R*.065,R*.065);c.fill();}}
+  if(sk.grain){c.fillStyle='rgba(255,255,255,.22)';for(const[px,py,r]of[[-.7,-.35,.03],[-.2,-.7,.025],[.4,-.55,.03],[.75,-.1,.02],[-.5,.1,.025],[.2,-.2,.02],[.6,.3,.03],[-.85,.35,.02]]){ell(c,px*R,py*R,r*R,r*R);c.fill();}
+    c.strokeStyle='rgba(255,255,255,.18)';c.lineWidth=R*.03;c.beginPath();c.moveTo(R*.32,-R*1.1);c.lineTo(R*.28,R*1.1);c.stroke();}
+  if(sk.plaid){c.fillStyle='rgba(60,30,10,.22)';for(const x of[-.7,-.1,.5])c.fillRect(x*R,-R*1.1,R*.2,R*2.2);for(const y of[-.75,-.15])c.fillRect(-R*1.1,y*R,R*2.2,R*.2);
+    c.strokeStyle='rgba(255,210,63,.45)';c.lineWidth=R*.025;c.beginPath();for(const x of[-.4,.2,.8]){c.moveTo(x*R,-R*1.1);c.lineTo(x*R,R*1.1);}for(const y of[-.45,.15]){c.moveTo(-R*1.1,y*R);c.lineTo(R*1.1,y*R);}c.stroke();}
+  if(sk.checker){const q=R*.16;for(let row=0;row<2;row++)for(let k=-7;k<7;k++){c.fillStyle=(k+row)%2?'rgba(20,20,30,.75)':'rgba(255,255,255,.9)';c.fillRect(k*q,R*.42+row*q,q,q);}}
+  if(sk.warpaint){c.fillStyle=sk.accent;for(const sd of[-1,1])for(const k of[0,1]){const x=sd*R*(.42+k*.16),y=R*.1;c.beginPath();c.moveTo(x-sd*R*.05,y-R*.02);c.lineTo(x+sd*R*.06,y-R*.02);c.lineTo(x+sd*R*.02,y+R*.24);c.lineTo(x-sd*R*.09,y+R*.24);c.closePath();c.fill();}}
+  if(sk.facets){c.strokeStyle='rgba(255,255,255,.65)';c.lineWidth=R*.04;c.beginPath();const P=[[-1.05,-.2],[-.35,-.95],[.35,-.95],[1.05,-.2],[0,1.1]];P.forEach(([px,py],i)=>i?c.lineTo(px*R,py*R):c.moveTo(px*R,py*R));c.closePath();
+    for(const[px,py]of[[-1.05,-.2],[1.05,-.2],[-.35,-.95],[.35,-.95],[0,1.1]]){c.moveTo(0,-R*.2);c.lineTo(px*R,py*R);}c.stroke();c.strokeStyle='rgba(70,180,255,.35)';c.beginPath();c.moveTo(-R*.35,-R*.95);c.lineTo(-R*.55,-R*.2);c.lineTo(0,R*1.1);c.moveTo(R*.35,-R*.95);c.lineTo(R*.55,-R*.2);c.lineTo(0,R*1.1);c.stroke();
+    c.fillStyle='#ffffff';star(c,-R*.55,-R*.55,R*.13,R*.04,4);c.fill();star(c,R*.62,R*.18,R*.09,R*.03,4);c.fill();}
   if(sk.dots){c.fillStyle='#2a1c14';for(const[px,py]of[[-.35,.75],[-.05,.85],[.25,.78],[.5,.62],[-.6,.55],[.05,.6]]){ell(c,px*R,py*R,R*.09,R*.09);c.fill();}}
 }
 
@@ -847,6 +932,17 @@ function drawHat(c,sk,R,lw,t){
   case 'starcrest':{c.save();c.globalCompositeOperation='lighter';glow(c,0,-R*1.15,R*.85,sk.accent,.55);c.restore();c.save();c.translate(0,-R*1.08);c.rotate(Math.sin((t||0)*2)*.12);star(c,0,0,R*.5,R*.22,5);c.fillStyle=sk.accent;c.fill();c.stroke();c.fillStyle='rgba(255,255,255,.6)';star(c,-R*.05,-R*.06,R*.2,R*.09,5);c.fill();c.restore();break;}
   case 'sprout':c.beginPath();c.moveTo(0,-R*.9);c.quadraticCurveTo(R*.05,-R*1.15,-R*.05,-R*1.3);c.lineWidth=lw*.9;c.strokeStyle='#5a3a1e';c.stroke();c.strokeStyle=OUT;c.lineWidth=lw*.8;
     for(const sx of[-1,1]){c.save();c.translate(-R*.04,-R*1.22);c.rotate(sx*.9);ell(c,sx*R*.2,0,R*.22,R*.11);c.fillStyle=sk.accent;c.fill();c.stroke();c.restore();}break;
+  case 'party':{c.beginPath();c.moveTo(-R*.48,-R*.74);c.lineTo(R*.14,-R*1.62);c.lineTo(R*.5,-R*.7);c.quadraticCurveTo(0,-R*.58,-R*.48,-R*.74);c.closePath();c.fillStyle=sk.accent;c.fill();c.save();c.clip();c.strokeStyle='rgba(255,255,255,.85)';c.lineWidth=R*.1;for(const k of[0,1,2]){c.beginPath();c.moveTo(-R*.6,-R*(.9+k*.28));c.lineTo(R*.6,-R*(.7+k*.28));c.stroke();}c.restore();
+    c.beginPath();c.moveTo(-R*.48,-R*.74);c.lineTo(R*.14,-R*1.62);c.lineTo(R*.5,-R*.7);c.quadraticCurveTo(0,-R*.58,-R*.48,-R*.74);c.closePath();c.stroke();c.fillStyle='#ffffff';ell(c,R*.14,-R*1.66,R*.14,R*.14);c.fill();c.stroke();break;}
+  case 'fedora':{const hc=sk.hatCol||'#1d1d24';c.fillStyle=hc;c.beginPath();c.ellipse(0,-R*.72,R*1.12,R*.22,0,0,TAU);c.fill();c.stroke();
+    c.beginPath();c.moveTo(-R*.62,-R*.76);c.lineTo(-R*.56,-R*1.34);c.quadraticCurveTo(-R*.28,-R*1.44,0,-R*1.24);c.quadraticCurveTo(R*.28,-R*1.44,R*.56,-R*1.34);c.lineTo(R*.62,-R*.76);c.closePath();c.fill();c.stroke();
+    c.fillStyle=sk.accent;c.fillRect(-R*.6,-R*.98,R*1.2,R*.15);c.strokeRect(-R*.6,-R*.98,R*1.2,R*.15);break;}
+  case 'deerstalker':{const hc='#8a6038';c.fillStyle=hc;for(const sd of[-1,1]){c.beginPath();c.moveTo(sd*R*.68,-R*.7);c.quadraticCurveTo(sd*R*.92,-R*.45,sd*R*.78,-R*.22);c.lineTo(sd*R*.6,-R*.4);c.closePath();c.fill();c.stroke();}
+    c.beginPath();c.moveTo(R*.3,-R*.62);c.quadraticCurveTo(R*1.0,-R*.7,R*1.12,-R*.5);c.lineTo(R*.4,-R*.5);c.closePath();c.fill();c.stroke();c.beginPath();c.moveTo(-R*.3,-R*.62);c.quadraticCurveTo(-R*1.0,-R*.7,-R*1.12,-R*.5);c.lineTo(-R*.4,-R*.5);c.closePath();c.fill();c.stroke();
+    c.beginPath();c.arc(0,-R*.58,R*.8,Math.PI,0);c.closePath();c.fill();c.stroke();c.save();c.beginPath();c.arc(0,-R*.58,R*.78,Math.PI,0);c.closePath();c.clip();c.strokeStyle='rgba(255,210,140,.45)';c.lineWidth=lw*.35;c.beginPath();for(const x of[-.5,-.15,.2,.55]){c.moveTo(x*R,-R*1.5);c.lineTo(x*R,-R*.5);}for(const y of[-1.15,-.85]){c.moveTo(-R,y*R);c.lineTo(R,y*R);}c.stroke();c.restore();
+    c.fillStyle=sk.accent;ell(c,0,-R*1.4,R*.13,R*.08);c.fill();c.stroke();break;}
+  case 'laurel':{c.lineWidth=lw*.5;for(const sd of[-1,1])for(let k=0;k<6;k++){const a=-Math.PI/2+sd*(.28+k*.32),x=Math.cos(a)*R*1.0,y=-R*.12+Math.sin(a)*R*1.0;c.save();c.translate(x,y);c.rotate(a+sd*Math.PI*.62);c.beginPath();c.ellipse(0,0,R*.2,R*.09,0,0,TAU);c.fillStyle=k%2?'#ffd23f':'#ffe680';c.fill();c.stroke();c.restore();}
+    c.fillStyle='#ffd23f';star(c,0,-R*1.25,R*.2,R*.09,5);c.fill();c.stroke();c.lineWidth=lw;break;}
   case 'cap':c.beginPath();c.arc(0,-R*.52,R*.78,Math.PI,0);c.closePath();c.fillStyle=sk.accent;c.fill();c.stroke();c.beginPath();c.moveTo(R*.2,-R*.6);c.quadraticCurveTo(R*1.1,-R*.68,R*1.2,-R*.48);c.lineTo(R*.3,-R*.46);c.closePath();c.fill();c.stroke();c.fillStyle='#fff';ell(c,0,-R*1.28,R*.08,R*.06);c.fill();break;
   case 'monkey':for(const s of[-1,1]){ell(c,s*R*.98,-R*.12,R*.3,R*.3);c.fillStyle=sk.body;c.fill();c.stroke();ell(c,s*R*.98,-R*.12,R*.16,R*.16);c.fillStyle=sk.belly;c.fill();}c.beginPath();c.moveTo(-R*.15,-R*.95);c.quadraticCurveTo(0,-R*1.35,R*.2,-R*1.1);c.lineWidth=lw*.8;c.stroke();break;
   case 'witch':c.beginPath();c.moveTo(-R*1.05,-R*.62);c.quadraticCurveTo(0,-R*.82,R*1.05,-R*.62);c.lineTo(R*.5,-R*.8);c.quadraticCurveTo(R*.3,-R*1.5,R*.75,-R*1.85);c.quadraticCurveTo(-R*.2,-R*1.6,-R*.5,-R*.8);c.closePath();c.fillStyle='#2a2150';c.fill();c.stroke();c.fillStyle=sk.accent;star(c,R*.05,-R*1.0,R*.16,R*.07,5);c.fill();break;
@@ -864,7 +960,7 @@ function iconCanvas(id,size){if(id==='z:sec_afk'){const cv=document.createElemen
   const tick=()=>{if(cv.isConnected)seen=true;else if(seen||Date.now()-born>5000)return;c.clearRect(0,0,size,size);drawProfileIcon(c,'z:sec_afk',size);requestAnimationFrame(tick);};tick();return cv;}if(/^k:\d$/.test(id||'')){const t=+id[2],el=document.createElement('span');el.className='icon-emb';el.style.width=el.style.height=size+'px';el.innerHTML=emblem(t>=7?RANK_STEPS-1:t*3,Math.round(size*.92),true);return el;}
   const cv=document.createElement('canvas'),d=Math.min(2,window.devicePixelRatio||1);cv.width=cv.height=Math.round(size*d);cv.style.width=cv.style.height=size+'px';cv.setAttribute('aria-hidden','true');const c=cv.getContext('2d');c.scale(d,d);drawProfileIcon(c,id||'r:ember',size);return cv;}
 function drawProfileIcon(c,id,s){const p=String(id).split(':'),R=s*.18;let col='#3a3380',col2='#1b1546';
-  if(p[0]==='z'){col=(SECRET_ART[p[1]]||['','#8a5cf5'])[1];col2='#1b1046';}else if(p[0]==='t'){col='#ffb000';col2='#c4366f';}else if(p[0]==='x'){const sp=SPECIAL_ICONS.find(x=>x[0]===p[1]);col=sp?sp[2]:'#9d7bff';col2='#1b1546';}else if(p[0]==='s'){col='#9d7bff';col2='#2a1458';}else{const b=BY_ID[p[1]];if(b)col=RARITY[b.rarity].col;}
+  if(p[0]==='z'){col=(SECRET_ART[p[1]]||['','#8a5cf5'])[1];col2='#1b1046';}else if(p[0]==='t'){col='#ffb000';col2='#c4366f';}else if(p[0]==='x'){const sp=SPECIAL_ICONS.find(x=>x[0]===p[1]);col=sp?sp[2]:'#9d7bff';col2='#1b1546';}else if(p[0]==='s'){col='#9d7bff';col2='#2a1458';const sb=BY_ID[p[1]],ss=sb&&getSkin(sb,p[2]);if(ss&&ss.tier==='exclusive'){col=ss.glow||ss.proj||EX_COL;col2='#06231d';}}else{const b=BY_ID[p[1]];if(b)col=RARITY[b.rarity].col;}
   const g=c.createLinearGradient(0,0,s,s);g.addColorStop(0,col);g.addColorStop(1,col2);rrect(c,s*.04,s*.04,s*.92,s*.92,R);c.fillStyle=(p[0]==='s'&&p[2]==='hw_surged')?rainbowGrad(c,0,0,s,s,0,58):(p[0]==='s'&&p[2]==='hw_grim')?(()=>{const q=c.createRadialGradient(s/2,s*.4,s*.05,s/2,s/2,s*.7);q.addColorStop(0,'#3dff8a');q.addColorStop(.55,'#0f3a22');q.addColorStop(1,'#030504');return q;})():g;c.fill();c.lineWidth=Math.max(2,s*.05);c.strokeStyle=OUT;c.stroke();
   c.save();rrect(c,s*.04,s*.04,s*.92,s*.92,R);c.clip();c.fillStyle='rgba(255,255,255,.18)';c.beginPath();c.ellipse(s*.3,s*.18,s*.4,s*.16,-.4,0,TAU);c.fill();
   if(p[0]==='r'||p[0]==='s'){const b=BY_ID[p[1]]||BY_ID[STARTER];drawFighter(c,s/2,s*.62,s*.36,b,getSkin(b,p[0]==='s'?p[2]:'classic'),Math.PI/2,0,{still:true,noShadow:true,happy:true});}
@@ -983,7 +1079,7 @@ function drawPin(c,id,x,y,s){
   if(p[0]==='r'){const b=BY_ID[p[1]];if(b){const sk=getSkin(b,'classic');c.beginPath();c.arc(0,0,R*.98,0,TAU);c.fillStyle=p[2]==='angry'?'#ff8a80':p[2]==='sad'?'#8ec5ff':'#ffe27a';c.fill();c.stroke();
       c.save();c.beginPath();c.arc(0,0,R*.92,0,TAU);c.clip();drawFighter(c,0,R*.18,R*.62,b,sk,Math.PI/2,0,{still:true,noShadow:true,happy:p[2]==='happy',mood:p[2]==='happy'?null:p[2]});c.restore();}
     c.restore();return;}
-  if(p[1]==='sk'&&BY_ID[p[2]]){const b=BY_ID[p[2]],sk=getSkin(b,p[3]),face=p[4],col=sk.tier==='halloween'?'#ff8a1f':sk.tier==='power'?'#9d7bff':sk.tier==='golden'?'#ffd23f':sk.tier==='sig'?'#ffb000':sk.tier===3?'#ffd23f':sk.tier===2?'#b56cff':sk.tier==='pass'?'#ffd36b':'#46b4ff';
+  if(p[1]==='sk'&&BY_ID[p[2]]){const b=BY_ID[p[2]],sk=getSkin(b,p[3]),face=p[4],col=sk.tier==='exclusive'?EX_COL:sk.tier==='halloween'?'#ff8a1f':sk.tier==='power'?'#9d7bff':sk.tier==='golden'?'#ffd23f':sk.tier==='sig'?'#ffb000':sk.tier===3?'#ffd23f':sk.tier===2?'#b56cff':sk.tier==='pass'?'#ffd36b':'#46b4ff';
     const g=c.createRadialGradient(0,-R*.2,R*.1,0,0,R);g.addColorStop(0,'#ffffff');g.addColorStop(1,col);c.beginPath();c.arc(0,0,R*.92,0,TAU);c.fillStyle=sk.surged?rainbowGrad(c,-R,-R,R,R,T,62):sk.grim?(()=>{const q=c.createRadialGradient(0,-R*.2,R*.1,0,0,R);q.addColorStop(0,'#3dff8a');q.addColorStop(.6,'#0f3a22');q.addColorStop(1,'#050a07');return q;})():g;c.fill();c.stroke();
     c.save();c.beginPath();c.arc(0,0,R*.9,0,TAU);c.clip();drawFighter(c,0,R*.12,R*.6,b,sk,Math.PI/2,T,{still:true,noShadow:true,happy:!face||face==='happy'||face==='cool'||face==='love',mood:face==='angry'||face==='sad'?face:null});c.restore();
     if(face==='cool'){c.fillStyle='#1a1430';rrect(c,-R*.5,-R*.2,R*.42,R*.22,R*.07);c.fill();rrect(c,R*.08,-R*.2,R*.42,R*.22,R*.07);c.fill();c.fillRect(-R*.1,-R*.15,R*.2,R*.05);c.fillStyle='rgba(255,255,255,.7)';c.fillRect(-R*.45+((T*.7)%1)*R*.85,-R*.18,R*.05,R*.18);}
@@ -1389,7 +1485,8 @@ const fmtFull=v=>Math.floor(Number(v)||0).toLocaleString('en-US');
 /* ---------- Save ---------- */
 const KEY='rooftop-rumble-v2';
 function newRumbler(){return{pinSlots:[null,null],facePins:[null,null,null],lvl:1,skins:['classic'],skin:'classic',prestige:0,gadgets:[],stars:[],gadget:null,star:null};}
-function defaultSave(){return{hw:{wins:0,used:0,spent:0,knocks:0,opened:0,doors:null},party:[],name:'You',trophies:0,best:0,coins:150,gems:30,pp:0,chromos:0,packs:[],pins:[],onboarded:false,nameChanges:0,nameLockUntil:0,pass:{xp:0,premium:false,cf:[],cp:[],bonus:0,wins:0},drops:[],dropDay:{date:'',n:0},pendingSkins:[],owned:{[STARTER]:newRumbler()},selected:STARTER,mode:'ring',rp:0,rpBest:0,rankClaimed:0,road:0,streak:0,daily:{date:'',claimed:false,dealSkins:[],bought:[]},sound:true,music:true,voice:true,shake:true,matches:0,wins:0};}
+function newSt(){return{kills:0,deaths:0,dmg:0,supers:0,gadgets:0,pins:0,time:0,bestStreak:0,tricksW:0,tricksL:0,sims:0,replays:0,watched:0,sdWins:0,modes:{},drops:{}};}
+function defaultSave(){return{st:newSt(),pf:{...PF_DEF,show:null},exNew:[],hw:{wins:0,used:0,spent:0,knocks:0,opened:0,doors:null},party:[],name:'You',trophies:0,best:0,coins:150,gems:30,pp:0,chromos:0,packs:[],pins:[],onboarded:false,nameChanges:0,nameLockUntil:0,pass:{xp:0,premium:false,cf:[],cp:[],bonus:0,wins:0},drops:[],dropDay:{date:'',n:0},pendingSkins:[],owned:{[STARTER]:newRumbler()},selected:STARTER,mode:'ring',rp:0,rpBest:0,rankClaimed:0,road:0,streak:0,daily:{date:'',claimed:false,dealSkins:[],bought:[]},sound:true,music:true,voice:true,shake:true,matches:0,wins:0};}
 function loadSave(given){
   const d=defaultSave();let s=null;
   if(given)s=given;else try{const raw=localStorage.getItem(KEY);if(raw)s=JSON.parse(raw);}catch(e){}
@@ -1401,9 +1498,9 @@ function loadSave(given){
   o.owned={};
   if(halloweenOn()&&!o.hwDef){o.hwDef=1;o.musicTrack='spooky';o.theme='halloween';}if(o.theme!=='halloween'&&o.theme!=='default')o.theme=halloweenOn()?'halloween':'default';
   o.hw={wins:0,used:0,spent:null,knocks:0,opened:0,doors:null,...(s.hw&&typeof s.hw==='object'?s.hw:{})};o.hw.wins=Math.max(0,o.hw.wins|0);o.hw.used=Math.max(0,Math.min(o.hw.used|0,Math.floor(o.hw.wins/KNOCK_EVERY)));if(o.hw.spent==null)o.hw.spent=o.hw.used;o.hw.spent=Math.max(0,o.hw.spent|0);o.hw.knocks=Math.max(0,o.hw.knocks|0);o.hw.opened=Math.max(0,o.hw.opened|0);o.hw.dead=Math.max(0,Math.min(DEAD_PITY,o.hw.dead|0));o.hw.knocked=Math.max(o.hw.knocked|0,o.hw.used|0,o.hw.dead|0);if(!Array.isArray(o.hw.doors)||o.hw.doors.length!==6||!o.hw.doors.every(id=>BY_ID[id]))o.hw.doors=null;
-  o.party=Array.isArray(s.party)?s.party.filter(f=>f&&typeof f.id==='string'&&BY_ID[f.rumbler]).slice(0,2).map(f=>({id:f.id.slice(0,40),name:String(f.name||'Friend').slice(0,20),rumbler:f.rumbler,skin:typeof f.skin==='string'?f.skin:'classic'})):[];o.netUrl=typeof s.netUrl==='string'?s.netUrl.slice(0,200):'';o.invitesOn=s.invitesOn!==false;{const sp=s.simPick,ok=a=>Array.isArray(a)&&a.length===3&&a.every(x=>x===null||!!BY_ID[x]);o.simPick=sp&&ok(sp.blue)&&ok(sp.red)&&MODE_BY[sp.mode]?{blue:sp.blue.slice(),red:sp.red.slice(),mode:sp.mode}:null;}{const d={kills:0,deaths:0,dmg:0,supers:0,gadgets:0,pins:0,time:0,bestStreak:0,tricksW:0,tricksL:0,sims:0,replays:0,watched:0,modes:{},drops:{}},x=s.st&&typeof s.st==='object'?s.st:{};o.st=d;for(const k in d)if(typeof d[k]==='number')d[k]=Math.max(0,+x[k]||0);
+  o.party=Array.isArray(s.party)?s.party.filter(f=>f&&typeof f.id==='string'&&BY_ID[f.rumbler]).slice(0,2).map(f=>({id:f.id.slice(0,40),name:String(f.name||'Friend').slice(0,20),rumbler:f.rumbler,skin:typeof f.skin==='string'?f.skin:'classic'})):[];o.netUrl=typeof s.netUrl==='string'?s.netUrl.slice(0,200):'';o.invitesOn=s.invitesOn!==false;{const sp=s.simPick,ok=a=>Array.isArray(a)&&a.length===3&&a.every(x=>x===null||!!BY_ID[x]);o.simPick=sp&&ok(sp.blue)&&ok(sp.red)&&MODE_BY[sp.mode]?{blue:sp.blue.slice(),red:sp.red.slice(),mode:sp.mode}:null;}{const d=newSt(),x=s.st&&typeof s.st==='object'?s.st:{};o.st=d;for(const k in d)if(typeof d[k]==='number')d[k]=Math.max(0,+x[k]||0);
     if(x.modes&&typeof x.modes==='object')for(const k in x.modes)if(MODE_BY[k]&&Array.isArray(x.modes[k]))d.modes[k]=[Math.max(0,x.modes[k][0]|0),Math.max(0,x.modes[k][1]|0)];
-    if(x.drops&&typeof x.drops==='object')for(const k in x.drops)if(RARITY[k])d.drops[k]=Math.max(0,x.drops[k]|0);}o.party=[];if(o.hw&&o.hw.darkClaimed&&o.owned&&o.owned.dark&&Array.isArray(o.owned.dark.skins)&&!o.owned.dark.skins.includes('hw_reaper'))o.owned.dark.skins.push('hw_reaper');o.friends=Array.isArray(s.friends)?s.friends.filter(f=>f&&typeof f.id==='string').slice(0,20).map(f=>({id:f.id.slice(0,40),name:String(f.name||'Friend').slice(0,20)})):[];o.rankTop=Math.max(0,Math.min(7,s.rankTop|0));o.orient=['auto','portrait','landscape'].includes(s.orient)?s.orient:'auto';o.findByName=!!s.findByName;o.icon=typeof s.icon==='string'?s.icon.slice(0,40):'';o.icons=Array.isArray(s.icons)?s.icons.filter(x=>SPECIAL_ICONS.some(y=>y[0]===x)):[];
+    if(x.drops&&typeof x.drops==='object')for(const k in x.drops)if(RARITY[k])d.drops[k]=Math.max(0,x.drops[k]|0);}o.party=[];o.exNew=Array.isArray(s.exNew)?s.exNew.filter(x=>typeof x==='string'&&EX_BY_SKIN[x]).slice(0,20):[];{const q=s.pf&&typeof s.pf==='object'?s.pf:{};o.pf={};for(const k in PF_DEF)o.pf[k]=typeof q[k]==='string'&&PF_KINDS[k].some(x=>x.id===q[k])?q[k]:PF_DEF[k];o.pf.show=Array.isArray(q.show)&&BY_ID[q.show[0]]&&typeof q.show[1]==='string'?[q.show[0],q.show[1].slice(0,30)]:null;}if(o.hw&&o.hw.darkClaimed&&o.owned&&o.owned.dark&&Array.isArray(o.owned.dark.skins)&&!o.owned.dark.skins.includes('hw_reaper'))o.owned.dark.skins.push('hw_reaper');o.friends=Array.isArray(s.friends)?s.friends.filter(f=>f&&typeof f.id==='string').slice(0,20).map(f=>({id:f.id.slice(0,40),name:String(f.name||'Friend').slice(0,20)})):[];o.rankTop=Math.max(0,Math.min(7,s.rankTop|0));o.orient=['auto','portrait','landscape'].includes(s.orient)?s.orient:'auto';o.findByName=!!s.findByName;o.icon=typeof s.icon==='string'?s.icon.slice(0,40):'';o.icons=Array.isArray(s.icons)?s.icons.filter(x=>SPECIAL_ICONS.some(y=>y[0]===x)):[];
   const src=(s.owned&&typeof s.owned==='object')?s.owned:{};
   for(const id in src){if(!BY_ID[id])continue;const r={...newRumbler(),...src[id]};r.lvl=clamp(Math.round(+r.lvl||1),1,MAX_LVL);r.prestige=Math.min(PRESTIGE_MAX,Math.max(0,Math.round(+r.prestige||0)));r.prClaim=Math.max(0,Math.round(+r.prClaim||0));r.pinSlots=Array.isArray(r.pinSlots)?[r.pinSlots[0]||null,r.pinSlots[1]||null]:[null,null];const gr=GEAR[id];r.gadgets=Array.isArray(r.gadgets)?r.gadgets.filter(x=>gr.g.some(g=>g.id===x)):[];r.stars=Array.isArray(r.stars)?r.stars.filter(x=>gr.s.some(g=>g.id===x)):[];if(!r.gadgets.includes(r.gadget))r.gadget=r.gadgets[0]||null;if(!r.stars.includes(r.star))r.star=r.stars[0]||null;
     r.skins=Array.isArray(r.skins)?r.skins.filter(x=>skinsOf(BY_ID[id]).some(k=>k.id===x)):['classic'];if(!r.skins.includes('classic'))r.skins.unshift('classic');if(!r.skins.includes(r.skin))r.skin='classic';o.owned[id]=r;}
@@ -1434,8 +1531,18 @@ function loadSave(given){
   for(const[k,rs]of RANK_SETS.entries()){const got=rs.idx===0?(o.rpBest>0||o.rankClaimed>0):o.rankClaimed>=rs.idx;if(got){if(!o.pins.includes(rs.pin))o.pins.push(rs.pin);const rid=rankSetRumbler(k,rankSeed(o)),e=o.owned[rid];if(e){if(!e.skins.includes(rs.skin.id))e.skins.push(rs.skin.id);}else if(!o.pendingSkins.includes(rid+':'+rs.skin.id))o.pendingSkins.push(rid+':'+rs.skin.id);}}o.onboarded=!!s.onboarded;o.sound=s.sound!==false;o.music=s.music!==false;o.voice=s.voice!==false;o.shake=s.shake!==false;
   return o;
 }
-let S=loadSave();
-function persist(){try{localStorage.setItem(KEY,JSON.stringify(S));}catch(e){}}
+let S=loadSave();try{checkExclusives();}catch(e){}
+function persist(){try{checkExclusives();}catch(e){}try{localStorage.setItem(KEY,JSON.stringify(S));}catch(e){}}
+function stMatches(){let n=0;const m=(S.st&&S.st.modes)||{};for(const k in m)n+=(m[k]&&m[k][0])|0;return n;}
+function exProgress(e){const st=S.st||{};switch(e.stat){case'pins':return st.pins|0;case'sims':return st.sims|0;case'replays':return st.replays|0;case'rbox':return(st.drops&&st.drops.rbox)|0;case'secrets':return secretsFound();case'sdWins':return st.sdWins|0;case'kills':return st.kills|0;case'matches':return stMatches();case'pass':return S.pass?passTier(S.pass.xp|0):0;case'best':return S.best|0;}return 0;}
+function exOwned(e){return hasSkin(e.rid,e.skin.id);}
+function exCount(){return EXCLUSIVE_SKINS.filter(exOwned).length;}
+function ownsSkinTier(t){for(const id in S.owned)for(const sid of S.owned[id].skins){const sk=skinsOf(BY_ID[id]).find(k=>k.id===sid);if(sk&&sk.tier===t)return true;}return false;}
+function pfHas(k,id){const it=PF_KINDS[k].find(x=>x.id===id);if(!it)return false;try{return!it.ok||!!it.ok();}catch(e){return false;}}
+/* the player's chosen look, falling back to the default if it is somehow locked */
+function pfMine(){const pf=S.pf||{},o={};for(const k in PF_DEF)o[k]=pfHas(k,pf[k])?pf[k]:PF_DEF[k];const sh=pf.show;o.show=sh&&S.owned[sh[0]]&&(sh[1]==='classic'||S.owned[sh[0]].skins.includes(sh[1]))?sh.slice():null;return o;}
+/* Grants any exclusive skin whose goal is met. New ones wait in S.exNew until the player is on the home screen. */
+function checkExclusives(){if(!S||!S.st||!S.owned)return;for(const e of EXCLUSIVE_SKINS){if(exOwned(e))continue;if(exProgress(e)>=e.goal){grantSkin(e.rid,e.skin.id);(S.exNew||(S.exNew=[])).push(e.skin.id);}}}
 function todayKey(){const d=new Date();return d.getFullYear()+'-'+(d.getMonth()+1)+'-'+d.getDate();}
 function hashStr(s){let h=2166136261;for(let i=0;i<s.length;i++){h^=s.charCodeAt(i);h=Math.imul(h,16777619);}return h>>>0;}
 /* Daily deal skins come from every rumbler, not just the ones you own */
@@ -2549,7 +2656,7 @@ function endMatch(w){
   /* Showdown: finishing in the top 3 counts as a win */
   if(M.mode.sd){M.place=M.place||1;w=M.place<=SD_WIN_PLACES?0:M.place<=Math.ceil(M.nTeams/2)?-1:1;}
   else if(M.mode.ffa){const mine=M.score[0];M.place=1+M.score.slice(1).filter(v=>v>mine).length;w=M.place===1?0:M.place<=3?-1:1;}
-  M.result=w;M.reward=applyRewards();if(!M.trial&&!M.sim&&!NETS&&S.st){const st=S.st,k=M.mode.id;st.modes[k]=st.modes[k]||[0,0];st.modes[k][0]++;if(w===0)st.modes[k][1]++;st.time+=Math.round(M.now);st.bestStreak=Math.max(st.bestStreak,S.streak|0);persist();}if(w===0&&P)say(P,'w',true);
+  M.result=w;M.reward=applyRewards();if(!M.trial&&!M.sim&&!NETS&&S.st){const st=S.st,k=M.mode.id;st.modes[k]=st.modes[k]||[0,0];st.modes[k][0]++;if(w===0)st.modes[k][1]++;if(M.mode.sd&&M.place===1)st.sdWins++;st.time+=Math.round(M.now);st.bestStreak=Math.max(st.bestStreak,S.streak|0);persist();}if(w===0&&P)say(P,'w',true);
   sfx(w===0?'win':w===1?'lose':'draw');
   if(!M.trial)for(const u of M.units)if(u.ai&&!u.dead&&Math.random()<.6)sendPin(u,(u.team===0)===(w===0)?pick(['b:gg','b:happy','b:laugh']):pick(['b:sad','b:gg','b:angry']));
 }
@@ -3153,7 +3260,7 @@ function confirmBuy(title,canvasEl,options,onDone){
 /* ---------- Home ---------- */
 const prev=$('#preview'),pctx=prev.getContext('2d');
 function renderHome(){
-  $('#meName').textContent=S.name;{const mi=$('#meIcon');if(mi){const ok=ownedIcons();if(!ok.includes(S.icon))S.icon='r:'+(S.owned.ember?'ember':Object.keys(S.owned)[0]);mi.innerHTML='';mi.append(iconCanvas(S.icon,40));}}$('#meTrophies').innerHTML=ICON.trophies+'<span>'+fmtFull(S.trophies)+'</span>';
+  $('#meName').textContent=S.name;{const mi=$('#meIcon');if(mi){const ok=ownedIcons();if(!ok.includes(S.icon))S.icon='r:'+(S.owned.ember?'ember':Object.keys(S.owned)[0]);mi.innerHTML='';const fr=pfItem('frame',pfMine().frame);mi.classList.toggle('framed',!!fr.css);mi.style.background=fr.css||'';mi.style.boxShadow=fr.css&&fr.glow?'0 0 10px '+fr.glow:'';mi.append(iconCanvas(S.icon,40));}}{const nc=pfItem('ncol',pfMine().ncol);$('#meName').style.cssText=nc.css;}if(S.exNew&&S.exNew.length)setTimeout(exRevealNext,700);$('#meTrophies').innerHTML=ICON.trophies+'<span>'+fmtFull(S.trophies)+'</span>';
   $('#wallet').innerHTML=pills(['coins','gems','pp','chromos']);
   const next=(S.road+1)*100,prevM=S.road*100;$('#roadFill').style.width=Math.round(clamp((S.best-prevM)/(next-prevM),0,1)*100)+'%';
   const rw=roadReward(Math.min(ROAD_MAX,S.road+1));$('#roadIco').innerHTML=ICON.trophies;$('#roadTxt').textContent=S.road>=ROAD_MAX?'Trophy road complete!':fmtFull(S.best)+' / '+next+' · '+roadLabel(rw);
@@ -3263,6 +3370,7 @@ function statRows(b,lvl,mods){
 let catId=null;
 function skinHow(b,sk){const me=S.owned[b.id];if(me&&me.skins.includes(sk.id))return['Owned','#6be39a'];if(sk.tier===0)return['Starter look','#9aa3c7'];
   if(sk.tier==='golden')return['20,000 coins, any time','#ffd23f'];if(sk.tier==='power')return['10,000 power points, any time','#c79bff'];
+  if(sk.tier==='exclusive'){const e=EX_BY_SKIN[sk.id];return[e?'Exclusive \u00b7 '+e.how+' ('+fmtFull(Math.min(exProgress(e),e.goal))+'/'+fmtFull(e.goal)+')':'Exclusive',EX_COL];}
   const dm=dailySkinMult(b.id,sk.id);if(dm)return[dm<1?'In the shop today · 50% off':'In the shop today','#ffd23f'];
   if(sk.tier==='pass')return['Rumble Pass','#ffd36b'];if(sk.tier==='master')return['Reach Master','#ff7aa8'];if(sk.tier==='rank'||sk.tier==='master'){const k=RANK_SETS.findIndex(x=>x.skin.id===sk.id),rs=RANK_SETS[k],mine=rankSetRumbler(k,rankSeed(S))===b.id,when=rs.key==='master'?'Reach Master':rs.idx===0?'First ranked match':'Reach '+rs.name+' I';return[mine?when+' (yours!)':'Ranked reward for other players','#c79bff'];}
   if(sk.id==='hw_surged')return['Halloween only · Happy House after '+HAPPY_KNOCKS+' knocks','#ff5ad1'];if(sk.id==='hw_grim')return['Halloween only · knock on the Dead Inside house','#3dff8a'];if(sk.id==='hw_reaper')return['Unlock Dark in the Halloween event','#ff8a1f'];if(sk.tier==='prestige')return['Prestige '+sk.prestige,'#e7a36b'];return['Daily skins (rotates)','#8fd3ff'];}
@@ -3400,13 +3508,13 @@ function openRumbler(id){
     const sr=document.createElement('div');sr.className='skinrow';
     for(const sk of skinsOf(b)){const owned=me.skins.includes(sk.id);if(!owned&&(sk.tier==='rank'||sk.tier==='master')){const k=RANK_SETS.findIndex(x=>x.skin.id===sk.id);if(rankSetRumbler(k,rankSeed(S))!==id)continue;}const el=document.createElement('button');el.className='card'+(me.skin===sk.id?' sel':'')+(owned?'':' ');el.style.setProperty('--r',owned?'#3a3380':'#2a2560');
       el.append(thumb(b,sk,72));const dm=owned?null:ALWAYS_SKIN(sk)?1:dailySkinMult(id,sk.id),pr=dm?skinPrice(sk):null;
-      el.insertAdjacentHTML('beforeend','<span class="nm">'+esc(sk.name)+'</span>'+(me.skin===sk.id?'<span class="tag on">On</span>':owned?'<span class="tag own">Owned</span>':(pr?'<span class="tag">'+(pr.gems!=null?ICON.gems+Math.ceil(pr.gems*dm):pr.coins!=null?ICON.coins+fmt(pr.coins):ICON.pp+fmt(pr.pp))+'</span>':!earnOnly(sk)&&sk.tier!==0?'<span class="tag" style="opacity:.75">Not in shop</span>':'<span class="tag on">'+(sk.tier==='master'?'Master':sk.tier==='rank'?'Ranked':sk.tier==='prestige'?'★'+sk.prestige:'Pass')+'</span>')));
+      el.insertAdjacentHTML('beforeend','<span class="nm">'+esc(sk.name)+'</span>'+(me.skin===sk.id?'<span class="tag on">On</span>':owned?'<span class="tag own">Owned</span>':(pr?'<span class="tag">'+(pr.gems!=null?ICON.gems+Math.ceil(pr.gems*dm):pr.coins!=null?ICON.coins+fmt(pr.coins):ICON.pp+fmt(pr.pp))+'</span>':!earnOnly(sk)&&sk.tier!==0?'<span class="tag" style="opacity:.75">Not in shop</span>':'<span class="tag on">'+(sk.tier==='master'?'Master':sk.tier==='rank'?'Ranked':sk.tier==='prestige'?'★'+sk.prestige:sk.tier==='exclusive'?'Exclusive':sk.tier==='halloween'?'Halloween':'Pass')+'</span>')));
       el.addEventListener('click',()=>{if(owned){me.skin=sk.id;persist();sfx('click');openRumbler(id);}else if(pr)buySkin(id,sk.id,dm,()=>openRumbler(id));
-      else if(!earnOnly(sk)){openSheet(c2=>{c2.insertAdjacentHTML('beforeend','<h2>'+esc(sk.name+' '+b.name)+'</h2><p class="sub">This skin isn\u2019t in the shop today. Skins can only be bought when they show up in Daily skins, which change every day.</p>');const pv=document.createElement('div');pv.className='d-set';pv.append(thumb(b,sk,130));c2.append(pv);const t=document.createElement('button');t.className='btn primary';t.textContent='Try this skin in training';t.addEventListener('click',()=>startTrial(id,sk.id));const x=document.createElement('button');x.className='btn';x.textContent='Back';x.addEventListener('click',()=>openRumbler(id));c2.append(t,x);});}else if(sk.tier==='prestige'){openPrestigeTrack(id);}
-      else{const rk=sk.tier==='master'||sk.tier==='rank',rs=rk?RANK_SETS.find(x=>x.skin.id===sk.id):null,how=rk?(rs.idx===0?'Play a ranked match to get it.':'Reach '+(rs.key==='master'?'Master':rs.name+' I')+' in ranked to unlock it.'):'It comes from the Rumble Pass.';
+      else if(!earnOnly(sk)){openSheet(c2=>{c2.insertAdjacentHTML('beforeend','<h2>'+esc(sk.name+' '+b.name)+'</h2><p class="sub">This skin isn\u2019t in the shop today. Skins can only be bought when they show up in Daily skins, which change every day.</p>');const pv=document.createElement('div');pv.className='d-set';pv.append(thumb(b,sk,130));c2.append(pv);const t=document.createElement('button');t.className='btn primary';t.textContent='Try this skin in training';t.addEventListener('click',()=>startTrial(id,sk.id));const x=document.createElement('button');x.className='btn';x.textContent='Back';x.addEventListener('click',()=>openRumbler(id));c2.append(t,x);});}else if(sk.tier==='exclusive'&&EX_BY_SKIN[sk.id])openExclusive(EX_BY_SKIN[sk.id],()=>openRumbler(id));else if(sk.tier==='prestige'){openPrestigeTrack(id);}
+      else{const rk=sk.tier==='master'||sk.tier==='rank',rs=rk?RANK_SETS.find(x=>x.skin.id===sk.id):null,how=rk?(rs.idx===0?'Play a ranked match to get it.':'Reach '+(rs.key==='master'?'Master':rs.name+' I')+' in ranked to unlock it.'):sk.tier==='halloween'?skinHow(b,sk)[0]+'.':'It comes from the Rumble Pass.',hw=sk.tier==='halloween';
         openSheet(c2=>{c2.insertAdjacentHTML('beforeend','<h2>'+esc(sk.name+' '+b.name)+'</h2><p class="sub">'+how+'</p>');const pv=document.createElement('div');pv.className='d-set';pv.append(thumb(b,sk,130));c2.append(pv);
           const t=document.createElement('button');t.className='btn primary';t.textContent='Try this skin in training';t.addEventListener('click',()=>startTrial(id,sk.id));
-          const g=document.createElement('button');g.className='btn';g.textContent=rk?'Go to Ranked':'Go to Rumble Pass';g.addEventListener('click',()=>{closeSheet();go(rk?'ranked':'pass');});
+          const g=document.createElement('button');g.className='btn';g.textContent=rk?'Go to Ranked':hw?'Go to Halloween':'Go to Rumble Pass';g.addEventListener('click',()=>{if(hw){openHalloween();return;}closeSheet();go(rk?'ranked':'pass');});if(hw&&!halloweenOn())g.hidden=true;
           const x=document.createElement('button');x.className='btn';x.textContent='Back';x.addEventListener('click',()=>openRumbler(id));c2.append(t,g,x);});}});sr.append(el);}
     card.append(sr);
     const close=document.createElement('button');close.className='btn';close.textContent='Close';close.addEventListener('click',closeSheet);card.append(close);
@@ -3591,16 +3699,70 @@ $('#creditsBtn').addEventListener('click',()=>{sfx('click');openSheet(card=>{car
 
 /* ---------- Profiles ---------- */
 function myProfile(){const pres=Object.entries(S.owned).map(([id,v])=>[id,v.prestige|0]).sort((a,b)=>b[1]-a[1]).slice(0,8);
-  return{name:S.name,icon:S.icon,code:playerCode(),trophies:S.trophies|0,best:S.best|0,coins:S.coins|0,pp:S.pp|0,wins:S.wins|0,rank:rankInfo(S.rp).name,rumblers:Object.keys(S.owned).length,pres};}
+  return{name:S.name,icon:S.icon,code:playerCode(),trophies:S.trophies|0,best:S.best|0,coins:S.coins|0,pp:S.pp|0,wins:S.wins|0,rank:rankInfo(S.rp).name,rumblers:Object.keys(S.owned).length,pres,pf:pfMine(),exs:EXCLUSIVE_SKINS.filter(exOwned).map(e=>e.skin.id)};}
+/* frame wrapper around a profile icon */
+function pfFramed(icon,fid,size){const fr=pfItem('frame',fid),w=document.createElement('span');w.className='pf-frame'+(fr.css?' on':'');if(fr.css){w.style.background=fr.css;if(fr.glow)w.style.boxShadow='0 0 14px '+fr.glow;}w.append(iconCanvas(icon||'r:ember',size));return w;}
+/* the banner header: icon in its frame, coloured name, title, code and showcase rumbler */
+function pfHeader(pr,mine){const pf=pr.pf||{},bn=pfItem('banner',pf.banner),tt=pfItem('title',pf.title),nc=pfItem('ncol',pf.ncol);
+  const top=document.createElement('div');top.className='pf-top';top.style.background=bn.css;
+  const ic=document.createElement(mine?'button':'div');ic.className='pf-icon';ic.append(pfFramed(pr.icon,pf.frame,84));if(mine){ic.setAttribute('aria-label','Change profile icon');ic.addEventListener('click',openIconPicker);}top.append(ic);
+  const mn=document.createElement('div');mn.className='pf-main';mn.innerHTML='<b class="pf-name"'+(mine?' role="button" tabindex="0"':'')+' style="'+nc.css+'">'+esc(safeName(pr.name||'Player'))+'</b><span class="pf-title">'+esc(tt.name)+'</span><span class="pf-code">Code <b>'+esc(pr.code||'------')+'</b></span>';top.append(mn);
+  const sh=pf.show,sb=sh&&BY_ID[sh[0]];if(sb){const d=document.createElement('div');d.className='pf-show';d.append(thumb(sb,getSkin(sb,sh[1]),74));top.append(d);}
+  if(mine)top.addEventListener('click',e=>{if(e.target.closest('.pf-name')){sfx('tap');secretTap('sec_name',5,5000);}});return top;}
 function openProfile(pr,mine){pr=pr||myProfile();openSheet(card=>{card.classList.add('profile');
-  const top=document.createElement('div');top.className='pf-top';const ic=document.createElement('button');ic.className='pf-icon';ic.append(iconCanvas(pr.icon||'r:ember',92));if(mine)ic.addEventListener('click',openIconPicker);top.append(ic);top.addEventListener('click',e=>{if(mine&&e.target.closest('.pf-name')){sfx('tap');secretTap('sec_name',5,5000);}});
-  top.insertAdjacentHTML('beforeend','<div class="pf-main"><b class="pf-name"'+(mine?' role="button" tabindex="0"':'')+'>'+esc(safeName(pr.name||'Player'))+'</b><span class="pf-code">Player code: <b>'+esc(pr.code||'------')+'</b></span>'+(mine?'<small>Tap your icon to change it</small>':'')+'</div>');card.append(top);
-  card.insertAdjacentHTML('beforeend','<div class="pf-troph">'+ICON.trophies+'<b>'+fmtFull(pr.trophies|0)+'</b><small>trophies \u00b7 best '+fmtFull(pr.best|0)+'</small></div>'+
-    '<div class="pf-grid"><span>'+ICON.coins+'<b>'+fmtFull(pr.coins|0)+'</b><small>coins</small></span><span>'+ICON.pp+'<b>'+fmtFull(pr.pp|0)+'</b><small>power points</small></span><span>'+ICON.rp+'<b>'+esc(pr.rank||'Bronze I')+'</b><small>rank</small></span><span>\ud83c\udfc6<b>'+fmtFull(pr.wins|0)+'</b><small>wins</small></span></div>'+
-    '<h3 class="pf-h">Prestige</h3>');
-  const pl=document.createElement('div');pl.className='pf-pres';for(const[id,n]of(pr.pres||[])){const b=BY_ID[id];if(!b)continue;const d=document.createElement('div');d.append(thumb(b,getSkin(b,'classic'),48));d.insertAdjacentHTML('beforeend','<b>'+esc(b.name)+'</b><small style="color:'+prestigeTier(n).col+'">\u2605 '+n+'</small>');pl.append(d);}card.append(pl);
+  card.append(pfHeader(pr,mine));
+  if(mine){const cz=document.createElement('button');cz.className='btn sm primary pf-cz';cz.innerHTML='🎨 Customize profile';cz.addEventListener('click',()=>{sfx('click');openCustomize('banner');});card.append(cz);}
+  card.insertAdjacentHTML('beforeend','<div class="pf-troph">'+ICON.trophies+'<b>'+fmtFull(pr.trophies|0)+'</b><small>trophies · best '+fmtFull(pr.best|0)+'</small></div>'+
+    '<div class="pf-grid"><span>'+ICON.coins+'<b>'+fmtFull(pr.coins|0)+'</b><small>coins</small></span><span>'+ICON.pp+'<b>'+fmtFull(pr.pp|0)+'</b><small>power points</small></span><span>'+ICON.rp+'<b>'+esc(pr.rank||'Bronze I')+'</b><small>rank</small></span><span>🏆<b>'+fmtFull(pr.wins|0)+'</b><small>wins</small></span></div>');
+  {const exs=(pr.exs||[]).filter(x=>EX_BY_SKIN[x]);const h=document.createElement(mine?'button':'h3');h.className='pf-h pf-exh';h.innerHTML='<span>Exclusive skins</span><small>'+exs.length+' / '+EXCLUSIVE_SKINS.length+(mine?' ›':'')+'</small>';if(mine)h.addEventListener('click',()=>{sfx('click');openExclusives(()=>openProfile(null,true));});card.append(h);
+    const ex=document.createElement('div');ex.className='pf-pres pf-ex';if(!exs.length)ex.innerHTML='<p class="sub" style="grid-column:1/-1;margin:0">'+(mine?'None yet — tap above to see how to earn them.':'None yet.')+'</p>';
+    for(const sid of exs){const e=EX_BY_SKIN[sid],b=BY_ID[e.rid],d=document.createElement('div');d.append(thumb(b,getSkin(b,sid),48));d.insertAdjacentHTML('beforeend','<b>'+esc(e.skin.name)+'</b>');ex.append(d);}card.append(ex);}
+  card.insertAdjacentHTML('beforeend','<h3 class="pf-h">Prestige</h3>');
+  const pl=document.createElement('div');pl.className='pf-pres';for(const[id,n]of(pr.pres||[])){const b=BY_ID[id];if(!b)continue;const d=document.createElement('div');d.append(thumb(b,getSkin(b,'classic'),48));d.insertAdjacentHTML('beforeend','<b>'+esc(b.name)+'</b><small style="color:'+prestigeTier(n).col+'">★ '+n+'</small>');pl.append(d);}if(!pl.children.length)pl.innerHTML='<p class="sub" style="grid-column:1/-1;margin:0">No prestige yet.</p>';card.append(pl);
   if(mine){const cp=document.createElement('button');cp.className='btn sm';cp.textContent='Copy my player code';cp.addEventListener('click',()=>{try{navigator.clipboard.writeText(playerCode());toast('Code copied: '+playerCode());}catch(e){toast('Your code: '+playerCode());}});card.append(cp);}
   const x=document.createElement('button');x.className='btn';x.textContent='Close';x.addEventListener('click',closeSheet);card.append(x);});}
+/* ---------- customize: banner, frame, title, name colour, showcase ---------- */
+const CZ_TABS=[['banner','Banner'],['frame','Frame'],['title','Title'],['ncol','Name color'],['show','Showcase']];
+function pfSet(k,v){S.pf=S.pf||{};S.pf[k]=v;persist();renderHome();if(typeof netHello==='function')netHello();}
+function openCustomize(tab){tab=tab||'banner';openSheet(card=>{card.classList.add('profile');card.insertAdjacentHTML('beforeend','<h2>Customize profile</h2>');
+  const pv=pfHeader(myProfile(),false);pv.classList.add('pf-prev');card.append(pv);
+  const tabs=document.createElement('div');tabs.className='trackrow cz-tabs';for(const[k,nm]of CZ_TABS){const b=document.createElement('button');b.className='tpill'+(k===tab?' on':'');b.textContent=nm;b.addEventListener('click',()=>{sfx('tap');openCustomize(k);});tabs.append(b);}card.append(tabs);
+  const g=document.createElement('div');g.className='cz-grid cz-'+tab;const cur=pfMine();
+  if(tab==='show'){const none=document.createElement('button');none.className='cz-cell'+(!cur.show?' on':'');none.innerHTML='<span class="cz-none">—</span><b>None</b>';none.addEventListener('click',()=>{pfSet('show',null);sfx('click');openCustomize(tab);});g.append(none);
+    for(const id of Object.keys(S.owned)){const b=BY_ID[id],me=S.owned[id],c=document.createElement('button');c.className='cz-cell'+(cur.show&&cur.show[0]===id&&cur.show[1]===me.skin?' on':'');c.append(thumb(b,getSkin(b,me.skin),56));c.insertAdjacentHTML('beforeend','<b>'+esc(b.name)+'</b>');
+      c.addEventListener('click',()=>{pfSet('show',[id,me.skin]);sfx('click');openCustomize(tab);});g.append(c);}
+    card.insertAdjacentHTML('beforeend','<p class="sub">Show off one rumbler on your profile, wearing the skin it has on right now. Change its skin first to show a different one.</p>');}
+  else{const list=PF_KINDS[tab];let got=0;
+    for(const it of list){const has=pfHas(tab,it.id);if(has)got++;const c=document.createElement('button');c.className='cz-cell'+(cur[tab]===it.id?' on':'')+(has?'':' locked');
+      if(tab==='banner'){const sw=document.createElement('span');sw.className='cz-sw';sw.style.background=it.css;c.append(sw);}
+      else if(tab==='frame')c.append(pfFramed(S.icon,it.id,48));
+      else if(tab==='title')c.insertAdjacentHTML('beforeend','<span class="pf-title">'+esc(it.name)+'</span>');
+      else c.insertAdjacentHTML('beforeend','<span class="cz-nm" style="'+it.css+'">'+esc(safeName(S.name))+'</span>');
+      c.insertAdjacentHTML('beforeend',(tab==='title'?'':'<b>'+esc(it.name)+'</b>')+(has?'':'<small>🔒 '+esc(it.how||'')+'</small>'));
+      c.addEventListener('click',()=>{if(!has){sfx('tap');toast(it.how||'Locked');return;}pfSet(tab,it.id);sfx('click');openCustomize(tab);});g.append(c);}
+    card.insertAdjacentHTML('beforeend','<p class="sub">'+got+' of '+list.length+' unlocked. Locked ones show how to get them.</p>');}
+  card.append(g);const x=document.createElement('button');x.className='btn';x.textContent='Back to profile';x.addEventListener('click',()=>openProfile(null,true));card.append(x);});}
+/* ---------- exclusive skins ---------- */
+function exBar(e){const v=Math.min(exProgress(e),e.goal);return'<div class="ex-bar"><i style="width:'+Math.round(v/e.goal*100)+'%"></i><span>'+fmtFull(v)+' / '+fmtFull(e.goal)+'</span></div>';}
+function openExclusives(back){openSheet(card=>{card.classList.add('exsheet');card.insertAdjacentHTML('beforeend','<h2>Exclusive skins</h2><p class="sub">You can’t buy these or find them in boxes. Each one is earned by doing something special. '+exCount()+' of '+EXCLUSIVE_SKINS.length+' earned.</p>');
+  const g=document.createElement('div');g.className='ex-list';
+  for(const e of EXCLUSIVE_SKINS){const b=BY_ID[e.rid],sk=getSkin(b,e.skin.id),own=exOwned(e),d=document.createElement('button');d.className='ex-row'+(own?' own':'');d.append(thumb(b,sk,64));
+    d.insertAdjacentHTML('beforeend','<div><b>'+esc(sk.name+' '+b.name)+'</b><small>'+esc(e.how)+'</small>'+(own?'<span class="ex-got">✔ Earned'+(S.owned[e.rid]?'':' · unlock '+esc(b.name)+' to wear it')+'</span>':exBar(e))+'</div>');
+    d.addEventListener('click',()=>{sfx('click');openExclusive(e,()=>openExclusives(back));});g.append(d);}
+  card.append(g);const x=document.createElement('button');x.className='btn';x.textContent=back?'Back':'Close';x.addEventListener('click',()=>back?back():closeSheet());card.append(x);});}
+function openExclusive(e,back){const b=BY_ID[e.rid],sk=getSkin(b,e.skin.id),own=exOwned(e);openSheet(card=>{card.classList.add('exsheet');
+  card.insertAdjacentHTML('beforeend','<p class="of-kick ex-kick">Exclusive skin</p><h2 style="text-align:center">'+esc(sk.name+' '+b.name)+'</h2>');const pv=document.createElement('div');pv.className='d-set ex-pv';pv.append(thumb(b,sk,140));card.append(pv);
+  card.insertAdjacentHTML('beforeend','<p class="sub" style="text-align:center">'+esc(e.how)+'. Never in the shop.</p>'+(own?'<p class="ex-got" style="text-align:center">✔ You earned this one!</p>':exBar(e)));
+  if(own&&S.owned[e.rid]){const q=document.createElement('button');q.className='btn gold';q.textContent=S.owned[e.rid].skin===sk.id?'Wearing it':'Wear it';q.disabled=S.owned[e.rid].skin===sk.id;q.addEventListener('click',()=>{S.owned[e.rid].skin=sk.id;persist();sfx('click');toast(sk.name+' '+b.name+' equipped');openExclusive(e,back);});card.append(q);}
+  const t=document.createElement('button');t.className='btn primary';t.textContent='Try it in training';t.addEventListener('click',()=>startTrial(e.rid,sk.id));card.append(t);
+  const x=document.createElement('button');x.className='btn';x.textContent='Back';x.addEventListener('click',()=>back?back():closeSheet());card.append(x);});}
+let exShowing=false;
+function exRevealNext(){if(exShowing||!S.exNew||!S.exNew.length||view!=='home'||!sheetEl.hidden||M)return;const sid=S.exNew.shift();persist();const e=EX_BY_SKIN[sid];if(!e)return exRevealNext();const b=BY_ID[e.rid],sk=getSkin(b,sid);exShowing=true;sfx('unlock');
+  openSheet(card=>{card.classList.add('exsheet','exreveal');card.insertAdjacentHTML('beforeend','<p class="of-kick ex-kick">Exclusive skin unlocked!</p><h2 style="text-align:center">'+esc(sk.name+' '+b.name)+'</h2>');const w=document.createElement('div');w.className='ex-burst';w.append(thumb(b,sk,150));card.append(w);
+    card.insertAdjacentHTML('beforeend','<p class="sub" style="text-align:center">You did it: '+esc((e.how.charAt(0).toLowerCase()+e.how.slice(1)).replace(/ \(.*\)$/,''))+'! Only players who did that have this skin.'+(S.owned[e.rid]?'':' Unlock '+esc(b.name)+' to wear it.')+'</p>');
+    const done=()=>{exShowing=false;closeSheet();setTimeout(exRevealNext,350);};
+    if(S.owned[e.rid]){const q=document.createElement('button');q.className='btn gold';q.textContent='Wear it now';q.addEventListener('click',()=>{S.owned[e.rid].skin=sid;persist();renderHome();done();});card.append(q);}
+    const x=document.createElement('button');x.className='btn';x.textContent='Awesome!';x.addEventListener('click',done);card.append(x);});}
 function openIconPicker(){openSheet(card=>{card.insertAdjacentHTML('beforeend','<h2>Profile icon</h2><p class="sub">Unlock more with rumblers, trophies (250, 500, then every 500 up to 5,000), ranked (one for each rank you reach), special skins and Rumbler Boxes.</p>');const g=document.createElement('div');g.className='icon-grid';
   const own=ownedIcons(),all=Object.keys(S.owned).map(id=>'r:'+id).concat(TROPHY_ICONS.map(n=>'t:'+n),[0,1,2,3,4,5,6,7].map(t=>'k:'+t),SPECIAL_ICONS.map(x=>'x:'+x[0]),SECRET_PINS.map(p=>'z:'+p[0]));
   for(const id of [...new Set(own.concat(all))]){const has=own.includes(id),b=document.createElement('button');b.className='icon-cell'+(S.icon===id?' on':'')+(has?'':' locked');b.append(iconCanvas(id,60));if(!has)b.insertAdjacentHTML('beforeend','<i>\ud83d\udd12</i><small>'+(id[0]==='t'?fmtFull(+id.split(':')[1])+' trophies':id[0]==='k'?'Reach '+(+id[2]>=7?'Master':TIERS[+id[2]][0]):id[0]==='z'?'Secret':'Rumbler Box')+'</small>');
@@ -3785,7 +3947,7 @@ function netClientUpdate(dt){const C=NETC;if(!C||!M)return;if(C.watch==='replay'
   C.lastIn-=dt;if(C.lastIn<=0&&P&&!C.watch){C.lastIn=.05;const[mx,my]=playerMove();const o={t:'in',mx:+mx.toFixed(2),my:+my.toFixed(2),aim:+(P.aim||0).toFixed(3),aiming:!!aimingNow()};
     const key=o.mx+','+o.my+','+o.aim+','+o.aiming;if(key!==C.sentKey||C.idle>.5){C.sentKey=key;C.idle=0;netSend(o);}else C.idle=(C.idle||0)+.05;}}
 function netAct(k,a,d,id){if(!NETC)return;const o={t:'in',k};if(a!=null)o.a=+(+a).toFixed(3);if(d!=null)o.d=Math.round(d);if(id)o.id=id;netSend(o);}
-function netEndClient(m){if(!NETC||!M||NETC.watch)return;const r=m.r||{};if(S.st){const k=M.mode.id;S.st.modes[k]=S.st.modes[k]||[0,0];S.st.modes[k][0]++;if(r.w===0)S.st.modes[k][1]++;S.st.kills+=r.kills|0;S.st.time+=Math.round(M.now);}NETC.ended=true;M.state='ended';M.endT=0;M.result=r.w;M.place=r.place||0;if(P){P.kills=r.kills|0;P.cubes=r.cubes|0;}if(r.star)M.star=P;
+function netEndClient(m){if(!NETC||!M||NETC.watch)return;const r=m.r||{};if(S.st){const k=M.mode.id;S.st.modes[k]=S.st.modes[k]||[0,0];S.st.modes[k][0]++;if(r.w===0)S.st.modes[k][1]++;if(M.mode.sd&&(r.place|0)===1)S.st.sdWins++;S.st.kills+=r.kills|0;S.st.time+=Math.round(M.now);}NETC.ended=true;M.state='ended';M.endT=0;M.result=r.w;M.place=r.place||0;if(P){P.kills=r.kills|0;P.cubes=r.cubes|0;}if(r.star)M.star=P;
   M.reward=applyRewards();sfx(r.w===0?'win':r.w===1?'lose':'draw');setTimeout(()=>{if(M&&NETC&&!M.shown){M.shown=true;showEnd();}},1500);}
 function netEndLocal(){if(!M)return;M.state='ended';M.result=1;M.place=0;M.left=true;M.reward=applyRewards();setTimeout(()=>{if(M&&!M.shown){M.shown=true;showEnd();}},600);}
 function netLeave(){if(NETC){netSend({t:'leave'});NETC=null;}MYT=0;}
@@ -3883,12 +4045,12 @@ function showSimEnd(){const w=M.result,best=M.units.filter(u=>!u.shadow).sort((a
 
 /* ---------- the menu ---------- */
 function openGameMenu(){sfx('click');let ov=$('#gmenu');if(ov)ov.remove();ov=document.createElement('div');ov.id='gmenu';ov.className='gmenu';
-  const items=[['stats','📊','Stats','Everything you’ve ever done'],['sim','🤖','Run a simulation','Pick 3 vs 3 bots and watch them fight'],['replays','🎬','Replays','Watch your last matches again'],['watch','📺','Watch a random match','Spectate a live online match']];
+  const items=[['stats','📊','Stats','Everything you’ve ever done'],['sim','🤖','Run a simulation','Pick 3 vs 3 bots and watch them fight'],['replays','🎬','Replays','Watch your last matches again'],['watch','📺','Watch a random match','Spectate a live online match'],['excl','💎','Exclusive skins','Skins you can only earn, never buy']];
   ov.innerHTML='<div class="gm-panel"><div class="gm-head"><span class="gm-me"></span><b>'+esc(S.name)+'</b><button class="gm-x" aria-label="Close menu">✕</button></div>'+items.map(([id,ic,t,s])=>'<button class="gm-item" data-act="'+id+'"><span class="gm-ic">'+ic+'</span><span class="gm-t"><b>'+t+'</b><small>'+s+'</small></span><span class="gm-go">›</span></button>').join('')+'</div>';
   document.body.append(ov);ov.querySelector('.gm-me').append(iconCanvas(S.icon||'r:'+S.selected,34));
   const close=()=>{ov.classList.add('out');setTimeout(()=>ov.remove(),200);};
   ov.addEventListener('click',e=>{if(e.target===ov)close();});ov.querySelector('.gm-x').addEventListener('click',close);
-  ov.querySelectorAll('.gm-item').forEach(b=>b.addEventListener('click',()=>{sfx('click');close();const a=b.dataset.act;if(a==='stats')openStats();else if(a==='sim')openSimSetup();else if(a==='replays')openReplays();else watchRandom();}));}
+  ov.querySelectorAll('.gm-item').forEach(b=>b.addEventListener('click',()=>{sfx('click');close();const a=b.dataset.act;if(a==='stats')openStats();else if(a==='sim')openSimSetup();else if(a==='replays')openReplays();else if(a==='excl')openExclusives();else watchRandom();}));}
 $('#hambBtn').addEventListener('click',openGameMenu);
 function menuBack(card){const x=document.createElement('button');x.className='btn';x.textContent='← Back to menu';x.addEventListener('click',()=>{closeSheet();openGameMenu();});card.append(x);}
 
@@ -3908,7 +4070,7 @@ function openStats(){const st=S.st,owned=Object.keys(S.owned),sk=owned.reduce((n
     h+=sec('Ranked','#c79bff',[['🎖️',ri.name,'rank now'],['🏔️',pk,'highest this climb'],['🔁',S.rankCycle|0,'times claimed'],['💯',fmtFull(S.rp|0),'rank points']]);
     h+=sec('Halloween','#ff8a1f',[['🎃',fmtFull(hw.wins|0),'event wins'],['🪙',Math.floor((hw.wins|0)/KNOCK_EVERY),'tokens earned'],['🚪',fmtFull(hw.knocked|0),'doors knocked'],['👻',fmtFull(hw.opened|0),'Halloween Drops opened'],['🎭',(st.tricksW|0)+' won · '+(st.tricksL|0)+' lost','tricks'],['🚧',(hw.dead|0)+' / '+DEAD_PITY,'Dead Inside knocks'],['🌈',Math.min(HAPPY_KNOCKS,hw.knocked|0)+' / '+HAPPY_KNOCKS,'Happy House'],['🖤',yes(S.owned.dark),'Dark unlocked'],['💀',yes(hasSkin('dark','hw_grim')),'Grim Dark'],['🌈',yes(hasSkin('dark','hw_surged')),'Surged Dark']]);
     h+='<h3 class="sx-h" style="--sc:#46b4ff">Game modes</h3><div class="sx-modes">'+MODES.map(m=>{const v=st.modes[m.id]||[0,0];return'<div><span class="mico" style="--mc:'+m.col+'">'+MODE_ICON[m.id]+'</span><b>'+esc(m.name)+'</b><small>'+v[0]+' played · '+v[1]+' won'+(v[0]?' · '+Math.round(v[1]/v[0]*100)+'%':'')+'</small></div>';}).join('')+'</div>';
-    h+=sec('Extras','#6be39a',[['🤖',st.sims|0,'simulations run'],['🎬',st.replays|0,'replays watched'],['📺',st.watched|0,'matches spectated']]);
+    h+=sec('Extras','#6be39a',[['🤖',st.sims|0,'simulations run'],['🎬',st.replays|0,'replays watched'],['📺',st.watched|0,'matches spectated'],['🥇',st.sdWins|0,'Showdown 1st places'],['💎',exCount()+' / '+EXCLUSIVE_SKINS.length,'exclusive skins']]);
     card.insertAdjacentHTML('beforeend',h+'<p class="hint" style="margin:0">Battle stats count from this update on. Online matches add to matches, wins and takedowns.</p>');menuBack(card);});}
 
 /* ---------- Run a simulation ---------- */
