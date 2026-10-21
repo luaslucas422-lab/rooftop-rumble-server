@@ -169,9 +169,9 @@ const RUMBLERS=[
   atk:{kind:'phase',range:520,spd:1100,dmg:1450,r:7},sup:{kind:'shadowstep',range:450,cloak:2},
   atkName:'Phase Shot',atkDesc:'A long shot that passes straight through walls.',supName:'Shadow Step',supDesc:'Steps through the shadows to appear behind the nearest enemy and turns invisible for 2 seconds.',
   look:{body:'#29253a',belly:'#3e3855',accent:'#b56cff',proj:'#d6c9ff',eye:'#d6c9ff',hat:'hood'},sig:{name:'Phantom',body:'#f1f4ff',belly:'#cfd8ff',accent:'#5ef2ff',proj:'#5ef2ff',hat:'hood',glow:'#5ef2ff'}},
- {id:'dark',name:'Dark',rarity:'legendary',role:'Shadow stalker',rad:20,hp:4400,speed:162,reload:.85,superNeed:3400,pref:.1,trait:'dark',eventOnly:true,
-  atk:{kind:'melee',range:112,arc:1.55,dmg:1176.47,kb:60,dark:{dps:294.12,dur:2}},sup:{kind:'darkdive',dur:5,dps:588.24},
-  atkName:'Darkness Slash',atkDesc:'His hands sweep together in a dark slash (2,000 damage at level 11) that poisons for 500 a second for 2 seconds. Poisoned enemies leave a black trail behind them that lasts 15 seconds.',
+ {id:'dark',name:'Dark',rarity:'legendary',role:'Shadow stalker',rad:20,hp:4600,speed:168,reload:.85,superNeed:3100,pref:.1,trait:'dark',eventOnly:true,
+  atk:{kind:'melee',range:118,arc:1.55,dmg:1300,kb:60,dark:{dps:330,dur:2.5,steal:.25}},sup:{kind:'darkdive',dur:5,dps:588.24},
+  atkName:'Darkness Slash',atkDesc:'His hands sweep together in a dark slash (2,210 damage at level 11) that poisons for 560 a second for 2.5 seconds and heals Dark for a quarter of the damage. Poisoned enemies leave a black trail behind them that lasts 7 seconds.',
   supName:'Dark Dive',supDesc:'Stand in one of your black trails and dive in: for 5 seconds Dark can\u2019t be hurt, glides through the dark, stretches the trail wherever he goes, and everyone who left a trail takes 1,000 damage a second.',
   look:{body:'#0d0a14',belly:'#0d0a14',accent:'#2a1a3a',proj:'#1a0d2e',eye:'#ffffff',hat:'none',glow:'#5a2a8a'},sig:{name:'Void',body:'#1a0b2e',belly:'#1a0b2e',accent:'#7b2fe0',proj:'#7b2fe0',eye:'#c79bff',hat:'none',glow:'#7b2fe0'}},
  {id:'frostbyte',name:'Frostbyte',rarity:'epic',role:'Ice slinger',rad:19,hp:3700,speed:150,reload:1.15,superNeed:5200,pref:.7,weapon:'nix',
@@ -1865,7 +1865,7 @@ const onTrail=u=>!!M.trails&&M.trails.some(p=>p.owner===u&&(p.x-u.x)**2+(p.y-u.y
 function meleeHit(u,ang,a,R){
   const range=a.range*R,dmg=a.dmg*u.dmgMul*(a.dark&&u.mods.darkvenom?.8:1);
   for(const e of M.ents){if(e.team===u.team||e.dead)continue;const d=dist(u.x,u.y,e.x,e.y);if(d>range+e.rad)continue;const an=Math.atan2(e.y-u.y,e.x-u.x);if(Math.abs(angDiff(ang,an))>a.arc/2&&d>e.rad+u.rad)continue;if(!los(u.x,u.y,e.x,e.y))continue;
-    hurt(e,dmg,u);hitFx(e.x,e.y,u.sk.proj);if(a.bat&&!e.isStruct){batEffects(u,e,a.bat.poison*u.dmgMul,a.bat.dur);sfx('crack');}if(a.burn&&!e.isStruct){e.poisonT=a.burn.dur;e.poisonDmg=a.burn.dps*u.dmgMul;e.poisonSrc=u;e.poisonTick=1;e.burnT=a.burn.dur;}if(a.dark&&!e.isStruct)darkPoison(u,e,a.dark.dps*u.dmgMul*(u.mods.darkvenom?.7:1),a.dark.dur);if(a.kb)knock(e,an,a.kb);if(a.pull)knock(e,an+Math.PI,a.pull);}
+    hurt(e,dmg,u);hitFx(e.x,e.y,u.sk.proj);if(a.bat&&!e.isStruct){batEffects(u,e,a.bat.poison*u.dmgMul,a.bat.dur);sfx('crack');}if(a.burn&&!e.isStruct){e.poisonT=a.burn.dur;e.poisonDmg=a.burn.dps*u.dmgMul;e.poisonSrc=u;e.poisonTick=1;e.burnT=a.burn.dur;}if(a.dark&&!e.isStruct){darkPoison(u,e,a.dark.dps*u.dmgMul*(u.mods.darkvenom?.7:1),a.dark.dur);if(a.dark.steal&&!u.dead){const hl=Math.min(u.maxHp-u.hp,dmg*a.dark.steal);if(hl>0){u.hp+=hl;if(Math.random()<.5)addFx({k:'plus',x:u.x+rand(-10,10),y:u.y-u.rad,t:0,T:.6});}}}if(a.kb)knock(e,an,a.kb);if(a.pull)knock(e,an+Math.PI,a.pull);}
   if(a.dark&&u.mods.darkheal)for(const e of M.units){if(e===u||e.team!==u.team||e.dead)continue;const d=dist(u.x,u.y,e.x,e.y);if(d>range+e.rad)continue;const an=Math.atan2(e.y-u.y,e.x-u.x);if(Math.abs(angDiff(ang,an))>a.arc/2&&d>e.rad+u.rad)continue;e.hot={t:2,amt:u.mods.darkheal*u.mul,tick:0};ringFx(e.x,e.y,6,36,.3,'#6be39a',4);}
   if(a.healAlly){const amt=a.healAlly*u.mul*(u.mods.kind?1.5:1);
     for(const e of M.units){if(e===u||e.team!==u.team||e.dead)continue;const d=dist(u.x,u.y,e.x,e.y);if(d>range+e.rad)continue;const an=Math.atan2(e.y-u.y,e.x-u.x);if(Math.abs(angDiff(ang,an))>a.arc/2&&d>e.rad+u.rad)continue;
