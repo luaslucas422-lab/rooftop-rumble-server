@@ -451,10 +451,10 @@ const SKIN_TOTAL=RUMBLERS.reduce((n,b)=>n+skinsOf(b).length,0);
 
 /* ---------- Modes & maps ---------- */
 const MODES=[
- {id:'ring',name:'Ring Rumble',desc:'Hold the center ring to score. Takedowns are worth 5. First team to 100 wins.',map:'yard',goal:100,time:150,ranked:true,col:'#ffc93c'},
+ {id:'ring',name:'Ring Rumble',desc:'Hold the center ring to score. Takedowns are worth 5. First team to 140 wins.',map:'yard',goal:140,time:150,ranked:true,col:'#ffc93c'},
  {id:'battery',name:'Battery Run',desc:'Grab batteries from the middle and drop them at your charger. First team to 12 wins.',map:'vents',goal:12,time:150,ranked:true,col:'#5ce1a0'},
  {id:'core',name:'Core Breaker',desc:'Smash the enemy core before they smash yours.',map:'lanes',goal:1,time:150,ranked:true,col:'#ff5d57'},
- {id:'crown',name:'Crown Carrier',desc:'Carry the crown to score. Knock out the carrier to steal it. First team to 60 wins.',map:'vents',goal:60,time:150,ranked:true,col:'#c792ff'},
+ {id:'crown',name:'Crown Carrier',desc:'Carry the crown to score. Knock out the carrier to steal it. First team to 80 wins.',map:'vents',goal:80,time:150,ranked:true,col:'#c792ff'},
  {id:'stand',name:'Last Stand',desc:'No respawns, and a storm closes in. The last team standing wins.',map:'pit',goal:0,time:120,ranked:true,col:'#ff5e87'},
  {id:'bounty',name:'Star Hunt',desc:'Every takedown earns your team a star. First team to 20 stars wins.',map:'yard',goal:20,time:150,ranked:true,col:'#ffd23f'},
  {id:'boss',name:'Giant Brawl',desc:'Your team of 3 takes on one giant rumbler with 10\u00d7 health. Take it down before time runs out.',map:'pit',goal:1,time:150,ranked:false,col:'#ff7a1a',tag:'3 vs Giant'},
@@ -1487,7 +1487,7 @@ const OPP_TIERS=[
 function oppTier(t){let i=0;for(let k=0;k<OPP_TIERS.length;k++)if(t>=OPP_TIERS[k].at)i=k;return i;}
 function oppSkill(t){
   const i=oppTier(t),a=OPP_TIERS[i].sk,n=OPP_TIERS[i+1];if(!n)return{...a,fire:a.fire.slice()};
-  const f=.35*clamp((t-OPP_TIERS[i].at)/(n.at-OPP_TIERS[i].at),0,1),b=n.sk,o={};
+  const f=(i===0?1:.35)*clamp((t-OPP_TIERS[i].at)/(n.at-OPP_TIERS[i].at),0,1),b=n.sk,o={};
   for(const k in a)o[k]=Array.isArray(a[k])?a[k].map((v,j)=>v+(b[k][j]-v)*f):a[k]+(b[k]-a[k])*f;
   return o;
 }
@@ -1715,6 +1715,8 @@ function botLoadout(b,lvl){const gr=GEAR[b.id];return{gadget:lvl>=GADGET_LVL?pic
 function botRarW(r,t){const f=Math.pow(clamp(t/1200,0,1),1.3),L={common:6,rare:5,epic:.6,mythic:.08,legendary:.01,celestial:0,ultra:0}[r];return L==null?1:L+(1-L)*f;}
 function botPick(excl,t,n){let pool=RUMBLERS.filter(b=>!excl.includes(b));const out=[];n=n||pool.length;
   while(out.length<n&&pool.length){const b=pickWeighted(pool.map(x=>[x,botRarW(x.rarity,t)+1e-6]))[0];out.push(b);pool=pool.filter(x=>x!==b);}return out;}
+/* fair teams: one enemy always has the same rarity as your rumbler, the rest are picked the same way as your teammates */
+function mirrorFoes(pb,t){const same=shuffle(RUMBLERS.filter(b=>b!==pb&&b.rarity===pb.rarity&&!b.random&&!eventLocked(b)));const first=same[0]||botPick([pb],t,1)[0];return shuffle([first].concat(botPick([pb,first],t,2)));}
 function newMatch(opts){
   const mode=MODE_BY[opts.mode],mapId=opts.map&&MAPS[opts.map]?opts.map:opts.ranked?pick(mapPool(mode)):dailyMap(mode.id);loadMap(mapId);uid=0;
   M={mode,ranked:!!opts.ranked,units:[],structs:[],ents:[],shots:[],fields:[],items:[],cubes:[],boxes:[],elim:{},fx:[],decals:[],texts:[],score:[],time:mode.time,now:0,state:'countdown',cd:3.6,
@@ -1729,7 +1731,7 @@ function newMatch(opts){
   if(M.ranked){const ri=rankInfo(S.rp).i,rt=ri>=RANK_STEPS-1?TIERS.length:Math.floor(ri/3);M.rankTier=rt;eskill=RANK_FOES()[rt];if(rt>=3)mskill=OPP_TIERS[3].sk;M.hell=rt===TIERS.length;
     elvl=()=>clamp(plvl+randi(-1,1),1,MAX_LVL);}
   else{const t=Math.max(0,S.trophies|0);eskill=oppSkill(t);M.opp=oppTier(t);if(t>=OPP_TIERS[3].at)mskill=oppSkill(t);if(t>=HELL_AT&&!opts.netHumans&&!trial){eskill=SKILL_HELL;mskill=OPP_TIERS[3].sk;M.hell=true;}
-    elvl=()=>randi(1,MAX_LVL);}
+    elvl=()=>clamp(plvl+randi(-1,1),1,MAX_LVL);if(!(t>=HELL_AT&&!opts.netHumans&&!trial))mskill=oppSkill(t+Math.max(0,350-t*.7));}
   const bot=(b,team,spawn,skill,lvl)=>{const lo=botLoadout(b,lvl);return makeUnit(b,botSkin(b),team,{name:names.pop()||'Bot',skill:typeof skill==='object'?varySkill(skill):skill,lvl,spawn,gadget:lo.gadget,star:lo.star});};
   if(opts.sim){M.sim=true;M.watch=true;const sp=MAP.spawns,mk=(id,team,s)=>{const b=BY_ID[id],lo=botLoadout(b,MAX_LVL);return makeUnit(b,botSkin(b),team,{name:(team?'Red ':'Blue ')+b.name,skill:'hard',lvl:MAX_LVL,spawn:s,gadget:lo.gadget,star:lo.star});};
     opts.sim.blue.forEach((id,i)=>M.units.push(mk(id,0,sp[0][[1,0,2][i]])));opts.sim.red.forEach((id,i)=>M.units.push(mk(id,1,sp[1][i])));P=M.units[0];M.followU=P;}
@@ -1749,7 +1751,7 @@ function newMatch(opts){
   }else{
     const sp=MAP.spawns;
     P=makeUnit(pb,me.skin,0,{player:true,name:S.name,lvl:plvl,spawn:sp[0][1],gadget:me.gadget,star:me.star});M.units.push(P);
-    const party=(S.party||[]).filter(f=>f&&BY_ID[f.rumbler]).slice(0,2),mates=dr?dr.mates.map(id=>BY_ID[id]):party.map(f=>BY_ID[f.rumbler]).concat(botPick([pb],S.trophies|0,4)).slice(0,2),foes=dr?dr.foes.map(id=>BY_ID[id]):botPick([],S.trophies|0,3);
+    const party=(S.party||[]).filter(f=>f&&BY_ID[f.rumbler]).slice(0,2),mates=dr?dr.mates.map(id=>BY_ID[id]):party.map(f=>BY_ID[f.rumbler]).concat(botPick([pb],S.trophies|0,4)).slice(0,2),foes=dr?dr.foes.map(id=>BY_ID[id]):mirrorFoes(pb,S.trophies|0);
     mates.forEach((b,i)=>{const f=party[i],ml=elvl();if(f&&!M.trial){const lo=botLoadout(b,ml);M.units.push(makeUnit(b,f.skin||'classic',0,{name:f.name,skill:typeof mskill==='object'?varySkill(mskill):mskill,lvl:ml,spawn:sp[0][i?2:0],gadget:lo.gadget,star:lo.star}));}else M.units.push(bot(b,0,sp[0][i?2:0],mskill,ml));});
     foes.forEach((b,i)=>M.units.push(bot(b,1,sp[1][i],eskill,elvl())));
   }
@@ -2154,7 +2156,7 @@ function endIf(){
 function modeTick(dt){
   const id=M.mode.id;
   if(id==='ring'){M.tick+=dt;while(M.tick>=.5){M.tick-=.5;const c=[0,0];for(const u of M.units)if(!u.dead&&!u.shadow&&inZone(u))c[u.team]++;
-    if(c[0]&&c[1])M.zone='contested';else if(c[0]){M.zone='blue';M.score[0]=Math.min(100,M.score[0]+1);}else if(c[1]){M.zone='red';M.score[1]=Math.min(100,M.score[1]+1);}else M.zone='empty';}}
+    if(c[0]&&c[1])M.zone='contested';else if(c[0]){M.zone='blue';M.score[0]=Math.min(M.mode.goal,M.score[0]+1);}else if(c[1]){M.zone='red';M.score[1]=Math.min(M.mode.goal,M.score[1]+1);}else M.zone='empty';}}
   else if(id==='battery'){
     M.battT-=dt;if(M.battT<=0&&M.items.length<8){const[x,y]=openPoint(ZX,ZY,0,70);M.items.push({x,y,vx:0,vy:0,cd:.3,t:0,ph:rand(0,6)});ringFx(x,y,4,30,.35,'#5ce1a0',4);M.battT=3;}
     for(let i=M.items.length-1;i>=0;i--){const it=M.items[i];it.t+=dt;it.cd-=dt;if(it.vx||it.vy){const nx=it.x+it.vx*dt,ny=it.y+it.vy*dt;if(!hitsWall(nx,ny,8)){it.x=nx;it.y=ny;}it.vx*=1-Math.min(1,dt*4);it.vy*=1-Math.min(1,dt*4);}
@@ -2183,8 +2185,10 @@ function modeObjective(u){
   if(id==='frenzy'){let best=null,bd=750;for(const e of M.units){if(e===u||e.dead||e.hidden)continue;const d=dist(u.x,u.y,e.x,e.y);if(d<bd){bd=d;best=e;}}if(best)return[best.x,best.y];if(!ai.zp||Math.random()<.004)ai.zp=openPoint(ZX,ZY,0,300);return ai.zp;}
   if(M.mode.sd){
     let best=null,bd=420;for(const c of M.cubes){if(dist(c.x,c.y,ZX,ZY)>M.storm.r-30)continue;const d=dist(u.x,u.y,c.x,c.y);if(d<bd){bd=d;best=c;}}if(best)return[best.x,best.y];
-    let bx=null,bb=750;for(const b of M.boxes){if(b.dead||dist(b.x,b.y,ZX,ZY)>M.storm.r-40)continue;const d=dist(u.x,u.y,b.x,b.y);if(d<bb){bb=d;bx=b;}}
+    const calmP=M.now<SD_CALM,mine=b=>!calmP||!M.units.some(e=>e!==u&&!e.dead&&e.team!==u.team&&dist(e.x,e.y,b.x,b.y)<dist(u.x,u.y,b.x,b.y));
+    let bx=null,bb=750;for(const b of M.boxes){if(b.dead||dist(b.x,b.y,ZX,ZY)>M.storm.r-40||!mine(b))continue;const d=dist(u.x,u.y,b.x,b.y);if(d<bb){bb=d;bx=b;}}
     if(bx){const a=Math.atan2(u.y-bx.y,u.x-bx.x),R=Math.max(55,Math.min(rangeOf(u)*.7,220));return[bx.x+Math.cos(a)*R,bx.y+Math.sin(a)*R];}
+    if(calmP&&u.spawn){if(!ai.cp)ai.cp=openPoint(u.spawn[0]+(ZX-u.spawn[0])*.3,u.spawn[1]+(ZY-u.spawn[1])*.3,0,90);return ai.cp;}
     const lim=Math.max(90,M.storm.r*.55);if(!ai.zp||dist(ai.zp[0],ai.zp[1],ZX,ZY)>lim||Math.random()<.003)ai.zp=openPoint(ZX,ZY,0,lim);return ai.zp;}
   if(id==='stand'||id==='knockout'){const lim=Math.min(260,M.storm.r*.55);if(!ai.zp||dist(ai.zp[0],ai.zp[1],ZX,ZY)>lim||Math.random()<.003)ai.zp=openPoint(ZX,ZY,0,lim);return ai.zp;}
   if(id==='battery'){const pd=own(u.team,(MAP.pads||[[500,1505],[500,95]]));
@@ -2239,12 +2243,14 @@ function autoAim(u,kind){
   return aimAt(u,best,spec,{lead:.75,aimErr:0});
 }
 function setMode(u,m){u.ai.mode=m;}
+/* Showdown starts with a calm looting phase so nobody is knocked out in the first few seconds */
+const SD_CALM=35;
 function think(u){
   const ai=u.ai,sk=ai.skill,lob=u.b.atk.kind==='lob'||u.b.atk.kind==='orbs',id=M.mode.id;
   let best=null,bs=1e9;
-  const nearUnit=M.units.some(e=>e.team!==u.team&&!e.dead&&!e.hidden&&dist(u.x,u.y,e.x,e.y)<260);
+  const nearUnit=M.units.some(e=>e.team!==u.team&&!e.dead&&!e.hidden&&dist(u.x,u.y,e.x,e.y)<260),calm=M.mode.sd&&M.now<SD_CALM&&M.now-(u.lastHurt==null?-99:u.lastHurt)>3;
   for(const e of foesOf(u.team)){
-    if(e.hidden)continue;const d=dist(u.x,u.y,e.x,e.y);if(d>(sk.sight||680))continue;
+    if(e.hidden)continue;const d=dist(u.x,u.y,e.x,e.y);if(d>(sk.sight||680))continue;if(calm&&!e.isStruct)continue;
     let s=d;
     if(e.isStruct){if(e.kind==='core'){if(nearUnit||d>rangeOf(u)+160)continue;s+=120;}else s+=110;}
     else{s-=(1-e.hp/e.maxHp)*160*(sk.focus??1);if(M.units.some(m=>m!==u&&m.ai&&m.team===u.team&&m.ai.target===e))s-=90*(sk.focus??1);if(e.super>=1&&d<400)s-=40;if(e.hasCrown)s-=220;s-=e.carry*45;if(id==='ring'&&inZone(e))s-=60;}
@@ -2562,7 +2568,7 @@ function applyRewards(){
     if(after>(S.rankPeak|0)){S.rankPeak=after;r.rank=after;r.rankWaiting=true;}
   }else if(M.mode.sd){const n=M.nTeams,i=clamp(M.place,1,n)-1,TT={8:[10,5,2,0,-1,-2,-3,-4],5:[10,5,2,-1,-3],4:[10,5,2,-3]}[n]||[10,5,2,0,-1,-2,-3,-4],CC={8:[50,40,32,25,18,14,12,10],5:[50,38,26,16,10],4:[50,34,20,12]}[n]||[50,40,32,25,18,14,12,10],PT={8:[30,25,20,15,12,10,8,6],5:[30,22,15,10,6],4:[30,20,12,8]}[n]||[30,25,20,15,12,10,8,6],t=TT[i];r.trophies=S.trophies<50?Math.max(0,t):t;r.coins=CC[i];r.pp=PT[i];if(i===0)r.gems=2;
   }else if(M.mode.ffa){const i=M.place-1;const t=[10,7,3,0,-2,-4][i];r.trophies=S.trophies<50?Math.max(0,t):t;r.coins=[45,35,25,15,12,10][i];r.pp=[25,20,15,10,8,6][i];if(i===0)r.gems=2;}
-  else{const tr=S.trophies;if(w===0){r.trophies=tr<500?8:tr<1000?6:4;r.coins=40;r.pp=25;r.gems=Math.random()<.5?2:1;}else if(w===1){r.trophies=tr<50?0:tr<500?-3:-5;r.coins=15;r.pp=10;}else{r.coins=25;r.pp=15;}}
+  else{const tr=S.trophies;if(w===0){r.trophies=tr<500?8:tr<1000?7:tr<2000?6:tr<3000?5:4;r.coins=40;r.pp=25;r.gems=Math.random()<.5?2:1;}else if(w===1){r.trophies=tr<50?0:tr<500?-2:tr<1000?-3:tr<2000?-4:-5;r.coins=15;r.pp=10;}else{r.coins=25;r.pp=15;}}
   /* Star Player: nobody in the match got more takedowns than you. Worth extra trophies, win or lose. */
   {let st=null;for(const u of M.units)if(!u.shadow&&(u.kills||0)>0&&(!st||u.kills>st.kills||u===P&&u.kills===st.kills))st=u;
    M.star=st;if(st===P&&!M.ranked){r.star=true;r.trophies+=STAR_PLAYER_TROPHIES;}}
@@ -3123,7 +3129,8 @@ function go(name){
 }
 document.querySelectorAll('.tab').forEach(t=>t.addEventListener('click',()=>{sfx('click');go(t.dataset.tab);}));
 document.querySelectorAll('[data-go]').forEach(b=>b.addEventListener('click',()=>go(b.dataset.go)));
-function updateShopDot(){$('#shopDot').hidden=S.daily.claimed;$('#passDot').hidden=!passClaimable();}
+function upgradeReady(){for(const id in S.owned){const me=S.owned[id];if(me.lvl<MAX_LVL&&S.pp>=UP_PP[me.lvl-1]&&S.coins>=UP_COIN[me.lvl-1])return true;}return false;}
+function updateShopDot(){$('#shopDot').hidden=S.daily.claimed&&!!S.welcomeGift;$('#passDot').hidden=!passClaimable();{const d=$('#rumDot');if(d)d.hidden=!upgradeReady();}}
 
 /* ---------- Sheet ---------- */
 const sheetEl=$('#sheet'),sheetCard=$('#sheetCard');
@@ -3178,6 +3185,8 @@ function renderTiles(){
     const order=['rbox','sbox','season','pumpkin','skeleton','zombie','ultra','legendary','mythic','epic','rare'].filter(k=>cnt[k]),nb=(cnt.rbox||0)+(cnt.sbox||0),nd=S.drops.length-nb;
     b.insertAdjacentHTML('beforeend','<span style="min-width:0"><span class="tk">'+(nb&&nd?'Rumble Drops & Boxes':nb?'Boxes':'Rumble Drops')+'</span><b>'+(nb&&nd?nd+' drop'+(nd>1?'s':'')+' + '+nb+' box'+(nb>1?'es':'')+' ready':S.drops.length+(nb?' box'+(nb>1?'es':''):'')+' ready to open')+'</b><span class="tt dropq"></span></span>');
     const q=b.querySelector('.dropq');for(const k of order){const w=document.createElement('span');w.className='dq';w.append(dropCanvas(k,22));w.insertAdjacentHTML('beforeend','<i>'+cnt[k]+' '+RARITY[k].name+'</i>');q.append(w);}}
+  if(!S.welcomeGift){const b=mk('wide gift welcometile','#ff5ad1',()=>{S.welcomeGift=1;for(let k=0;k<3;k++)S.drops.push({r:'legendary',min:null});S.drops.push({r:'rbox',min:null});persist();sfx('unlock');toast('Gift added! Opening it now','chromos');renderHome();openDrops();});
+    b.append(dropCanvas('legendary',52));b.insertAdjacentHTML('beforeend','<span style="min-width:0"><span class="tk">New player gift</span><b>3 Legendary Drops + 1 Rumbler Box</b><span class="tt">Tap to claim it now!</span></span>');}
   if(halloweenOn()){const tk=tokensLeft(),kl=knocksLeft(),b=mk('wide hwtile','#ff8a1f',openHalloween);const into=(S.hw.wins|0)%KNOCK_EVERY;
     b.append(dropCanvas('pumpkin',52));b.insertAdjacentHTML('beforeend','<span style="min-width:0"><span class="tk">Halloween \u00b7 Trick or Treat</span><b>'+(tk>0?tk+' Halloween token'+(tk>1?'s':'')+' ready!':kl>0?kl+' door knock'+(kl>1?'s':'')+' ready!':(KNOCK_EVERY-into)+' more win'+(KNOCK_EVERY-into>1?'s':'')+' for a token')+'</b><span class="tbar"><i style="width:'+(tk>0?100:into/KNOCK_EVERY*100)+'%"></i></span></span>');}
   if(!S.daily.claimed){const g=GIFTS[S.daily.gift||0],k=Object.keys(g)[0],b=mk('wide gift','#6be39a',()=>go('shop'));
