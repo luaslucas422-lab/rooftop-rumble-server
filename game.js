@@ -406,7 +406,7 @@ const SPECIAL_ICONS=[['crown','\ud83d\udc51','#ffd23f'],['skull','\ud83d\udc80',
 const ICON_SKIN_TIERS=['golden','power','halloween','rank','master'];
 const SPOOKY=['pumpkin','skeleton','zombie'],BOXES=['rbox','sbox'],isSpecialDrop=r=>r==='season'||SPOOKY.includes(r)||BOXES.includes(r),KNOCK_EVERY=5;
 const dropName=r=>RARITY[r]?(RARITY[r].box?RARITY[r].name:RARITY[r].name+' Drop'):'Drop';
-const BOX_PRICE={rbox:70,sbox:60};
+const BOX_PRICE={rbox:70,sbox:80};
 const eventLocked=b=>!!(b&&b.eventOnly&&halloweenOn());
 const halloweenOn=d=>{d=d||new Date();const m=d.getMonth();return m===9||(m===10&&d.getDate()<=7);};
 const HALLOWEEN_SKINS=[
@@ -1371,7 +1371,7 @@ function loadSave(given){
   o.owned={};
   if(halloweenOn()&&!o.hwDef){o.hwDef=1;o.musicTrack='spooky';o.theme='halloween';}if(o.theme!=='halloween'&&o.theme!=='default')o.theme=halloweenOn()?'halloween':'default';
   o.hw={wins:0,used:0,spent:null,knocks:0,opened:0,doors:null,...(s.hw&&typeof s.hw==='object'?s.hw:{})};o.hw.wins=Math.max(0,o.hw.wins|0);o.hw.used=Math.max(0,Math.min(o.hw.used|0,Math.floor(o.hw.wins/KNOCK_EVERY)));if(o.hw.spent==null)o.hw.spent=o.hw.used;o.hw.spent=Math.max(0,o.hw.spent|0);o.hw.knocks=Math.max(0,o.hw.knocks|0);o.hw.opened=Math.max(0,o.hw.opened|0);if(!Array.isArray(o.hw.doors)||o.hw.doors.length!==6||!o.hw.doors.every(id=>BY_ID[id]))o.hw.doors=null;
-  o.party=Array.isArray(s.party)?s.party.filter(f=>f&&typeof f.id==='string'&&BY_ID[f.rumbler]).slice(0,2).map(f=>({id:f.id.slice(0,40),name:String(f.name||'Friend').slice(0,20),rumbler:f.rumbler,skin:typeof f.skin==='string'?f.skin:'classic'})):[];o.netUrl=typeof s.netUrl==='string'?s.netUrl.slice(0,200):'';o.invitesOn=s.invitesOn!==false;if(o.hw&&o.hw.darkClaimed&&o.owned&&o.owned.dark&&Array.isArray(o.owned.dark.skins)&&!o.owned.dark.skins.includes('hw_reaper'))o.owned.dark.skins.push('hw_reaper');o.friends=Array.isArray(s.friends)?s.friends.filter(f=>f&&typeof f.id==='string').slice(0,20).map(f=>({id:f.id.slice(0,40),name:String(f.name||'Friend').slice(0,20)})):[];o.rankTop=Math.max(0,Math.min(7,s.rankTop|0));o.orient=['auto','portrait','landscape'].includes(s.orient)?s.orient:'auto';o.findByName=!!s.findByName;o.icon=typeof s.icon==='string'?s.icon.slice(0,40):'';o.icons=Array.isArray(s.icons)?s.icons.filter(x=>SPECIAL_ICONS.some(y=>y[0]===x)):[];
+  o.party=Array.isArray(s.party)?s.party.filter(f=>f&&typeof f.id==='string'&&BY_ID[f.rumbler]).slice(0,2).map(f=>({id:f.id.slice(0,40),name:String(f.name||'Friend').slice(0,20),rumbler:f.rumbler,skin:typeof f.skin==='string'?f.skin:'classic'})):[];o.netUrl=typeof s.netUrl==='string'?s.netUrl.slice(0,200):'';o.invitesOn=s.invitesOn!==false;o.party=[];if(o.hw&&o.hw.darkClaimed&&o.owned&&o.owned.dark&&Array.isArray(o.owned.dark.skins)&&!o.owned.dark.skins.includes('hw_reaper'))o.owned.dark.skins.push('hw_reaper');o.friends=Array.isArray(s.friends)?s.friends.filter(f=>f&&typeof f.id==='string').slice(0,20).map(f=>({id:f.id.slice(0,40),name:String(f.name||'Friend').slice(0,20)})):[];o.rankTop=Math.max(0,Math.min(7,s.rankTop|0));o.orient=['auto','portrait','landscape'].includes(s.orient)?s.orient:'auto';o.findByName=!!s.findByName;o.icon=typeof s.icon==='string'?s.icon.slice(0,40):'';o.icons=Array.isArray(s.icons)?s.icons.filter(x=>SPECIAL_ICONS.some(y=>y[0]===x)):[];
   const src=(s.owned&&typeof s.owned==='object')?s.owned:{};
   for(const id in src){if(!BY_ID[id])continue;const r={...newRumbler(),...src[id]};r.lvl=clamp(Math.round(+r.lvl||1),1,MAX_LVL);r.prestige=Math.min(PRESTIGE_MAX,Math.max(0,Math.round(+r.prestige||0)));r.prClaim=Math.max(0,Math.round(+r.prClaim||0));r.pinSlots=Array.isArray(r.pinSlots)?[r.pinSlots[0]||null,r.pinSlots[1]||null]:[null,null];const gr=GEAR[id];r.gadgets=Array.isArray(r.gadgets)?r.gadgets.filter(x=>gr.g.some(g=>g.id===x)):[];r.stars=Array.isArray(r.stars)?r.stars.filter(x=>gr.s.some(g=>g.id===x)):[];if(!r.gadgets.includes(r.gadget))r.gadget=r.gadgets[0]||null;if(!r.stars.includes(r.star))r.star=r.stars[0]||null;
     r.skins=Array.isArray(r.skins)?r.skins.filter(x=>skinsOf(BY_ID[id]).some(k=>k.id===x)):['classic'];if(!r.skins.includes('classic'))r.skins.unshift('classic');if(!r.skins.includes(r.skin))r.skin='classic';o.owned[id]=r;}
@@ -1593,19 +1593,19 @@ function knockDoor(i){if(knocksLeft()<=0)return null;S.hw.knocks--;S.hw.used++;c
   const pool=RUMBLERS.filter(b=>!b.random&&!S.hw.doors.includes(b.id));S.hw.doors[i]=pick(pool).id;persist();return res;}
 function claimDark(){if(S.owned.dark||(S.hw.opened|0)<DARK_DROPS)return false;grantRumbler('dark');const d=S.owned.dark;if(d&&!d.skins.includes('hw_reaper')){d.skins.push('hw_reaper');d.skin='hw_reaper';}S.hw.darkClaimed=1;persist();return true;}
 /* Rumbler Box: a guaranteed rumbler (mostly Rare/Epic/Mythic, Legendary is rare) plus resources.
-   Skin Box: two guaranteed skins plus resources. Both show a reward counter while you open them. */
+   Skin Box: three guaranteed skins plus five resources (8 rewards). Both show a reward counter while you open them. */
 function grantBoxRumbler(){const w=[['rare',35],['epic',35],['mythic',22],['legendary',7],['ultra',1]],free=b=>!S.owned[b.id]&&!eventLocked(b);
   const avail=w.filter(([r])=>RUMBLERS.some(b=>b.rarity===r&&free(b)));
   if(!avail.length){const n=Math.round(randi(2000,6000)/50)*50;S.chromos+=n;return{kind:'chromos',n,note:'You own every rumbler, so it became chromos'};}
   const r=pickWeighted(avail)[0],b=pick(RUMBLERS.filter(x=>x.rarity===r&&free(x)));grantRumbler(b.id);return{kind:'rumbler',id:b.id};}
 function openBox(kind){const items=[],R=[['coins',[300,900]],['pp',[200,600]],['gems',[10,30]],['chromos',[500,1500]]];
-  /* Rumbler Box: 7 rewards guaranteed, and each lucky roll adds one more (up to 10). Skin Box: 4 rewards. */
-  let extra=kind==='rbox'?6:2;if(kind==='rbox')while(extra<9&&Math.random()<.35)extra++;
+  /* Rumbler Box: 7 rewards guaranteed, and each lucky roll adds one more (up to 10). Skin Box: 8 rewards. */
+  let extra=kind==='rbox'?6:5;if(kind==='rbox')while(extra<9&&Math.random()<.35)extra++;
   for(let i=0;i<extra;i++){const[k,[a,b]]=R[Math.floor(Math.random()*R.length)];let n=randi(a,b);if(n>=50)n=Math.round(n/10)*10;S[k]+=n;items.push({kind:k,n});}
   if(kind==='rbox'&&Math.random()<.3){const it={};if(grantAnySkin(it))items.push(it);}
   if(kind==='rbox'&&Math.random()<.25){const left=SPECIAL_ICONS.map(x=>x[0]).filter(x=>!(S.icons||[]).includes(x));if(left.length){const ic=pick(left);(S.icons||(S.icons=[])).push(ic);items.push({kind:'icon',icon:ic});}}
   if(kind==='rbox')items.push(grantBoxRumbler());
-  else for(let i=0;i<2;i++){const it={};if(grantAnySkin(it))items.push(it);else{S.gems+=40;items.push({kind:'gems',n:40,note:'You own every skin, so it became gems'});}}
+  else for(let i=0;i<3;i++){const it={};if(grantAnySkin(it))items.push(it);else{S.gems+=40;items.push({kind:'gems',n:40,note:'You own every skin, so it became gems'});}}
   persist();return{rar:kind,start:kind,kind:'box',items,idx:0};}
 function openDrop(d){
   if(d&&BOXES.includes(d.r))return openBox(d.r);
@@ -3626,7 +3626,7 @@ function netHello(){if(!NETW.ok)return;const b=BY_ID[S.selected],me=S.owned[b.id
 function netConnect(){const url=netUrl();if(NETW.ws){try{NETW.ws.onclose=null;NETW.ws.close();}catch(e){}NETW.ws=null;}NETW.ok=false;netBadge();if(!url||typeof WebSocket==='undefined')return;NETW.url=url;
   let ws;try{ws=new WebSocket(url);}catch(e){return;}NETW.ws=ws;
   ws.onopen=()=>{NETW.ok=true;NETW.retry=0;netHello();netBadge();};
-  ws.onclose=()=>{const was=NETW.ok;NETW.ok=false;NETW.ws=null;netBadge();if(NETC&&M&&M.state!=='ended'){toast('Lost connection to the server');netEndLocal();}if(NETW.queue)netQueueUi(null);
+  ws.onclose=()=>{const was=NETW.ok;NETW.ok=false;NETW.ws=null;NETW.party=[];NETW.partyLeader=null;if((S.party||[]).length){S.party=[];persist();try{renderParty();}catch(e){}}netBadge();if(NETC&&M&&M.state!=='ended'){toast('Lost connection to the server');netEndLocal();}if(NETW.queue)netQueueUi(null);
     if(netUrl()){NETW.retry=Math.min(30,NETW.retry+3);setTimeout(()=>{if(!NETW.ws)netConnect();},NETW.retry*1000);}};
   ws.onerror=()=>{};
   ws.onmessage=e=>{let m;try{m=JSON.parse(e.data);}catch(x){return;}netOnMsg(m);};}
@@ -3654,7 +3654,9 @@ function netQueue(modeId){if((NETW.party||[]).length+1>netTeamCap(modeId)){toast
 function netQueueUi(m){const mm=$('#mm');NETW.queue=m;if(!m){mm.hidden=true;return;}mm.hidden=false;
   $('#mmKicker').textContent='Online · '+(MODE_BY[m.mode]?MODE_BY[m.mode].name:'');$('#mmTitle').textContent=m.found?'Match found!':'Finding players';
   $('#mmMode').textContent=m.need?m.n+' / '+m.need+' players'+(m.left!=null?' · bots fill in after '+Math.max(0,Math.ceil(m.left))+'s':''):'Connecting to the queue…';$('#mmOpp').hidden=true;
-  const slots=$('#mmSlots');slots.innerHTML='';for(let i=0;i<(m.need||1);i++){const d=document.createElement('div');d.className='mm-slot '+(i<m.n?'in blue':'wait');slots.append(d);}}
+  const slots=$('#mmSlots');slots.innerHTML='';const pl=m.players&&m.players.length?m.players:[{name:S.name,rumbler:S.selected,skin:(S.owned[S.selected]||{}).skin,icon:S.icon}];
+  for(let i=0;i<Math.max(m.need||1,pl.length);i++){const d=document.createElement('div'),q=pl[i];d.className='mm-slot '+(q?'in blue':'wait');
+    if(q){const b=BY_ID[q.rumbler]||BY_ID[STARTER];d.append(thumb(b,getSkin(b,q.skin||'classic'),60));if(q.icon){const ic=iconCanvas(q.icon,22);ic.classList.add('mm-ic');d.append(ic);}d.insertAdjacentHTML('beforeend','<small class="mm-nm">'+esc(safeName(q.name||'Player'))+'</small>');}slots.append(d);}}
 /* the match on this phone */
 function netStartClient(m){NETW.queue=null;$('#mm').hidden=true;clearMM&&clearMM();lastRanked=false;lastTrial=null;
   const mode=MODE_BY[m.mode];loadMap(m.s&&m.s.mapId&&MAPS[m.s.mapId]?m.s.mapId:mode.map);MYT=m.team|0;
@@ -3752,6 +3754,12 @@ function openPartyChat(){if(!canQuickChat()){toast('Party chat unlocks from age 
     const g=document.createElement('div');g.className='qc-grid';QUICK_CHAT.forEach((t,i)=>{const b=document.createElement('button');b.className='qcopt';b.textContent=t;b.addEventListener('click',()=>{const now=Date.now();if(now-(NETW.lastChat||0)<1200)return;NETW.lastChat=now;netSend({t:'pchat',i});chatGot('You',t,null,true);});g.append(b);});card.append(g);
     const x=document.createElement('button');x.className='btn';x.textContent='Close';x.addEventListener('click',closeSheet);card.append(x);});}
 
+/* closing or leaving the app fully disconnects you (and takes you out of your party); coming back reconnects */
+let netAwayT=0;
+window.addEventListener('pagehide',()=>{try{if(NETW.ws){netSend({t:'leaveParty'});NETW.ws.close();}}catch(e){}});
+document.addEventListener('visibilitychange',()=>{if(document.hidden){clearTimeout(netAwayT);netAwayT=setTimeout(()=>{if(document.hidden&&NETW.ws&&!(NETC&&M&&M.state!=='ended')){try{netSend({t:'leaveParty'});NETW.ws.close();}catch(e){}}},30000);}
+  else{clearTimeout(netAwayT);if(!NETW.ws)netConnect();}});
+
 /* ---------- Shop ---------- */
 const GIFTS=[{coins:100},{gems:10},{pp:60}];
 const PACKS=[{id:'pp1',name:'Power pack',get:{pp:100},pay:['coins',200]},{id:'pp2',name:'Big power pack',get:{pp:350},pay:['coins',600]},{id:'c1',name:'Coin pouch',get:{coins:500},pay:['gems',40]},{id:'c2',name:'Coin chest',get:{coins:1600},pay:['gems',110]}];
@@ -3822,7 +3830,7 @@ function renderShop(){
    body.append(pg);body.insertAdjacentHTML('beforeend','<p class="hint" style="margin:0">Every rumbler already has 3 free pins of its own. Tap a rumbler, then Pins, to choose its 2 custom pins.</p>');const pcb=document.createElement('button');pcb.className='btn';pcb.textContent='Open the pin catalog';pcb.addEventListener('click',()=>openPinCatalog());body.append(pcb);}
   body.append(sectionTitle('Boxes','Gems only \u00b7 open them from the Play screen'));
   {const bg=document.createElement('div');bg.className='grid';
-   for(const[k,desc]of[['rbox','A guaranteed new rumbler (usually Rare to Mythic, sometimes Legendary) + 7 or more rewards'],['sbox','2 guaranteed skins for your rumblers + 2 rewards']]){const el=document.createElement('button');el.className='card boxcard';el.style.setProperty('--r',RARITY[k].col);
+   for(const[k,desc]of[['rbox','A guaranteed new rumbler (usually Rare to Mythic, sometimes Legendary) + 7 or more rewards'],['sbox','8 rewards: 3 guaranteed skins for your rumblers + 5 more']]){const el=document.createElement('button');el.className='card boxcard';el.style.setProperty('--r',RARITY[k].col);
      el.append(dropCanvas(k,80));el.insertAdjacentHTML('beforeend','<span class="nm">'+RARITY[k].name+'</span><span class="sm">'+desc+'</span><span class="tag">'+ICON.gems+BOX_PRICE[k]+'</span>');
      el.addEventListener('click',()=>confirmBuy(RARITY[k].name,dropCanvas(k,110),[['gems',BOX_PRICE[k]]],()=>{S.drops.push({r:k,min:null});persist();sfx('unlock');toast(RARITY[k].name+' added! Opening it now','gems');renderShop();openDrops();}));bg.append(el);}
    body.append(bg);}
@@ -3995,7 +4003,7 @@ function startMatchmaking(ranked,pre){
   const opp=$('#mmOpp');if(M.opp!=null){const o=OPP_TIERS[M.opp];opp.hidden=false;opp.style.setProperty('--oc',o.col);opp.innerHTML='<b>'+o.name+' opponents</b><span>'+o.note+'</span>';}else opp.hidden=true;
   slots.innerHTML='';const order=M.units.slice().sort((a,b)=>a.team-b.team);
   const els=order.map((u,i)=>{const d=document.createElement('div');d.className='mm-slot wait '+(u.team===0?'blue':'red');slots.append(d);return d;});
-  let t=150;order.forEach((u,i)=>{t+=i===0?0:order.length>8?rand(90,200):rand(180,420);mmTimers.push(setTimeout(()=>{const d=els[i];d.className='mm-slot in '+(u.team===0?'blue':'red');d.innerHTML='';d.append(thumb(u.b,u.sk,64));sfx('pin');},t));});
+  let t=150;order.forEach((u,i)=>{t+=i===0?0:order.length>8?rand(90,200):rand(180,420);mmTimers.push(setTimeout(()=>{const d=els[i];d.className='mm-slot in '+(u.team===0?'blue':'red');d.innerHTML='';d.append(thumb(u.b,u.sk,64));if(u.isPlayer&&S.icon){const ic=iconCanvas(S.icon,22);ic.classList.add('mm-ic');d.append(ic);}d.insertAdjacentHTML('beforeend','<small class="mm-nm">'+esc(u.isPlayer?S.name:u.name||'')+'</small>');sfx('pin');},t));});
   mmTimers.push(setTimeout(()=>{$('#mmTitle').textContent='Match found!';sfx('go');},t+200));
   mmTimers.push(setTimeout(()=>{mm.hidden=true;enterGame();},t+900));
 }
@@ -4182,7 +4190,7 @@ function revealDrop(){
   if(DA.res&&DA.res.kind==='box'){const bx=DA.res,it=bx.items[bx.idx],el=$('#dropReward');el.innerHTML='';renderDropItem(el,it);
     const tot={coins:0,pp:0,gems:0,chromos:0};let rum=0,sk=0;for(let i=0;i<=bx.idx;i++){const x=bx.items[i];if(x.kind==='rumbler')rum++;else if(x.kind==='skin')sk++;else if(tot[x.kind]!=null)tot[x.kind]+=x.n;}
     let h='<div class="box-count"><small>Reward '+(bx.idx+1)+' of '+bx.items.length+'</small><div>';for(const k in tot)h+='<span class="bc'+(tot[k]?' on':'')+'">'+ICON[k]+fmtFull(tot[k])+'</span>';
-    if(bx.rar==='rbox')h+='<span class="bc'+(rum?' on':'')+'">'+ICON.chromos+rum+' rumbler</span>';else h+='<span class="bc'+(sk?' on':'')+'">'+ICON.gems+sk+' / 2 skins</span>';
+    if(bx.rar==='rbox')h+='<span class="bc'+(rum?' on':'')+'">'+ICON.chromos+rum+' rumbler</span>';else h+='<span class="bc'+(sk?' on':'')+'">'+ICON.gems+sk+' / 3 skins</span>';
     el.insertAdjacentHTML('beforeend',h+'</div></div>');el.hidden=false;
     setDropUi(dropName(bx.rar)+(bx.idx<bx.items.length-1?' \u00b7 tap for more':' \u00b7 all done'),it.kind==='rumbler'?'New rumbler!':it.kind==='skin'?'New skin!':'Nice!',RARITY[bx.rar].col);return;}
   const res=DA.res,el=$('#dropReward');el.innerHTML='';renderDropItem(el,res);

@@ -9,7 +9,7 @@ const vm = require('vm');
 const { WebSocketServer } = require('ws');
 
 const PORT = process.env.PORT || 8080;
-const WAIT = +(process.env.WAIT_SECONDS || 12);   // seconds to wait for more players before bots fill in
+const WAIT = +(process.env.WAIT_SECONDS || 2);   // seconds to wait for more players before bots fill in
 const TICK = 30;                                    // simulation steps per second
 const SNAP_EVERY = 2;                               // send a snapshot every N steps (15 per second)
 const CODE = fs.readFileSync(path.join(__dirname, 'game.js'), 'utf8');
@@ -134,7 +134,7 @@ function tryMatch(mode) {
   }
   const waited = (Date.now() - list[0].since) / 1000, full = seats.length >= need;
   if (!full && waited < WAIT) {
-    for (const e of list) for (const id of e.pids) send(players.get(id), { t: 'queue', mode, n: Math.min(need, seats.length), need, left: WAIT - waited });
+    for (const e of list) for (const id of e.pids) send(players.get(id), { t: 'queue', mode, n: Math.min(need, seats.length), need, left: WAIT - waited, players: seats.map(([sid]) => { const q = players.get(sid); return q ? { name: q.name, rumbler: q.rumbler, skin: q.skin, icon: q.icon } : null; }).filter(Boolean) });
     return;
   }
   if (!seats.length) { queues.set(mode, list.filter(e => !used.includes(e) && e.pids.some(id => players.has(id)))); return; }
@@ -192,5 +192,5 @@ wss.on('connection', ws => {
     const mt = p.match && matches.get(p.match); if (mt) { try { mt.world.leave(p.pid); } catch (e) {} } p.match = null; leaveParty(p); p.ws = null;
     setTimeout(() => { if (!p.ws) players.delete(p.pid); }, 60000); });
 });
-setInterval(() => { for (const ws of wss.clients) { if (!ws.isAlive) { ws.terminate(); continue; } ws.isAlive = false; try { ws.ping(); } catch (e) {} } }, 20000);
+setInterval(() => { for (const ws of wss.clients) { if (!ws.isAlive) { ws.terminate(); continue; } ws.isAlive = false; try { ws.ping(); } catch (e) {} } }, 8000);
 server.listen(PORT, () => console.log('Rooftop Rumble server listening on port ' + PORT));
