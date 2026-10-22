@@ -2,6 +2,9 @@
 'use strict';
 /* online: NETS = running inside the game server; MYT = which team is "mine" on this phone */
 const NETS=!!window.__rrServer;let MYT=0;
+/* which version is running: main game, sandbox, 3D test, or the beta (beta = its own build served from the game server) */
+const RR_BETA=false;
+const RR_MODE=(()=>{if(RR_BETA)return'beta';let m='main';try{m=localStorage.getItem('rr-mode')||'main';}catch(e){}return['main','sandbox','d3','beta'].includes(m)?m:'main';})();
 const $=s=>document.querySelector(s);
 const TAU=Math.PI*2;
 const clamp=(v,a,b)=>v<a?a:v>b?b:v;
@@ -387,9 +390,9 @@ const skinPinFaces=sk=>sk.tier!==0?['happy','angry','sad','cool','love']:null;
 const isSkinPin=id=>{const m=/^sk:([a-z]+):([a-z_0-9]+)(?::(happy|angry|sad|cool|love))?$/.exec(id);return!!(m&&BY_ID[m[1]]&&skinsOf(BY_ID[m[1]]).some(k=>k.id===m[2]));};
 const skinHasPin=sk=>sk.tier!==0&&sk.tier!=='master';
 /* How flashy a skin's takedown and spawn effects are: 0 none, 1 small, 2 medium, 3 big */
-const skinFx=sk=>sk.ultraFx?4:sk.tier==='halloween'||sk.tier==='exclusive'?3:sk.supercharged?0:sk.tier==='power'?4:sk.tier==='golden'?3:sk.tier==='troll'?2:sk.charged||sk.tier===3||sk.tier==='sig'||sk.tier==='pass'||sk.tier==='master'?3:sk.tier===2||sk.tier==='rank'?2:sk.tier===1||sk.tier==='prestige'?1:0;
+const skinFx=sk=>sk.ultraFx||sk.fame?4:sk.tier==='solar'?3:sk.tier==='halloween'||sk.tier==='exclusive'?3:sk.supercharged?0:sk.tier==='power'?4:sk.tier==='golden'?3:sk.tier==='troll'?2:sk.charged||sk.tier===3||sk.tier==='sig'||sk.tier==='pass'||sk.tier==='master'?3:sk.tier===2||sk.tier==='rank'?2:sk.tier===1||sk.tier==='prestige'?1:0;
 /* skins you can only earn, never buy */
-const earnOnly=sk=>sk.tier==='exclusive'||sk.tier==='halloween'||sk.tier==='pass'||sk.tier==='master'||sk.tier==='rank'||sk.tier==='prestige';
+const earnOnly=sk=>sk.tier==='solar'||sk.tier==='exclusive'||sk.tier==='halloween'||sk.tier==='pass'||sk.tier==='master'||sk.tier==='rank'||sk.tier==='prestige';
 const SKIN_PRICE={1:{gems:30,coins:1500,pp:600},2:{gems:60,coins:3000,pp:1200},3:{gems:120,coins:6000,pp:2400},sig:{gems:90,coins:4500,pp:1800}};
 SKIN_PRICE.troll={gems:80,coins:4000,pp:1600};
 /* Golden skins: coins only, always for sale. Power skins: the best rarity, power points only, always for sale. */
@@ -403,12 +406,12 @@ const canQuickChat=()=>S.ageBand&&S.ageBand!=='u7';
 /* Profile icons: rumbler faces you own, trophy milestones, special skins, and rare icons from Rumbler Boxes */
 const TROPHY_ICONS=[250,500,1000,1500,2000,2500,3000,3500,4000,4500,5000];
 const SPECIAL_ICONS=[['crown','\ud83d\udc51','#ffd23f'],['skull','\ud83d\udc80','#c9cfe0'],['star','\u2b50','#ffb547'],['flame','\ud83d\udd25','#ff7a1a'],['heart','\ud83d\udc96','#ff7aa8'],['ghost','\ud83d\udc7b','#b48cff'],['bolt','\u26a1','#5ec8ff'],['moon','\ud83c\udf19','#3b3399'],['dino','\ud83e\udd96','#6be39a'],['alien','\ud83d\udc7d','#7ed957'],['gem','\ud83d\udc8e','#7df9ff'],['cool','\ud83d\ude0e','#ffd23f']];
-const ICON_SKIN_TIERS=['golden','power','halloween','rank','master','exclusive'];
+const ICON_SKIN_TIERS=['golden','power','halloween','rank','master','exclusive','solar'];
 const SPOOKY=['pumpkin','skeleton','zombie'],BOXES=['rbox','sbox'],isSpecialDrop=r=>r==='season'||SPOOKY.includes(r)||BOXES.includes(r),KNOCK_EVERY=5;
 const dropName=r=>RARITY[r]?(RARITY[r].box?RARITY[r].name:RARITY[r].name+' Drop'):'Drop';
 const BOX_PRICE={rbox:70,sbox:80};
 const eventLocked=b=>!!(b&&b.eventOnly&&halloweenOn());
-const halloweenOn=d=>{d=d||new Date();const m=d.getMonth();return m===9||(m===10&&d.getDate()<=7);};
+const halloweenOn=d=>{if(RR_MODE==='sandbox'&&SBX&&SBX.hw!=null)return SBX.hw;d=d||new Date();const m=d.getMonth();return m===9||(m===10&&d.getDate()<=7);};
 const HALLOWEEN_SKINS=[
  {id:'hw_jack',name:'Jack-o’-Lantern',tier:'halloween',body:'#ff8a1f',belly:'#ffc07a',accent:'#3f7d2c',proj:'#ffb347',eye:'#ffe27a',hat:'stem',grin:true,glow:'#ffb347'},
  {id:'hw_skelly',name:'Skelly Bones',tier:'halloween',body:'#f1f4ff',belly:'#2a2238',accent:'#1a1430',proj:'#f1f4ff',eye:'#ff3b30',hat:'none',stripes:true},
@@ -441,6 +444,18 @@ const EXCLUSIVE_SKINS=[
  {rid:'pip',stat:'matches',goal:300,how:'Play 300 matches',skin:{id:'ex_marathon',name:'Marathon',tier:'exclusive',body:'#2ad19a',belly:'#ffffff',accent:'#ff5ad1',proj:'#ffd23f',hat:'visor',checker:true}},
  {rid:'zapper',stat:'pass',goal:45,how:'Reach Rumble Pass tier 45',skin:{id:'ex_passmaster',name:'Pass Master',tier:'exclusive',body:'#1b2a6b',belly:'#ffd23f',accent:'#ffd23f',proj:'#7ad7ff',eye:'#7ad7ff',hat:'laurel',glow:'#7ad7ff',starry:true}},
  {rid:'echo',stat:'best',goal:3000,how:'Reach 3,000 trophies',skin:{id:'ex_diamond',name:'Diamond',tier:'exclusive',body:'#bfefff',belly:'#ffffff',accent:'#46b4ff',proj:'#9be8ff',eye:'#2a7fd0',hat:'icecrown',glow:'#9be8ff',facets:true,shine:true}}];
+/* Solars: levels bought with chromos after you've done everything else. Each level gives a profile icon and more. */
+const SOLAR_LEVELS=[{name:'Spark',cost:1000},{name:'Glow',cost:2000},{name:'Flare',cost:3500},{name:'Ray',cost:5500},{name:'Beam',cost:8000},
+ {name:'Blaze',cost:12000},{name:'Corona',cost:18000},{name:'Nova',cost:27000},{name:'Eclipse',cost:40000},{name:'Solars Fame',cost:200000}];
+const SOLAR_MAX=SOLAR_LEVELS.length,SOL_COL='#ffb000';
+const SOLAR_SKINS=[
+ {lv:2,rid:'spritz',skin:{id:'sol_sunbeam',name:'Sunbeam',tier:'solar',body:'#ffd23f',belly:'#fff6d0',accent:'#ff8a1f',proj:'#ffe680',eye:'#ff8a1f',hat:'halo',glow:'#ffd23f',shine:true}},
+ {lv:4,rid:'blaze',skin:{id:'sol_flare',name:'Solar Flare',tier:'solar',body:'#ff6a00',belly:'#ffd23f',accent:'#fff3a6',proj:'#ffb000',eye:'#fff3a6',hat:'flame',glow:'#ff8a1f',cracks:true}},
+ {lv:6,rid:'volta',skin:{id:'sol_storm',name:'Sunstorm',tier:'solar',body:'#ffb000',belly:'#fff3a6',accent:'#ff3b5c',proj:'#ffe680',eye:'#ff3b5c',hat:'starcrest',glow:'#ffb000',charged:true}},
+ {lv:8,rid:'nova',skin:{id:'sol_corona',name:'Corona',tier:'solar',body:'#fff3a6',belly:'#ffffff',accent:'#ffb000',proj:'#ffd23f',eye:'#ff8a1f',hat:'crown',glow:'#ffe680',rim:'#ffb000',shine:true}},
+ {lv:9,rid:'luna',skin:{id:'sol_eclipse',name:'Eclipse',tier:'solar',body:'#120f26',belly:'#ffb000',accent:'#ffd23f',proj:'#ffd23f',eye:'#ffd23f',hat:'halo',glow:'#ffb000',rim:'#ffd23f',starry:true}},
+ {lv:10,rid:'astra',skin:{id:'sol_fame',name:'Solars Fame',tier:'solar',fame:true,body:'#ffd23f',belly:'#fffbe6',accent:'#ff5e87',proj:'#fff3a6',eye:'#ff3b5c',hat:'starcrest',glow:'#ffd23f',rim:'#ffffff',shine:true,starry:true}}];
+const SOL_BY_SKIN={};for(const x of SOLAR_SKINS)SOL_BY_SKIN[x.skin.id]=x;
 const EX_BY_SKIN={};for(const e of EXCLUSIVE_SKINS)EX_BY_SKIN[e.skin.id]=e;
 function skinsOf(b){
   if(b._skins)return b._skins;
@@ -458,6 +473,7 @@ function skinsOf(b){
   list.push({...base,...POWER_SKIN,boxy:!!b.boxy});
   if(b.id==='juggler')list.push({...base,...MAID_SKIN,boxy:!!b.boxy});
   for(const e of EXCLUSIVE_SKINS)if(e.rid===b.id)list.push({...base,...e.skin,boxy:!!b.boxy});
+  for(const x of SOLAR_SKINS)if(x.rid===b.id)list.push({...base,...x.skin,boxy:!!b.boxy});
   list.push({...base,...b.sig,id:'sig',tier:'sig'});
   return(b._skins=list);
 }
@@ -598,6 +614,7 @@ const PF_BANNERS=[
  {id:'b_galaxy',name:'Galaxy',css:'radial-gradient(circle at 18% 30%,#fff 0 1.5px,transparent 2.5px),radial-gradient(circle at 72% 62%,#fff 0 1.5px,transparent 2.5px),radial-gradient(circle at 46% 84%,#fffa 0 1px,transparent 2px),radial-gradient(circle at 88% 18%,#fffa 0 1px,transparent 2px),linear-gradient(135deg,#0b0b2e,#3b1f6b 60%,#7a3fb5)',ok:()=>passTier(S.pass.xp|0)>=20,how:'Reach Rumble Pass tier 20'},
  {id:'b_exclusive',name:'Exclusive',css:'linear-gradient(135deg,#053a30,#1a9c80 55%,#7dffd9)',ok:()=>exCount()>=3,how:'Earn 3 exclusive skins'},
  {id:'b_gold',name:'Gold Rush',css:'linear-gradient(135deg,#7a4a00,#ffd23f 50%,#fff3a6)',ok:()=>S.best>=3000,how:'Reach 3,000 trophies'},
+ {id:'b_solar',name:'Solar Flare',css:'radial-gradient(circle at 80% 30%,#fffbe6 0 8%,#ffd23f 12%,#ff8a1f 34%,#c4366f 66%,#3a0a24)',ok:()=>(S.sol|0)>=5,how:'Reach Solars level 5'},
  {id:'b_rainbow',name:'Rainbow',css:'linear-gradient(135deg,'+RB_LINE+')',ok:isMaster,how:'Reach Master in ranked'}];
 const PF_FRAMES=[
  {id:'f_none',name:'None',css:''},
@@ -610,6 +627,7 @@ const PF_FRAMES=[
  {id:'f_star',name:'Starfall',css:'linear-gradient(135deg,#7ad7ff,#ffffff 45%,#ffd23f)',glow:'#7ad7ff',ok:()=>passTier(S.pass.xp|0)>=30,how:'Reach Rumble Pass tier 30'},
  {id:'f_exclusive',name:'Exclusive',css:'linear-gradient(135deg,#c8fff0,#2de0b0 50%,#0b5a4a)',glow:'#2de0b0',ok:()=>exCount()>=5,how:'Earn 5 exclusive skins'},
  {id:'f_diamond',name:'Diamond',css:'linear-gradient(135deg,#e8fbff,#7ad7ff 30%,#ffffff 55%,#46b4ff)',glow:'#9be8ff',ok:()=>S.best>=3000,how:'Reach 3,000 trophies'},
+ {id:'f_solar',name:'Sunburst',css:'conic-gradient(#ffd23f,#ff8a1f,#fff3a6,#ffb000,#ff5e87,#ffd23f)',glow:'#ffb000',ok:()=>(S.sol|0)>=7,how:'Reach Solars level 7'},
  {id:'f_rainbow',name:'Rainbow',css:'conic-gradient('+RB_LINE+',#ff5d57)',glow:'#ff5ad1',ok:isMaster,how:'Reach Master in ranked'}];
 const PF_TITLES=[
  {id:'t_rookie',name:'Rookie'},{id:'t_runner',name:'Rooftop Runner'},{id:'t_friendly',name:'Good Sport'},
@@ -626,7 +644,8 @@ const PF_TITLES=[
  {id:'t_pass',name:'Pass Master',ok:()=>passTier(S.pass.xp|0)>=45,how:'Reach Rumble Pass tier 45'},
  {id:'t_trend',name:'Trendsetter',ok:()=>exCount()>=5,how:'Earn 5 exclusive skins'},
  {id:'t_legend',name:'Legend',ok:()=>S.best>=3000,how:'Reach 3,000 trophies'},
- {id:'t_master',name:'Master',ok:isMaster,how:'Reach Master in ranked'}];
+ {id:'t_master',name:'Master',ok:isMaster,how:'Reach Master in ranked'},
+ {id:'t_spark',name:'Spark',ok:()=>(S.sol|0)>=1,how:'Reach Solars level 1'},{id:'t_sun',name:'Sun Chaser',ok:()=>(S.sol|0)>=3,how:'Reach Solars level 3'},{id:'t_eclipse',name:'Eclipse',ok:()=>(S.sol|0)>=9,how:'Reach Solars level 9'},{id:'t_fame',name:'Solars Fame',ok:()=>(S.sol|0)>=SOLAR_MAX,how:'Reach Solars Fame'}];
 const GRAD_TXT=g=>'background:'+g+';-webkit-background-clip:text;background-clip:text;color:transparent;text-shadow:none;filter:drop-shadow(0 2px 0 rgba(0,0,0,.55))';
 const PF_NCOLS=[
  {id:'n_white',name:'White',css:'color:#ffffff'},{id:'n_sun',name:'Sunny',css:'color:#ffd23f'},{id:'n_pink',name:'Pink',css:'color:#ff8ad8'},{id:'n_sky',name:'Sky',css:'color:#8fdcff'},
@@ -635,7 +654,9 @@ const PF_NCOLS=[
  {id:'n_fire',name:'Fire',css:GRAD_TXT('linear-gradient(0deg,#ff3b5c,#ff8a1f 50%,#ffd23f)'),ok:()=>(S.wins|0)>=50,how:'Win 50 matches'},
  {id:'n_ghost',name:'Ghost Green',css:'color:#7dffb0;text-shadow:0 0 10px #2bd46a,0 2px 0 #000',ok:()=>hasSkin('dark','hw_grim'),how:'Get Grim Dark'},
  {id:'n_gold',name:'Gold',css:GRAD_TXT('linear-gradient(180deg,#fff3a6,#ffb000 60%,#c47a00)'),ok:()=>S.best>=2000,how:'Reach 2,000 trophies'},
- {id:'n_rainbow',name:'Rainbow',css:GRAD_TXT('linear-gradient(90deg,'+RB_LINE+')'),ok:()=>isMaster()||hasSkin('dark','hw_surged'),how:'Reach Master or get Surged Dark'}];
+ {id:'n_rainbow',name:'Rainbow',css:GRAD_TXT('linear-gradient(90deg,'+RB_LINE+')'),ok:()=>isMaster()||hasSkin('dark','hw_surged'),how:'Reach Master or get Surged Dark'},
+ {id:'n_solar',name:'Solar',css:GRAD_TXT('linear-gradient(180deg,#fffbe6,#ffd23f 45%,#ff8a1f)'),ok:()=>(S.sol|0)>=6,how:'Reach Solars level 6'},
+ {id:'n_fame',name:'Fame',css:GRAD_TXT('linear-gradient(90deg,#ffd23f,#ff8a1f,#ff5e87,#ffd23f)'),ok:()=>(S.sol|0)>=SOLAR_MAX,how:'Reach Solars Fame'}];
 const PF_KINDS={banner:PF_BANNERS,frame:PF_FRAMES,title:PF_TITLES,ncol:PF_NCOLS};
 const PF_DEF={banner:'b_sky',frame:'f_none',title:'t_rookie',ncol:'n_white'};
 const pfItem=(k,id)=>PF_KINDS[k].find(x=>x.id===id)||PF_KINDS[k].find(x=>x.id===PF_DEF[k]);
@@ -961,16 +982,28 @@ function iconCanvas(id,size){if(id==='z:sec_afk'){const cv=document.createElemen
   const tick=()=>{if(cv.isConnected)seen=true;else if(seen||Date.now()-born>5000)return;c.clearRect(0,0,size,size);drawProfileIcon(c,'z:sec_afk',size);requestAnimationFrame(tick);};tick();return cv;}if(/^k:\d$/.test(id||'')){const t=+id[2],el=document.createElement('span');el.className='icon-emb';el.style.width=el.style.height=size+'px';el.innerHTML=emblem(t>=7?RANK_STEPS-1:t*3,Math.round(size*.92),true);return el;}
   const cv=document.createElement('canvas'),d=Math.min(2,window.devicePixelRatio||1);cv.width=cv.height=Math.round(size*d);cv.style.width=cv.style.height=size+'px';cv.setAttribute('aria-hidden','true');const c=cv.getContext('2d');c.scale(d,d);drawProfileIcon(c,id||'r:ember',size);return cv;}
 function drawProfileIcon(c,id,s){const p=String(id).split(':'),R=s*.18;let col='#3a3380',col2='#1b1546';
-  if(p[0]==='z'){col=(SECRET_ART[p[1]]||['','#8a5cf5'])[1];col2='#1b1046';}else if(p[0]==='t'){col='#ffb000';col2='#c4366f';}else if(p[0]==='x'){const sp=SPECIAL_ICONS.find(x=>x[0]===p[1]);col=sp?sp[2]:'#9d7bff';col2='#1b1546';}else if(p[0]==='s'){col='#9d7bff';col2='#2a1458';const sb=BY_ID[p[1]],ss=sb&&getSkin(sb,p[2]);if(ss&&ss.tier==='exclusive'){col=ss.glow||ss.proj||EX_COL;col2='#06231d';}}else{const b=BY_ID[p[1]];if(b)col=RARITY[b.rarity].col;}
+  if(p[0]==='z'){col=(SECRET_ART[p[1]]||['','#8a5cf5'])[1];col2='#1b1046';}else if(p[0]==='t'){col='#ffb000';col2='#c4366f';}else if(p[0]==='x'){const sp=SPECIAL_ICONS.find(x=>x[0]===p[1]);col=sp?sp[2]:'#9d7bff';col2='#1b1546';}else if(p[0]==='o'){col=+p[1]>=SOLAR_MAX?'#ff5e87':'#ffd23f';col2=+p[1]>=SOLAR_MAX?'#3a0a24':'#c4366f';}else if(p[0]==='s'){col='#9d7bff';col2='#2a1458';const sb=BY_ID[p[1]],ss=sb&&getSkin(sb,p[2]);if(ss&&ss.tier==='exclusive'){col=ss.glow||ss.proj||EX_COL;col2='#06231d';}}else{const b=BY_ID[p[1]];if(b)col=RARITY[b.rarity].col;}
   const g=c.createLinearGradient(0,0,s,s);g.addColorStop(0,col);g.addColorStop(1,col2);rrect(c,s*.04,s*.04,s*.92,s*.92,R);c.fillStyle=(p[0]==='s'&&p[2]==='hw_surged')?rainbowGrad(c,0,0,s,s,0,58):(p[0]==='s'&&p[2]==='hw_grim')?(()=>{const q=c.createRadialGradient(s/2,s*.4,s*.05,s/2,s/2,s*.7);q.addColorStop(0,'#3dff8a');q.addColorStop(.55,'#0f3a22');q.addColorStop(1,'#030504');return q;})():g;c.fill();c.lineWidth=Math.max(2,s*.05);c.strokeStyle=OUT;c.stroke();
   c.save();rrect(c,s*.04,s*.04,s*.92,s*.92,R);c.clip();c.fillStyle='rgba(255,255,255,.18)';c.beginPath();c.ellipse(s*.3,s*.18,s*.4,s*.16,-.4,0,TAU);c.fill();
   if(p[0]==='r'||p[0]==='s'){const b=BY_ID[p[1]]||BY_ID[STARTER];drawFighter(c,s/2,s*.62,s*.36,b,getSkin(b,p[0]==='s'?p[2]:'classic'),Math.PI/2,0,{still:true,noShadow:true,happy:true});}
   else if(p[0]==='t'){c.fillStyle='#fff6c2';c.strokeStyle=OUT;c.lineWidth=Math.max(1.5,s*.035);c.beginPath();c.moveTo(s*.3,s*.2);c.lineTo(s*.7,s*.2);c.lineTo(s*.66,s*.46);c.quadraticCurveTo(s*.5,s*.6,s*.34,s*.46);c.closePath();c.fill();c.stroke();c.fillRect(s*.45,s*.52,s*.1,s*.1);c.strokeRect(s*.45,s*.52,s*.1,s*.1);
     c.fillStyle='#120f26';c.font='900 '+(s*.22)+'px system-ui, sans-serif';c.textAlign='center';c.textBaseline='middle';const t=+p[1]>=1000?(+p[1]/1000)+'K':p[1];c.fillText(t,s/2,s*.78);}
+  else if(p[0]==='o'){drawSolarEmblem(c,s/2,s*.5,s*.36,+p[1]);}
   else if(p[0]==='z'&&p[1]==='sec_afk'){blinkFace(c,s/2,s*.52,s*.32,performance.now()/1000);}
   else if(p[0]==='z'){if(p[1]==='secretking'){if(SECRET_IMG&&SECRET_IMG.complete&&SECRET_IMG.naturalWidth)c.drawImage(SECRET_IMG,s*.1,s*.12,s*.8,s*.8);}else{c.font=(s*.55)+'px '+EMOJI_FONT;c.textAlign='center';c.textBaseline='middle';c.fillText((SECRET_ART[p[1]]||['?'])[0],s/2,s*.55);}c.fillStyle='#ffd23f';star(c,s*.82,s*.18,s*.09,s*.035,4);c.fill();}
   else{const sp=SPECIAL_ICONS.find(x=>x[0]===p[1]);c.font=(s*.55)+'px system-ui, "Apple Color Emoji","Segoe UI Emoji","Noto Color Emoji", sans-serif';c.textAlign='center';c.textBaseline='middle';c.fillText(sp?sp[1]:'?',s/2,s*.55);}
   c.restore();}
+/* Solars level emblem: a sun with more rays as you level up */
+function drawSolarEmblem(c,x,y,r,lv){const fame=lv>=SOLAR_MAX,n=8+lv*2;c.save();c.translate(x,y);c.lineJoin='round';
+  c.save();c.globalCompositeOperation='lighter';glow(c,0,0,r*1.25,fame?'#ff8ad8':'#ffd23f',.45);c.restore();
+  c.beginPath();for(let i=0;i<n*2;i++){const a=i*Math.PI/n-Math.PI/2,rr=i%2?r*.62:r*(fame?1.02:.92);c.lineTo(Math.cos(a)*rr,Math.sin(a)*rr);}c.closePath();
+  const g=c.createRadialGradient(0,-r*.2,r*.1,0,0,r);g.addColorStop(0,'#fffbe6');g.addColorStop(.5,fame?'#ffb000':'#ffd23f');g.addColorStop(1,fame?'#ff5e87':'#ff8a1f');c.fillStyle=g;c.fill();c.lineWidth=Math.max(1.5,r*.08);c.strokeStyle=OUT;c.stroke();
+  c.beginPath();c.arc(0,0,r*.5,0,TAU);c.fillStyle=fame?'#ff5e87':'#ff8a1f';c.fill();c.stroke();
+  c.fillStyle='#fff';c.font='900 '+(r*(lv>=10?.42:.56))+'px system-ui,sans-serif';c.textAlign='center';c.textBaseline='middle';
+  if(fame){c.fillStyle='#ffd23f';c.beginPath();c.moveTo(-r*.3,r*.12);c.lineTo(-r*.34,-r*.2);c.lineTo(-r*.15,-r*.05);c.lineTo(0,-r*.28);c.lineTo(r*.15,-r*.05);c.lineTo(r*.34,-r*.2);c.lineTo(r*.3,r*.12);c.closePath();c.fill();c.lineWidth=Math.max(1,r*.05);c.stroke();}
+  else{c.lineWidth=Math.max(1.5,r*.08);c.strokeStyle=OUT;c.strokeText(String(lv||0),0,r*.04);c.fillText(String(lv||0),0,r*.04);}
+  c.restore();}
+function solarCanvas(lv,size){const cv=document.createElement('canvas'),d=Math.min(2,window.devicePixelRatio||1);cv.width=cv.height=Math.round(size*d);cv.style.width=cv.style.height=size+'px';cv.setAttribute('aria-hidden','true');const c=cv.getContext('2d');c.scale(d,d);drawSolarEmblem(c,size/2,size/2,size*.42,lv);return cv;}
 function thumb(b,sk,size,o){
   const cv=document.createElement('canvas');const d=Math.min(2,window.devicePixelRatio||1);
   cv.width=Math.round(size*d);cv.height=Math.round(size*d);cv.style.width=size+'px';cv.style.height=size+'px';cv.setAttribute('aria-hidden','true');
@@ -1080,7 +1113,7 @@ function drawPin(c,id,x,y,s){
   if(p[0]==='r'){const b=BY_ID[p[1]];if(b){const sk=getSkin(b,'classic');c.beginPath();c.arc(0,0,R*.98,0,TAU);c.fillStyle=p[2]==='angry'?'#ff8a80':p[2]==='sad'?'#8ec5ff':'#ffe27a';c.fill();c.stroke();
       c.save();c.beginPath();c.arc(0,0,R*.92,0,TAU);c.clip();drawFighter(c,0,R*.18,R*.62,b,sk,Math.PI/2,0,{still:true,noShadow:true,happy:p[2]==='happy',mood:p[2]==='happy'?null:p[2]});c.restore();}
     c.restore();return;}
-  if(p[1]==='sk'&&BY_ID[p[2]]){const b=BY_ID[p[2]],sk=getSkin(b,p[3]),face=p[4],col=sk.tier==='exclusive'?EX_COL:sk.tier==='halloween'?'#ff8a1f':sk.tier==='power'?'#9d7bff':sk.tier==='golden'?'#ffd23f':sk.tier==='sig'?'#ffb000':sk.tier===3?'#ffd23f':sk.tier===2?'#b56cff':sk.tier==='pass'?'#ffd36b':'#46b4ff';
+  if(p[1]==='sk'&&BY_ID[p[2]]){const b=BY_ID[p[2]],sk=getSkin(b,p[3]),face=p[4],col=sk.tier==='solar'?SOL_COL:sk.tier==='exclusive'?EX_COL:sk.tier==='halloween'?'#ff8a1f':sk.tier==='power'?'#9d7bff':sk.tier==='golden'?'#ffd23f':sk.tier==='sig'?'#ffb000':sk.tier===3?'#ffd23f':sk.tier===2?'#b56cff':sk.tier==='pass'?'#ffd36b':'#46b4ff';
     const g=c.createRadialGradient(0,-R*.2,R*.1,0,0,R);g.addColorStop(0,'#ffffff');g.addColorStop(1,col);c.beginPath();c.arc(0,0,R*.92,0,TAU);c.fillStyle=sk.surged?rainbowGrad(c,-R,-R,R,R,T,62):sk.grim?(()=>{const q=c.createRadialGradient(0,-R*.2,R*.1,0,0,R);q.addColorStop(0,'#3dff8a');q.addColorStop(.6,'#0f3a22');q.addColorStop(1,'#050a07');return q;})():g;c.fill();c.stroke();
     c.save();c.beginPath();c.arc(0,0,R*.9,0,TAU);c.clip();drawFighter(c,0,R*.12,R*.6,b,sk,Math.PI/2,T,{still:true,noShadow:true,happy:!face||face==='happy'||face==='cool'||face==='love',mood:face==='angry'||face==='sad'?face:null});c.restore();
     if(face==='cool'){c.fillStyle='#1a1430';rrect(c,-R*.5,-R*.2,R*.42,R*.22,R*.07);c.fill();rrect(c,R*.08,-R*.2,R*.42,R*.22,R*.07);c.fill();c.fillRect(-R*.1,-R*.15,R*.2,R*.05);c.fillStyle='rgba(255,255,255,.7)';c.fillRect(-R*.45+((T*.7)%1)*R*.85,-R*.18,R*.05,R*.18);}
@@ -1484,7 +1517,7 @@ function fmt(v){v=Number(v)||0;if(v<10000)return Math.floor(v).toLocaleString('e
 const fmtFull=v=>Math.floor(Number(v)||0).toLocaleString('en-US');
 
 /* ---------- Save ---------- */
-const KEY='rooftop-rumble-v2';
+const KEY=RR_MODE==='sandbox'?'rooftop-rumble-sandbox':'rooftop-rumble-v2';
 function newRumbler(){return{pinSlots:[null,null],facePins:[null,null,null],lvl:1,skins:['classic'],skin:'classic',prestige:0,gadgets:[],stars:[],gadget:null,star:null};}
 function newSt(){return{kills:0,deaths:0,dmg:0,supers:0,gadgets:0,pins:0,time:0,bestStreak:0,tricksW:0,tricksL:0,sims:0,replays:0,watched:0,sdWins:0,modes:{},drops:{}};}
 function defaultSave(){return{st:newSt(),pf:{...PF_DEF,show:null},exNew:[],hw:{wins:0,used:0,spent:0,knocks:0,opened:0,doors:null},party:[],name:'You',trophies:0,best:0,coins:150,gems:30,pp:0,chromos:0,packs:[],pins:[],onboarded:false,nameChanges:0,nameLockUntil:0,pass:{xp:0,premium:false,cf:[],cp:[],bonus:0,wins:0},drops:[],dropDay:{date:'',n:0},pendingSkins:[],owned:{[STARTER]:newRumbler()},selected:STARTER,mode:'ring',rp:0,rpBest:0,rankClaimed:0,road:0,streak:0,daily:{date:'',claimed:false,dealSkins:[],bought:[]},sound:true,music:true,voice:true,shake:true,matches:0,wins:0};}
@@ -1669,7 +1702,7 @@ function ownedIcons(){const out=[];for(const id in S.owned)out.push('r:'+id);for
   for(const id in S.owned)for(const sid of S.owned[id].skins){const sk=skinsOf(BY_ID[id]).find(k=>k.id===sid);if(sk&&(ICON_SKIN_TIERS.includes(sk.tier)||sk.ultraFx))out.push('s:'+id+':'+sid);}
   S.rankTop=Math.max(S.rankTop|0,rankInfo(S.rp|0).tier,rankInfo(S.rankPeak|0).tier);for(let t=0;t<=Math.min(7,S.rankTop);t++)out.push('k:'+t);
   for(const p of SECRET_PINS)if(S.pins.includes(p[0]))out.push('z:'+p[0]);
-  for(const x of S.icons||[])out.push('x:'+x);return out;}
+  for(const x of S.icons||[])out.push('x:'+x);for(let l=1;l<=Math.min(SOLAR_MAX,S.sol|0);l++)out.push('o:'+l);return out;}
 function playerCode(){const pid=myPid();let h=2166136261;for(const ch of pid)h=Math.imul(h^ch.charCodeAt(0),16777619)>>>0;const A='ABCDEFGHJKMNPQRSTUVWXYZ23456789';let o='';for(let i=0;i<6;i++){o+=A[h%A.length];h=((Math.floor(h/A.length)^Math.imul(h,2654435761))>>>0);}return o;}
 function grantRumbler(id){
   if(S.owned[id])return false;S.owned[id]=newRumbler();if(S.masterAll&&!S.owned[id].skins.includes('master'))S.owned[id].skins.push('master');const keep=[];
@@ -3371,6 +3404,7 @@ function statRows(b,lvl,mods){
 let catId=null;
 function skinHow(b,sk){const me=S.owned[b.id];if(me&&me.skins.includes(sk.id))return['Owned','#6be39a'];if(sk.tier===0)return['Starter look','#9aa3c7'];
   if(sk.tier==='golden')return['20,000 coins, any time','#ffd23f'];if(sk.tier==='power')return['10,000 power points, any time','#c79bff'];
+  if(sk.tier==='solar'){const x=SOL_BY_SKIN[sk.id];return[x?'Solars level '+x.lv+(x.lv>=SOLAR_MAX?' \u00b7 Solars Fame':''):'Solars',SOL_COL];}
   if(sk.tier==='exclusive'){const e=EX_BY_SKIN[sk.id];return[e?'Exclusive \u00b7 '+e.how+' ('+fmtFull(Math.min(exProgress(e),e.goal))+'/'+fmtFull(e.goal)+')':'Exclusive',EX_COL];}
   const dm=dailySkinMult(b.id,sk.id);if(dm)return[dm<1?'In the shop today · 50% off':'In the shop today','#ffd23f'];
   if(sk.tier==='pass')return['Rumble Pass','#ffd36b'];if(sk.tier==='master')return['Reach Master','#ff7aa8'];if(sk.tier==='rank'||sk.tier==='master'){const k=RANK_SETS.findIndex(x=>x.skin.id===sk.id),rs=RANK_SETS[k],mine=rankSetRumbler(k,rankSeed(S))===b.id,when=rs.key==='master'?'Reach Master':rs.idx===0?'First ranked match':'Reach '+rs.name+' I';return[mine?when+' (yours!)':'Ranked reward for other players','#c79bff'];}
@@ -3509,9 +3543,9 @@ function openRumbler(id){
     const sr=document.createElement('div');sr.className='skinrow';
     for(const sk of skinsOf(b)){const owned=me.skins.includes(sk.id);if(!owned&&(sk.tier==='rank'||sk.tier==='master')){const k=RANK_SETS.findIndex(x=>x.skin.id===sk.id);if(rankSetRumbler(k,rankSeed(S))!==id)continue;}const el=document.createElement('button');el.className='card'+(me.skin===sk.id?' sel':'')+(owned?'':' ');el.style.setProperty('--r',owned?'#3a3380':'#2a2560');
       el.append(thumb(b,sk,72));const dm=owned?null:ALWAYS_SKIN(sk)?1:dailySkinMult(id,sk.id),pr=dm?skinPrice(sk):null;
-      el.insertAdjacentHTML('beforeend','<span class="nm">'+esc(sk.name)+'</span>'+(me.skin===sk.id?'<span class="tag on">On</span>':owned?'<span class="tag own">Owned</span>':(pr?'<span class="tag">'+(pr.gems!=null?ICON.gems+Math.ceil(pr.gems*dm):pr.coins!=null?ICON.coins+fmt(pr.coins):ICON.pp+fmt(pr.pp))+'</span>':!earnOnly(sk)&&sk.tier!==0?'<span class="tag" style="opacity:.75">Not in shop</span>':'<span class="tag on">'+(sk.tier==='master'?'Master':sk.tier==='rank'?'Ranked':sk.tier==='prestige'?'★'+sk.prestige:sk.tier==='exclusive'?'Exclusive':sk.tier==='halloween'?'Halloween':'Pass')+'</span>')));
+      el.insertAdjacentHTML('beforeend','<span class="nm">'+esc(sk.name)+'</span>'+(me.skin===sk.id?'<span class="tag on">On</span>':owned?'<span class="tag own">Owned</span>':(pr?'<span class="tag">'+(pr.gems!=null?ICON.gems+Math.ceil(pr.gems*dm):pr.coins!=null?ICON.coins+fmt(pr.coins):ICON.pp+fmt(pr.pp))+'</span>':!earnOnly(sk)&&sk.tier!==0?'<span class="tag" style="opacity:.75">Not in shop</span>':'<span class="tag on">'+(sk.tier==='master'?'Master':sk.tier==='rank'?'Ranked':sk.tier==='prestige'?'★'+sk.prestige:sk.tier==='solar'?'Solars':sk.tier==='exclusive'?'Exclusive':sk.tier==='halloween'?'Halloween':'Pass')+'</span>')));
       el.addEventListener('click',()=>{if(owned){me.skin=sk.id;persist();sfx('click');openRumbler(id);}else if(pr)buySkin(id,sk.id,dm,()=>openRumbler(id));
-      else if(!earnOnly(sk)){openSheet(c2=>{c2.insertAdjacentHTML('beforeend','<h2>'+esc(sk.name+' '+b.name)+'</h2><p class="sub">This skin isn\u2019t in the shop today. Skins can only be bought when they show up in Daily skins, which change every day.</p>');const pv=document.createElement('div');pv.className='d-set';pv.append(thumb(b,sk,130));c2.append(pv);const t=document.createElement('button');t.className='btn primary';t.textContent='Try this skin in training';t.addEventListener('click',()=>startTrial(id,sk.id));const x=document.createElement('button');x.className='btn';x.textContent='Back';x.addEventListener('click',()=>openRumbler(id));c2.append(t,x);});}else if(sk.tier==='exclusive'&&EX_BY_SKIN[sk.id])openExclusive(EX_BY_SKIN[sk.id],()=>openRumbler(id));else if(sk.tier==='prestige'){openPrestigeTrack(id);}
+      else if(!earnOnly(sk)){openSheet(c2=>{c2.insertAdjacentHTML('beforeend','<h2>'+esc(sk.name+' '+b.name)+'</h2><p class="sub">This skin isn\u2019t in the shop today. Skins can only be bought when they show up in Daily skins, which change every day.</p>');const pv=document.createElement('div');pv.className='d-set';pv.append(thumb(b,sk,130));c2.append(pv);const t=document.createElement('button');t.className='btn primary';t.textContent='Try this skin in training';t.addEventListener('click',()=>startTrial(id,sk.id));const x=document.createElement('button');x.className='btn';x.textContent='Back';x.addEventListener('click',()=>openRumbler(id));c2.append(t,x);});}else if(sk.tier==='solar')openSolars();else if(sk.tier==='exclusive'&&EX_BY_SKIN[sk.id])openExclusive(EX_BY_SKIN[sk.id],()=>openRumbler(id));else if(sk.tier==='prestige'){openPrestigeTrack(id);}
       else{const rk=sk.tier==='master'||sk.tier==='rank',rs=rk?RANK_SETS.find(x=>x.skin.id===sk.id):null,how=rk?(rs.idx===0?'Play a ranked match to get it.':'Reach '+(rs.key==='master'?'Master':rs.name+' I')+' in ranked to unlock it.'):sk.tier==='halloween'?skinHow(b,sk)[0]+'.':'It comes from the Rumble Pass.',hw=sk.tier==='halloween';
         openSheet(c2=>{c2.insertAdjacentHTML('beforeend','<h2>'+esc(sk.name+' '+b.name)+'</h2><p class="sub">'+how+'</p>');const pv=document.createElement('div');pv.className='d-set';pv.append(thumb(b,sk,130));c2.append(pv);
           const t=document.createElement('button');t.className='btn primary';t.textContent='Try this skin in training';t.addEventListener('click',()=>startTrial(id,sk.id));
@@ -3701,14 +3735,14 @@ $('#creditsBtn').addEventListener('click',()=>{sfx('click');openSheet(card=>{car
 
 /* ---------- Profiles ---------- */
 function myProfile(){const pres=Object.entries(S.owned).map(([id,v])=>[id,v.prestige|0]).sort((a,b)=>b[1]-a[1]).slice(0,8);
-  return{name:S.name,icon:S.icon,code:playerCode(),trophies:S.trophies|0,best:S.best|0,coins:S.coins|0,pp:S.pp|0,wins:S.wins|0,rank:rankInfo(S.rp).name,rumblers:Object.keys(S.owned).length,pres,pf:pfMine(),exs:EXCLUSIVE_SKINS.filter(exOwned).map(e=>e.skin.id)};}
+  return{name:S.name,icon:S.icon,code:playerCode(),trophies:S.trophies|0,best:S.best|0,coins:S.coins|0,pp:S.pp|0,wins:S.wins|0,rank:rankInfo(S.rp).name,rumblers:Object.keys(S.owned).length,pres,sol:S.sol|0,pf:pfMine(),exs:EXCLUSIVE_SKINS.filter(exOwned).map(e=>e.skin.id)};}
 /* frame wrapper around a profile icon */
 function pfFramed(icon,fid,size){const fr=pfItem('frame',fid),w=document.createElement('span');w.className='pf-frame'+(fr.css?' on':'');if(fr.css){w.style.background=fr.css;if(fr.glow)w.style.boxShadow='0 0 14px '+fr.glow;}w.append(iconCanvas(icon||'r:ember',size));return w;}
 /* the banner header: icon in its frame, coloured name, title, code and showcase rumbler */
 function pfHeader(pr,mine){const pf=pr.pf||{},bn=pfItem('banner',pf.banner),tt=pfItem('title',pf.title),nc=pfItem('ncol',pf.ncol);
   const top=document.createElement('div');top.className='pf-top';top.style.background=bn.css;
   const ic=document.createElement(mine?'button':'div');ic.className='pf-icon';ic.append(pfFramed(pr.icon,pf.frame,84));if(mine){ic.setAttribute('aria-label','Change profile icon');ic.addEventListener('click',openIconPicker);}top.append(ic);
-  const mn=document.createElement('div');mn.className='pf-main';mn.innerHTML='<b class="pf-name"'+(mine?' role="button" tabindex="0"':'')+' style="'+nc.css+'">'+esc(safeName(pr.name||'Player'))+'</b><span class="pf-title">'+esc(tt.name)+'</span><span class="pf-code">Code <b>'+esc(pr.code||'------')+'</b></span>';top.append(mn);
+  const mn=document.createElement('div');mn.className='pf-main';mn.innerHTML='<b class="pf-name"'+(mine?' role="button" tabindex="0"':'')+' style="'+nc.css+'">'+esc(safeName(pr.name||'Player'))+'</b><span class="pf-title">'+esc(tt.name)+'</span>'+((pr.sol|0)>0?'<span class="pf-sol">\u2600\ufe0f '+esc(SOLAR_LEVELS[Math.min(SOLAR_MAX,pr.sol|0)-1].name)+((pr.sol|0)<SOLAR_MAX?' \u00b7 Solars '+(pr.sol|0):'')+'</span>':'')+'<span class="pf-code">Code <b>'+esc(pr.code||'------')+'</b></span>';top.append(mn);
   const sh=pf.show,sb=sh&&BY_ID[sh[0]];if(sb){const d=document.createElement('div');d.className='pf-show';d.append(thumb(sb,getSkin(sb,sh[1]),74));top.append(d);}
   if(mine)top.addEventListener('click',e=>{if(e.target.closest('.pf-name')){sfx('tap');secretTap('sec_name',5,5000);}});return top;}
 function openProfile(pr,mine){pr=pr||myProfile();openSheet(card=>{card.classList.add('profile');
@@ -3766,8 +3800,8 @@ function exRevealNext(){if(exShowing||!S.exNew||!S.exNew.length||view!=='home'||
     if(S.owned[e.rid]){const q=document.createElement('button');q.className='btn gold';q.textContent='Wear it now';q.addEventListener('click',()=>{S.owned[e.rid].skin=sid;persist();renderHome();done();});card.append(q);}
     const x=document.createElement('button');x.className='btn';x.textContent='Awesome!';x.addEventListener('click',done);card.append(x);});}
 function openIconPicker(){openSheet(card=>{card.insertAdjacentHTML('beforeend','<h2>Profile icon</h2><p class="sub">Unlock more with rumblers, trophies (250, 500, then every 500 up to 5,000), ranked (one for each rank you reach), special skins and Rumbler Boxes.</p>');const g=document.createElement('div');g.className='icon-grid';
-  const own=ownedIcons(),all=Object.keys(S.owned).map(id=>'r:'+id).concat(TROPHY_ICONS.map(n=>'t:'+n),[0,1,2,3,4,5,6,7].map(t=>'k:'+t),SPECIAL_ICONS.map(x=>'x:'+x[0]),SECRET_PINS.map(p=>'z:'+p[0]));
-  for(const id of [...new Set(own.concat(all))]){const has=own.includes(id),b=document.createElement('button');b.className='icon-cell'+(S.icon===id?' on':'')+(has?'':' locked');b.append(iconCanvas(id,60));if(!has)b.insertAdjacentHTML('beforeend','<i>\ud83d\udd12</i><small>'+(id[0]==='t'?fmtFull(+id.split(':')[1])+' trophies':id[0]==='k'?'Reach '+(+id[2]>=7?'Master':TIERS[+id[2]][0]):id[0]==='z'?'Secret':'Rumbler Box')+'</small>');
+  const own=ownedIcons(),all=Object.keys(S.owned).map(id=>'r:'+id).concat(TROPHY_ICONS.map(n=>'t:'+n),[0,1,2,3,4,5,6,7].map(t=>'k:'+t),SPECIAL_ICONS.map(x=>'x:'+x[0]),SECRET_PINS.map(p=>'z:'+p[0]),SOLAR_LEVELS.map((_,i)=>'o:'+(i+1)));
+  for(const id of [...new Set(own.concat(all))]){const has=own.includes(id),b=document.createElement('button');b.className='icon-cell'+(S.icon===id?' on':'')+(has?'':' locked');b.append(iconCanvas(id,60));if(!has)b.insertAdjacentHTML('beforeend','<i>\ud83d\udd12</i><small>'+(id[0]==='t'?fmtFull(+id.split(':')[1])+' trophies':id[0]==='k'?'Reach '+(+id[2]>=7?'Master':TIERS[+id[2]][0]):id[0]==='z'?'Secret':id[0]==='o'?'Solars '+id.slice(2):'Rumbler Box')+'</small>');
     if(!has)b.addEventListener('click',()=>{sfx('tap');secretTap('sec_lock',8,6000);b.animate&&b.animate([{transform:'translateX(0)'},{transform:'translateX(-4px)'},{transform:'translateX(4px)'},{transform:'translateX(0)'}],{duration:180});});
     if(has)b.addEventListener('click',()=>{S.icon=id;persist();sfx('click');renderHome();openProfile(null,true);if(typeof netHello==='function')netHello();});g.append(b);}
   card.append(g);const x=document.createElement('button');x.className='btn';x.textContent='Back';x.addEventListener('click',()=>openProfile(null,true));card.append(x);});}
@@ -3869,7 +3903,8 @@ if(NETS){
 const NETW={ws:null,url:'',ok:false,pid:null,retry:0,searchCb:null,queue:null,party:[],partyLeader:null,chat:[]};
 let NETC=null;
 const NET_CLIENT_SKIP=new Set(['units','structs','fx','texts','decals','ev','result','place','shown','endT','reward','left','star','shake','net','netId','trial','ranked','sim','watch','followU','followDeadT','pMoved']);
-const DEFAULT_SERVER='wss://rooftop-rumble-server.onrender.com';
+const DEFAULT_SERVER=RR_MODE==='sandbox'?'':'wss://rooftop-rumble-server.onrender.com';
+const BETA_URL='https://rooftop-rumble-server.onrender.com/beta';
 function netUrl(){let u=DEFAULT_SERVER.trim().replace(/\/+$/,'');if(!u)return'';if(/^https?:\/\//i.test(u))u=u.replace(/^http/i,'ws');else if(!/^wss?:\/\//i.test(u))u='wss://'+u;return u;}
 function netSend(o){if(NETW.ws&&NETW.ws.readyState===1)NETW.ws.send(JSON.stringify(o));}
 function myPid(){if(!S.pid){S.pid='p'+(S.seed>>>0).toString(36)+Math.random().toString(36).slice(2,8);persist();}return S.pid;}
@@ -3882,7 +3917,7 @@ function netConnect(){const url=netUrl();if(NETW.ws){try{NETW.ws.onclose=null;NE
   ws.onerror=()=>{};
   ws.onmessage=e=>{let m;try{m=JSON.parse(e.data);}catch(x){return;}netOnMsg(m);};}
 function netBadge(){const b=$('#onlineBtn');if(!b)return;const on=S.playOnline!==false;
-  b.classList.toggle('on',on&&NETW.ok);b.innerHTML='<i></i>'+(!netUrl()?'Offline · no server set':!NETW.ok?(on?'Connecting…':'Offline'):on?'Online':'Offline (tap for online)');}
+  b.classList.toggle('on',on&&NETW.ok);b.innerHTML='<i></i>'+(!netUrl()?(RR_MODE==='sandbox'?'Sandbox · offline':'Offline · no server set'):!NETW.ok?(on?'Connecting…':'Offline'):on?'Online':'Offline (tap for online)');}
 function netOnMsg(m){
   if(m.t==='search'&&NETW.searchCb)NETW.searchCb(m.list||[]);
   else if(m.t==='invite')netShowInvite(m);
@@ -4047,12 +4082,12 @@ function showSimEnd(){const w=M.result,best=M.units.filter(u=>!u.shadow).sort((a
 
 /* ---------- the menu ---------- */
 function openGameMenu(){sfx('click');let ov=$('#gmenu');if(ov)ov.remove();ov=document.createElement('div');ov.id='gmenu';ov.className='gmenu';
-  const items=[['stats','📊','Stats','Everything you’ve ever done'],['sim','🤖','Run a simulation','Pick 3 vs 3 bots and watch them fight'],['replays','🎬','Replays','Watch your last matches again'],['watch','📺','Watch a random match','Spectate a live online match'],['excl','💎','Exclusive skins','Skins you can only earn, never buy'],['rid','🪪','Rumble ID','Sign in, save online, get a free Epic'],['pc','🔒','Parent controls','Limits set by a parent or guardian']];
+  const items=[['stats','📊','Stats','Everything you’ve ever done'],['sim','🤖','Run a simulation','Pick 3 vs 3 bots and watch them fight'],['replays','🎬','Replays','Watch your last matches again'],['watch','📺','Watch a random match','Spectate a live online match'],['excl','💎','Exclusive skins','Skins you can only earn, never buy'],['solars','☀️','Solars','Level up with chromos for icons and skins'],['rid','🪪','Rumble ID','Sign in, save online, get a free Epic'],['pc','🔒','Parent controls','Limits set by a parent or guardian']];
   ov.innerHTML='<div class="gm-panel"><div class="gm-head"><span class="gm-me"></span><b>'+esc(S.name)+'</b><button class="gm-x" aria-label="Close menu">✕</button></div>'+items.map(([id,ic,t,s])=>'<button class="gm-item" data-act="'+id+'"><span class="gm-ic">'+ic+'</span><span class="gm-t"><b>'+t+'</b><small>'+s+'</small></span><span class="gm-go">›</span></button>').join('')+'</div>';
   document.body.append(ov);ov.querySelector('.gm-me').append(iconCanvas(S.icon||'r:'+S.selected,34));
   const close=()=>{ov.classList.add('out');setTimeout(()=>ov.remove(),200);};
   ov.addEventListener('click',e=>{if(e.target===ov)close();});ov.querySelector('.gm-x').addEventListener('click',close);
-  ov.querySelectorAll('.gm-item').forEach(b=>b.addEventListener('click',()=>{sfx('click');close();const a=b.dataset.act;if(a==='stats')openStats();else if(a==='sim')openSimSetup();else if(a==='replays')openReplays();else if(a==='excl')openExclusives();else if(a==='rid')openRumbleId();else if(a==='pc')openParentControls();else watchRandom();}));}
+  ov.querySelectorAll('.gm-item').forEach(b=>b.addEventListener('click',()=>{sfx('click');close();const a=b.dataset.act;if(a==='stats')openStats();else if(a==='sim')openSimSetup();else if(a==='replays')openReplays();else if(a==='excl')openExclusives();else if(a==='rid')openRumbleId();else if(a==='solars')openSolars();else if(a==='pc')openParentControls();else watchRandom();}));}
 $('#hambBtn').addEventListener('click',openGameMenu);
 function menuBack(card){const x=document.createElement('button');x.className='btn';x.textContent='← Back to menu';x.addEventListener('click',()=>{closeSheet();openGameMenu();});card.append(x);}
 
@@ -4115,7 +4150,7 @@ function repBuilder(){const st={top:{},u:{},o:[],s:[],sn:0};return x=>{if(x.t)Ob
 function recFinish(left){if(!REC)return;const R=REC;REC=null;if(R.frames.length<40||!M)return;const m=R.meta;m.result=left?1:M.result;m.left=!!left;m.kills=P?P.kills|0:0;m.dur=Math.round(R.frames.reduce((n,f)=>n+f[0],0));m.n=R.frames.length;
   replaySave(m,R.frames).catch(()=>{});}
 const REP_MEM=[];
-const RDB={p:null,open(){if(this.p)return this.p;this.p=new Promise((res,rej)=>{try{const r=indexedDB.open('rr-replays',1);r.onupgradeneeded=()=>{const db=r.result;if(!db.objectStoreNames.contains('meta'))db.createObjectStore('meta',{keyPath:'id'});if(!db.objectStoreNames.contains('frames'))db.createObjectStore('frames',{keyPath:'id'});};
+const RDB={p:null,open(){if(this.p)return this.p;this.p=new Promise((res,rej)=>{try{const r=indexedDB.open(RR_MODE==='sandbox'?'rr-sandbox-replays':'rr-replays',1);r.onupgradeneeded=()=>{const db=r.result;if(!db.objectStoreNames.contains('meta'))db.createObjectStore('meta',{keyPath:'id'});if(!db.objectStoreNames.contains('frames'))db.createObjectStore('frames',{keyPath:'id'});};
     r.onsuccess=()=>res(r.result);r.onerror=()=>rej(r.error);}catch(e){rej(e);}});this.p.catch(()=>{this.p=null;});return this.p;}};
 const idbReq=r=>new Promise((res,rej)=>{r.onsuccess=()=>res(r.result);r.onerror=()=>rej(r.error);});
 async function replayList(){try{const db=await RDB.open();const all=await idbReq(db.transaction('meta').objectStore('meta').getAll());return(all||[]).sort((a,b)=>b.date-a.date);}catch(e){return REP_MEM.map(x=>x.meta).sort((a,b)=>b.date-a.date);}}
@@ -4144,6 +4179,166 @@ function watchRandom(){openSheet(card=>{card.insertAdjacentHTML('beforeend','<h2
   if(!NETW.ok){st.textContent='No matches found';return;}st.textContent='Looking for a match…';NETW.wantWatch=true;
   NETW.watchCb=ok=>{if(!ok){st.textContent='No matches found';return;}closeSheet();S.st.watched++;persist();};
   netSend({t:'watch'});setTimeout(()=>{if(NETW.watchCb){NETW.watchCb=null;NETW.wantWatch=false;st.textContent='No matches found';}},7000);});}
+
+/* ================= SANDBOX MODE (Settings > Experimental) =================
+   Its own save, no online play, everything unlocked, and a panel to set anything. Only active when RR_MODE is 'sandbox'. */
+var SBX;
+SBX=(()=>{let o={};try{o=JSON.parse(localStorage.getItem('rr-sandbox-cfg')||'{}')||{};}catch(e){}
+  return Object.assign({god:false,onehit:false,dmg:1,superFull:false,ammo:false,freeze:false,noTimer:false,speed:1,run:1,bots:'auto',hw:null,setup:false},o);})();
+function sbxSave(){try{localStorage.setItem('rr-sandbox-cfg',JSON.stringify(SBX));}catch(e){}}
+function sbxAllPins(){return[BASIC_PINS,PREMIUM_PINS,PASS_PINS,HALLOWEEN_PINS,TOXIC_PINS,FRIENDLY_PINS,DAILY_ONLY_PINS,GEN_PINS,SECRET_PINS,SEASON_PINS,TROLL_PINS,SET_PINS,RANK_PINS].flat().map(p=>p[0]);}
+function sbxMaxRumbler(b){const me=S.owned[b.id]||(S.owned[b.id]=newRumbler());me.lvl=MAX_LVL;const g=GEAR[b.id];
+  if(g){me.gadgets=(g.g||[]).map(x=>x.id);me.stars=(g.s||[]).map(x=>x.id);if(!me.gadgets.includes(me.gadget))me.gadget=me.gadgets[0]||null;if(!me.stars.includes(me.star))me.star=me.stars[0]||null;}
+  me.skins=skinsOf(b).map(k=>k.id);for(const k of skinsOf(b))grantSkinPin(b.id,k.id);return me;}
+function sbxUnlockAll(){for(const b of RUMBLERS)sbxMaxRumbler(b);S.pendingSkins=[];
+  for(const id of sbxAllPins())if(!S.pins.includes(id))S.pins.push(id);S.icons=SPECIAL_ICONS.map(x=>x[0]);
+  S.masterAll=true;S.hw=S.hw||{};S.hw.darkClaimed=1;S.exNew=[];sbxMaxRes();}
+function sbxMaxRes(){S.coins=1000000;S.gems=100000;S.pp=1000000;S.chromos=1000000;}
+function sbxFresh(){S=defaultSave();S.onboarded=true;S.name='Sandbox';S.welcomeGift=1;}
+/* first time: you have everything */
+if(RR_MODE==='sandbox'&&!SBX.setup){try{try{const m=JSON.parse(localStorage.getItem('rooftop-rumble-v2')||'null');if(m&&m.ageBand&&!S.ageBand){S.ageBand=m.ageBand;if(m.ageNum!=null)S.ageNum=m.ageNum;}}catch(e){}S.onboarded=true;if(!S.name||S.name==='You')S.name='Sandbox';S.welcomeGift=1;sbxUnlockAll();S.best=Math.max(S.best|0,5000);S.trophies=Math.max(S.trophies|0,1000);S.road=Math.min(ROAD_MAX,Math.floor(S.best/100));
+  S.rp=(RANK_STEPS-1)*100;S.rankPeak=RANK_STEPS-1;S.rankTop=TIERS.length;S.pass=S.pass||{};S.pass.premium=true;S.pass.xp=PASS_TIERS*PASS_STEP;
+  for(const r of['ultra','legendary','rbox','sbox'])for(let k=0;k<3;k++)S.drops.push({r,min:null});persist();}catch(e){console.error(e);}SBX.setup=true;sbxSave();}
+
+/* ---------- match cheats: wrap the game's own functions ---------- */
+if(RR_MODE==='sandbox'){
+const sbxMine=src=>!!(P&&src&&(src===P||src.shadowOf===P||src.owner===P||src.src===P));
+{const _hurt=hurt;hurt=function(t,dmg,src,raw){
+  if(P&&t===P&&SBX.god)return 0;
+  if(P&&t&&t.team!==P.team&&sbxMine(src)){if(SBX.onehit)dmg=Math.max(dmg,(t.hp||0)*4+50);else dmg*=SBX.dmg;}
+  return _hurt(t,dmg,src,raw);};}
+{const _ai=aiUpdate;aiUpdate=function(u,dt){if(SBX.freeze&&P&&u.team!==P.team)return[0,0];return _ai(u,dt);};}
+{const _nm=newMatch;newMatch=function(){const r=_nm.apply(this,arguments);try{if(M&&P&&SBX.bots!=='auto'){const sk=SBX.bots==='hell'?SKILL_HELL:SKILL[SBX.bots];if(sk)for(const u of M.units)if(u.ai&&u.team!==P.team)u.ai.skill=sk;}}catch(e){}return r;};}
+{const _up=update;const cheat=()=>{if(!M||!P||P.dead||M.state==='ended'||M.watch)return;
+    if(SBX.superFull)P.super=Math.max(P.super,1);if(SBX.ammo){P.ammo=P.maxAmmo;P.gUses=Math.max(P.gUses,3);P.gCd=Math.min(P.gCd,0);}if(SBX.god)P.hp=P.maxHp;
+    if(P._sbxSp===undefined){P.mods={...P.mods};P._sbxSp=P.mods.speed||0;}P.mods.speed=(1+P._sbxSp)*SBX.run-1;};
+  const step=dt=>{if(!M)return;const t0=M.time;cheat();_up(dt);if(M&&SBX.noTimer&&M.state==='play'&&!M.watch)M.time=t0;};
+  update=function(dt){if(SBX.speed>1){step(dt);if(M)step(dt*(SBX.speed-1));}else step(dt*SBX.speed);};}
+}
+
+/* ---------- the panel ---------- */
+function sbxNum(label,get,set,max,note){const r=document.createElement('div');r.className='sbx-row';r.innerHTML='<label><b>'+label+'</b>'+(note?'<small>'+note+'</small>':'')+'</label>';
+  const inp=document.createElement('input');inp.type='number';inp.min='0';inp.max=String(max);inp.inputMode='numeric';inp.value=String(get());
+  const apply=v=>{v=clamp(Math.round(+v||0),0,max);set(v);inp.value=String(get());persist();renderHome();};
+  inp.addEventListener('change',()=>apply(inp.value));
+  const z=document.createElement('button');z.className='tpill';z.textContent='0';z.addEventListener('click',()=>{sfx('tap');apply(0);});
+  const m=document.createElement('button');m.className='tpill';m.textContent='Max';m.addEventListener('click',()=>{sfx('tap');apply(max);});
+  r.append(inp,z,m);return r;}
+function sbxPills(label,opts,get,set){const r=document.createElement('div');r.className='sbx-row sbx-pills';r.innerHTML='<label><b>'+label+'</b></label>';const w=document.createElement('div');w.className='trackrow';
+  for(const[v,nm]of opts){const b=document.createElement('button');b.className='tpill'+(get()===v?' on':'');b.textContent=nm;b.addEventListener('click',()=>{sfx('tap');set(v);sbxSave();w.querySelectorAll('.tpill').forEach(x=>x.classList.remove('on'));b.classList.add('on');});w.append(b);}
+  r.append(w);return r;}
+function sbxSwitch(label,note,key){const r=document.createElement('button');r.className='sbx-sw'+(SBX[key]?' on':'');r.innerHTML='<span><b>'+label+'</b><small>'+note+'</small></span><i></i>';
+  r.addEventListener('click',()=>{SBX[key]=!SBX[key];sbxSave();sfx('tap');r.classList.toggle('on',SBX[key]);});return r;}
+function sbxBtn(txt,cls,fn){const b=document.createElement('button');b.className='btn sm '+(cls||'');b.innerHTML=txt;b.addEventListener('click',fn);return b;}
+function sbxSec(card,title,col){const h=document.createElement('h3');h.className='sbx-h';h.style.setProperty('--sc',col||'#6be39a');h.textContent=title;card.append(h);const d=document.createElement('div');d.className='sbx-sec';card.append(d);return d;}
+function sbxCheats(sec){
+  sec.append(sbxSwitch('God mode','You can’t be hurt','god'),sbxSwitch('One-hit takedowns','Every hit you land knocks them out','onehit'),sbxSwitch('Always super','Your super is always ready','superFull'),
+    sbxSwitch('Infinite ammo & gadgets','Never reload, gadgets never run out','ammo'),sbxSwitch('Frozen enemies','Enemy bots stand still and don’t fight','freeze'),sbxSwitch('Stop the clock','The match timer and storm stop','noTimer'));
+  sec.append(sbxPills('Game version',[[false,'2D classic'],[true,'3D']],()=>!!SBX.v3d,v=>SBX.v3d=v));
+  sec.append(sbxPills('Your damage',[[1,'1×'],[2,'2×'],[5,'5×'],[10,'10×']],()=>SBX.dmg,v=>SBX.dmg=v),
+    sbxPills('Your run speed',[[1,'1×'],[1.5,'1.5×'],[2,'2×'],[3,'3×']],()=>SBX.run,v=>SBX.run=v),
+    sbxPills('Game speed',[[.5,'Slow-mo'],[1,'Normal'],[1.5,'1.5×'],[2,'2×']],()=>SBX.speed,v=>SBX.speed=v),
+    sbxPills('Enemy bots',[['auto','Normal'],['easy','Easy'],['hard','Hard'],['insane','Insane'],['hell','Hell']],()=>SBX.bots,v=>SBX.bots=v));}
+function openSandbox(){openSheet(card=>{card.classList.add('sbx');
+  card.insertAdjacentHTML('beforeend','<p class="of-kick sbx-kick">🧪 Sandbox mode</p><h2>Set anything</h2><p class="sub">This is a separate copy of the game with its own save. Nothing here touches your real game, and online play is off.</p>');
+  {const rb=document.createElement('button');rb.className='btn green-back';rb.textContent='\u2b05 Return to main game';rb.addEventListener('click',()=>rrSwitchMode('main'));card.append(rb);}
+  {const q=document.createElement('div');q.className='sbx-quick';
+    q.append(sbxBtn('✨ Unlock everything','gold',()=>{sbxUnlockAll();persist();renderHome();sfx('unlock');toast('Everything unlocked');openSandbox();}),
+      sbxBtn('💰 Max money','primary',()=>{sbxMaxRes();persist();renderHome();sfx('coin');openSandbox();}),
+      sbxBtn('👶 Fresh player','',()=>{sbxFresh();persist();renderHome();toast('Back to a brand new save (sandbox only)');openSandbox();}));card.append(q);}
+  {const s=sbxSec(card,'Game version','#7ad7ff');s.append(sbxPills('View',[[false,'2D classic'],[true,'3D']],()=>!!SBX.v3d,v=>SBX.v3d=v));s.insertAdjacentHTML('beforeend','<p class="sub" style="margin:0">3D tilts the arena so you see it from the side, with tall crates. Your controls stay the same.</p>');}
+  {const s=sbxSec(card,'Money','#ffd23f');s.append(sbxNum(ICON.coins+' Coins',()=>S.coins,v=>S.coins=v,9999999),sbxNum(ICON.gems+' Gems',()=>S.gems,v=>S.gems=v,999999),sbxNum(ICON.pp+' Power points',()=>S.pp,v=>S.pp=v,9999999),sbxNum(ICON.chromos+' Chromos',()=>S.chromos,v=>S.chromos=v,9999999));}
+  {const s=sbxSec(card,'Progress','#ff8a5c');
+    s.append(sbxNum('Trophies',()=>S.trophies,v=>{S.trophies=v;S.best=Math.max(S.best,v);},TROPHY_MAX,'Bots get tougher with more trophies'),sbxNum('Best trophies',()=>S.best,v=>{S.best=Math.max(v,S.trophies);S.road=Math.min(ROAD_MAX,Math.floor(S.best/100));},TROPHY_MAX,'Unlocks trophy icons, banners and more'),
+      sbxNum('Rumble Pass tier',()=>passTier(S.pass.xp|0),v=>{S.pass.xp=v*PASS_STEP;},PASS_TIERS),sbxNum('Wins',()=>S.wins|0,v=>S.wins=v,99999),sbxNum('\u2600\ufe0f Solars level',()=>S.sol|0,v=>solSetLevel(v),SOLAR_MAX,'Level 10 is Solars Fame'));
+    const rk=document.createElement('div');rk.className='sbx-row';rk.innerHTML='<label><b>Rank</b><small>Ranked mode rank</small></label>';const sel=document.createElement('select');
+    for(let i=0;i<RANK_STEPS;i++){const o=document.createElement('option');o.value=String(i);o.textContent=rankInfo(i*100).name;if(rankInfo(S.rp|0).i===i)o.selected=true;sel.append(o);}
+    sel.addEventListener('change',()=>{const i=+sel.value;S.rp=i*100;S.rankPeak=Math.max(S.rankPeak|0,i);S.rankTop=Math.max(S.rankTop|0,rankInfo(i*100).tier);persist();renderHome();sfx('tap');});rk.append(sel);s.append(rk);
+    s.append(sbxPills('Rumble Pass',[[true,'Premium'],[false,'Free only']],()=>!!S.pass.premium,v=>{S.pass.premium=v;persist();}));
+    s.append(sbxBtn('Reset pass claims','',()=>{S.pass.cf=[];S.pass.cp=[];persist();sfx('tap');toast('Pass rewards can be claimed again');}));}
+  {const s=sbxSec(card,'Give drops & boxes','#9d7bff');let n=1;s.append(sbxPills('How many',[[1,'×1'],[5,'×5'],[10,'×10'],[25,'×25']],()=>n,v=>n=v));
+    const g=document.createElement('div');g.className='sbx-drops';
+    for(const r of DROP_RAR.concat(['season'],SPOOKY,BOXES)){if(!RARITY[r])continue;const b=document.createElement('button');b.className='sbx-drop';b.append(dropCanvas(r,46));b.insertAdjacentHTML('beforeend','<small>'+esc(dropName(r))+'</small>');
+      b.addEventListener('click',()=>{for(let k=0;k<n;k++)S.drops.push({r,min:null});persist();renderHome();sfx('coin');toast('+'+n+' '+dropName(r)+(n>1?'s':''),'drop');});g.append(b);}
+    s.append(g);s.append(sbxBtn('Open my drops now','primary',()=>{closeSheet();openDrops();}),sbxBtn('Clear all drops','',()=>{S.drops=[];persist();renderHome();toast('Drops cleared');}));}
+  {const s=sbxSec(card,'Rumblers','#46b4ff');const sel=document.createElement('select');sel.className='sbx-sel';for(const b of RUMBLERS){const o=document.createElement('option');o.value=b.id;o.textContent=b.name+(S.owned[b.id]?'':' (locked)');if(b.id===(SBX.rum||S.selected))o.selected=true;sel.append(o);}
+    const body=document.createElement('div');s.append(sel,body);
+    const draw=()=>{const id=sel.value,b=BY_ID[id],me=S.owned[id];SBX.rum=id;body.innerHTML='';const top=document.createElement('div');top.className='sbx-rum';top.append(thumb(b,getSkin(b,me?me.skin:'classic'),64));top.insertAdjacentHTML('beforeend','<div><b>'+esc(b.name)+'</b><small>'+esc(RARITY[b.rarity].name)+' · '+(me?'level '+me.lvl:'locked')+'</small></div>');body.append(top);
+      if(me){body.append(sbxNum('Level',()=>me.lvl,v=>{me.lvl=clamp(v,1,MAX_LVL);},MAX_LVL),sbxNum('Prestige',()=>me.prestige|0,v=>{me.prestige=v;},PRESTIGE_MAX));
+        const w=document.createElement('div');w.className='sbx-quick';w.append(sbxBtn('Max it out','gold',()=>{sbxMaxRumbler(b);persist();renderHome();sfx('unlock');draw();}),sbxBtn('Use it','primary',()=>{S.selected=id;persist();renderHome();sfx('click');toast(b.name+' selected');}));
+        if(id!==STARTER)w.append(sbxBtn('Lock it','',()=>{delete S.owned[id];if(S.selected===id)S.selected=STARTER;persist();renderHome();sel.selectedOptions[0].textContent=b.name+' (locked)';draw();}));body.append(w);}
+      else body.append(sbxBtn('Unlock '+esc(b.name),'gold',()=>{grantRumbler(id);persist();renderHome();sfx('unlock');sel.selectedOptions[0].textContent=b.name;draw();}));};
+    sel.addEventListener('change',()=>{sfx('tap');draw();});draw();}
+  {const s=sbxSec(card,'Match cheats','#ff5d57');s.insertAdjacentHTML('beforeend','<p class="sub" style="margin:0 0 4px">These also work mid-match: tap 🧪 next to the pause button.</p>');sbxCheats(s);}
+  {const s=sbxSec(card,'Halloween event','#ff8a1f');s.append(sbxPills('Event',[[null,'Real date'],[true,'Always on'],[false,'Off']],()=>SBX.hw,v=>{SBX.hw=v;applyTheme();renderHome();}));
+    s.append(sbxNum('Doors knocked',()=>S.hw.knocked|0,v=>{S.hw.knocked=v;},500,'100 opens the Happy House'),sbxNum('Halloween wins',()=>S.hw.wins|0,v=>{S.hw.wins=v;},999,'Every '+KNOCK_EVERY+' wins gives a knock'));
+    s.append(sbxBtn('Reset Halloween','',()=>{S.hw={wins:0,used:0,spent:0,knocks:0,opened:0,doors:null};for(const id of['hw_reaper','hw_surged','hw_grim']){const me=S.owned.dark;if(me)me.skins=me.skins.filter(x=>x!==id);}if(S.owned.dark&&!S.owned.dark.skins.includes(S.owned.dark.skin))S.owned.dark.skin='classic';persist();renderHome();toast('Halloween progress reset');}));}
+  {const s=sbxSec(card,'Stats & exclusive skins','#2de0b0');const st=S.st;
+    for(const[k,nm,mx]of[['sims','Simulations run',999],['replays','Replays watched',999],['pins','Pins sent',9999],['kills','Takedowns',99999],['sdWins','Showdown 1st places',999]])s.append(sbxNum(nm,()=>st[k]|0,v=>{st[k]=v;},mx));
+    s.append(sbxBtn('Lock exclusive skins again','',()=>{for(const e of EXCLUSIVE_SKINS){const me=S.owned[e.rid];if(me){me.skins=me.skins.filter(x=>x!==e.skin.id);if(me.skin===e.skin.id)me.skin='classic';}S.pendingSkins=S.pendingSkins.filter(x=>x!==e.rid+':'+e.skin.id);}
+      for(const k of['sims','replays','pins','kills','sdWins'])st[k]=0;st.modes={};st.drops={};persist();renderHome();toast('Exclusive skins locked. Earn them again!');openSandbox();}));
+    s.append(sbxBtn('Lock all secrets','',()=>{S.pins=S.pins.filter(p=>!SECRET_PINS.some(x=>x[0]===p));persist();toast('Secrets hidden again');}),sbxBtn('Find all secrets','',()=>{for(const p of SECRET_PINS)if(!S.pins.includes(p[0]))S.pins.push(p[0]);persist();toast('All secrets found');}));}
+  const x=document.createElement('button');x.className='btn';x.textContent='Done';x.addEventListener('click',()=>{closeSheet();renderHome();});card.append(x);});}
+
+/* in-match cheat menu */
+function openSandboxGame(){if(!M)return;const was=paused;paused=true;openSheet(card=>{card.classList.add('sbx');card.insertAdjacentHTML('beforeend','<p class="of-kick sbx-kick">🧪 Sandbox</p><h2>Match cheats</h2>');
+  const q=document.createElement('div');q.className='sbx-quick';
+  q.append(sbxBtn('💥 Knock out all enemies','gold',()=>{for(const u of M.units)if(P&&u.team!==P.team&&!u.dead&&!u.shadow){u.shield=0;hurt(u,u.hp*10+99,P,true);}finish();}),
+    sbxBtn('❤️ Full heal','primary',()=>{if(P&&!P.dead)P.hp=P.maxHp;finish();}),sbxBtn('⚡ Fill super','primary',()=>{if(P&&!P.dead)P.super=1;finish();}));
+  card.append(q);const s=document.createElement('div');s.className='sbx-sec';card.append(s);sbxCheats(s);
+  const finish=()=>{closeSheet();paused=was;sfx('click');};
+  const x=document.createElement('button');x.className='btn';x.textContent='Back to the match';x.addEventListener('click',finish);card.append(x);});}
+if(RR_MODE==='sandbox'){const hb=document.createElement('button');hb.className='sbx-home';hb.id='sbxBtn';hb.setAttribute('aria-label','Sandbox settings');hb.textContent='🧪';hb.addEventListener('click',()=>{sfx('click');openSandbox();});
+  const h=$('#hambBtn');if(h&&h.parentNode)h.parentNode.insertBefore(hb,h);
+  const gb=document.createElement('button');gb.className='btn sbx-game';gb.setAttribute('aria-label','Sandbox cheats');gb.textContent='🧪';gb.addEventListener('click',e=>{e.stopPropagation();sfx('click');openSandboxGame();});
+  const pb=$('#pauseBtn');if(pb&&pb.parentNode)pb.parentNode.insertBefore(gb,pb.nextSibling);
+  const tag=document.createElement('span');tag.className='sbx-tag';tag.textContent='SANDBOX';const me=document.querySelector('.me');if(me)me.append(tag);}
+{const st=document.createElement('style');st.textContent=
+'.sbx-home{position:absolute;top:calc(max(4px,env(safe-area-inset-top,0px)) - 10px);right:calc(max(12px,env(safe-area-inset-right,0px)) + 52px);z-index:4;width:42px;height:42px;border-radius:14px;border:3px solid var(--edge);background:linear-gradient(180deg,#2de0b0,#0f7a64);box-shadow:0 4px 0 var(--edge);font-size:20px;line-height:1;padding:0;cursor:pointer;display:grid;place-items:center}'+
+'.sbx-home:active{transform:translateY(3px);box-shadow:0 1px 0 var(--edge)}'+
+'.sbx-game{position:absolute;top:66px;left:calc(max(12px,env(safe-area-inset-left,0px)) + 100px);width:42px;height:42px;padding:0;display:grid;place-items:center;font-size:18px;background:linear-gradient(180deg,#2de0b0,#0f7a64)}'+
+'.me{position:relative}.sbx-tag{position:absolute;left:-3px;top:34px;z-index:2;font-size:8px;font-weight:900;letter-spacing:.1em;padding:2px 4px;border-radius:5px;background:#2de0b0;color:#06231d;border:2px solid var(--edge);pointer-events:none}'+
+'.sbx-kick{color:#2de0b0!important}.sbx h2{margin-top:0}.sbx-h{margin:14px 0 6px;font-family:var(--display);font-weight:400;font-size:20px;color:var(--sc);text-shadow:0 2px 0 var(--edge)}'+
+'.sbx-sec{display:grid;gap:8px;padding:10px;border-radius:16px;background:rgba(0,0,0,.22);border:2px solid rgba(255,255,255,.08)}.sbx-sec>.btn{width:100%;margin:0}'+
+'.sbx-quick{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:6px;margin:6px 0}.sbx-quick .btn{margin:0;width:100%}'+
+'.sbx-row{display:flex;align-items:center;gap:6px;flex-wrap:wrap}.sbx-row label{flex:1 1 96px;display:grid;min-width:0}.sbx-row label b{display:flex;align-items:center;gap:5px;font-size:14px}.sbx-row label svg{width:18px;height:18px}.sbx-row label small{font-size:11px;color:var(--muted);font-weight:700}'+
+'.sbx-row input,.sbx-row select,.sbx-sel{font:inherit;font-weight:800;font-size:15px;color:#fff;background:#16133a;border:2px solid var(--edge);border-radius:10px;padding:6px 7px;width:106px;min-width:0;font-size:14px}.sbx-row select{width:150px}.sbx-sel{width:100%}'+
+'.sbx-pills{align-items:flex-start}.sbx-pills label{flex-basis:100%}.sbx-pills .trackrow{gap:5px}'+
+'.sbx-sw{display:flex;align-items:center;gap:10px;width:100%;padding:8px 10px;border-radius:14px;border:2px solid var(--edge);background:#221d4f;color:#fff;font:inherit;text-align:left;cursor:pointer}.sbx-sw span{flex:1;display:grid}.sbx-sw small{font-size:11px;color:var(--muted);font-weight:700}'+
+'.sbx-sw i{flex:none;width:46px;height:26px;border-radius:999px;background:#3a3466;position:relative;transition:background .15s}.sbx-sw i::after{content:"";position:absolute;top:3px;left:3px;width:20px;height:20px;border-radius:50%;background:#fff;transition:transform .15s}'+
+'.sbx-sw.on{border-color:#2de0b0}.sbx-sw.on i{background:#2de0b0}.sbx-sw.on i::after{transform:translateX(20px)}'+
+'.sbx-drops{display:grid;grid-template-columns:repeat(auto-fill,minmax(76px,1fr));gap:6px}.sbx-drop{display:grid;justify-items:center;gap:2px;padding:6px 4px;border-radius:12px;border:2px solid var(--edge);background:#221d4f;color:#fff;font:inherit;cursor:pointer}.sbx-drop small{font-size:10px;font-weight:800;text-align:center;line-height:1.1}.sbx-drop:active{transform:scale(.95)}'+
+'.sbx-rum{display:flex;align-items:center;gap:10px}.sbx-rum div{display:grid}.sbx-rum small{color:var(--muted);font-weight:700}';
+if(document.head)document.head.append(st);}
+/* ---------- 3D version: the world is drawn on a tilted canvas, controls stay flat on top ---------- */
+const V3={ang:36,persp:850,scale:1.38};
+let v3cv=null,v3c=null;
+const v3On=()=>!!((RR_MODE==='d3'||(RR_MODE==='sandbox'&&SBX.v3d))&&view==='game'&&M);
+function v3Matrix(){return new DOMMatrix('perspective('+V3.persp+'px) rotateX('+V3.ang+'deg) scale('+V3.scale+')');}
+function v3Setup(){if(v3cv)return;v3cv=document.createElement('canvas');v3cv.id='world3d';v3cv.setAttribute('aria-hidden','true');v3cv.style.transform='perspective('+V3.persp+'px) rotateX('+V3.ang+'deg) scale('+V3.scale+')';canvas.parentNode.insertBefore(v3cv,canvas);v3c=v3cv.getContext('2d');}
+{const _render=render,_dc=drawControls;let skip=false;
+  drawControls=function(c){if(skip)return;return _dc(c);};
+  render=function(){if(!v3On()){if(v3cv)v3cv.hidden=true;gameEl.classList.remove('v3');return _render();}
+    v3Setup();v3cv.hidden=false;gameEl.classList.add('v3');
+    if(v3cv.width!==canvas.width||v3cv.height!==canvas.height){v3cv.width=canvas.width;v3cv.height=canvas.height;}
+    v3cv.style.width=W+'px';v3cv.style.height=H+'px';
+    skip=true;try{_render();}finally{skip=false;}
+    v3c.setTransform(1,0,0,1,0,0);v3c.clearRect(0,0,v3cv.width,v3cv.height);v3c.drawImage(canvas,0,0);
+    ctx.setTransform(1,0,0,1,0,0);ctx.clearRect(0,0,canvas.width,canvas.height);ctx.setTransform(dpr,0,0,dpr,0,0);_dc(ctx);};}
+/* mouse aim: undo the tilt so clicks land where you see them */
+{const _tw=toWorld;toWorld=function(sx,sy){if(v3On()&&!ROT){const m=v3Matrix(),ox=W/2,oy=H,X=sx-ox,Y=sy-oy;
+  const A=m.m11-m.m14*X,B=m.m21-m.m24*X,C=m.m44*X-m.m41,D=m.m12-m.m14*Y,E=m.m22-m.m24*Y,F=m.m44*Y-m.m42,det=A*E-B*D;
+  if(Math.abs(det)>1e-9){sx=(C*E-B*F)/det+ox;sy=(A*F-C*D)/det+oy;}}return _tw(sx,sy);};}
+/* rumblers stand up instead of lying flat */
+{const _du=drawUnit,k=1/Math.cos(V3.ang*Math.PI/180);drawUnit=function(c,u){if(!v3On()||WA)return _du(c,u);const fy=u.y+u.rad;c.save();c.translate(u.x,fy);c.scale(1,k);c.translate(-u.x,-fy);try{_du(c,u);}finally{c.restore();}};}
+/* tall crates */
+{const _cr=crate;crate=function(c,x,y,cc,rr){if(!v3On())return _cr(c,x,y,cc,rr);const L=18;
+  c.fillStyle='rgba(8,6,22,.45)';c.fillRect(x+7,y+TILE-5,TILE,11);
+  c.fillStyle='#5e3424';c.fillRect(x,y+TILE-12-L,TILE,12+L);c.fillStyle='rgba(0,0,0,.22)';c.fillRect(x,y+TILE-12-L,TILE,5);
+  c.strokeStyle='rgba(18,15,38,.45)';c.lineWidth=1.5;c.beginPath();c.moveTo(x+3,y+TILE-6);c.lineTo(x+TILE-3,y+TILE-6);c.stroke();
+  c.strokeStyle=OUT;c.lineWidth=2.5;c.strokeRect(x+1.25,y+TILE-12-L,TILE-2.5,12+L-1.25);
+  c.save();c.translate(0,-L);_cr(c,x,y,cc,rr);c.restore();};}
+{const st=document.createElement('style');st.textContent='#world3d{position:absolute;left:0;top:0;transform-origin:50% 100%;pointer-events:none;z-index:0}.v3{background:linear-gradient(180deg,#0b0820,#2a2470 55%,#1b1546)!important}.v3 #world{z-index:1}';if(document.head)document.head.append(st);}
 
 /* ================= Rumble ID (accounts) + Parent controls ================= */
 const RID_TOKEN_KEY='rr-rid-token',RID_SAVE_KEY='rr-rid-saved';
@@ -4302,6 +4497,87 @@ setInterval(()=>{try{if(pcOn()&&view==='game'&&M&&!M.watch){pcToday();S.pc.secs+
 setTimeout(()=>{try{if(S.onboarded&&S.ageNum!=null&&S.ageNum<10&&!pcOn()&&!S.pcAsked&&view==='home'&&sheetEl.hidden){S.pcAsked=true;persist();
   openSheet(card=>{card.classList.add('rid','pc');card.insertAdjacentHTML('beforeend','<p class="of-kick pc-kick">🔒 For grown-ups</p><h2>Parent controls</h2><p class="sub">Ask a parent or guardian if they want to set limits, like how many matches you can play each day. They can do it any time from the ☰ menu.</p>');
     const s=document.createElement('button');s.className='btn gold';s.textContent='A parent will set it up now';s.addEventListener('click',()=>pcGrownUpCheck(()=>pcNewPin(openPcSettings)));const x=document.createElement('button');x.className='btn';x.textContent='Maybe later';x.addEventListener('click',closeSheet);card.append(s,x);});}}catch(e){}},2500);
+
+/* ================= Experimental settings: Sandbox, 3D test, Beta test ================= */
+const RR_MODE_INFO={
+  main:{name:'Main game',emoji:'🏠',col:'#ffd23f'},
+  sandbox:{name:'Sandbox',emoji:'🧪',col:'#2de0b0',desc:'A separate copy of the game where you have everything and can set anything. It has its own save, so your real game isn’t touched. Online play is off.'},
+  d3:{name:'3D test',emoji:'🧊',col:'#7ad7ff',desc:'The same game, but matches are shown in 3D: the arena is tilted and the crates stand up tall. It uses your real save. It’s a test, so some things may look a bit odd.'},
+  beta:{name:'Beta test',emoji:'🧬',col:'#c79bff',desc:'The newest version we’re testing, before it comes out as a new app. It’s loaded from the game server, needs internet, and has its own save.'}};
+const rrIcon=m=>{try{const el=document.querySelector('meta[name="rr-icon-'+m+'"]');return el&&el.content||null;}catch(e){return null;}};
+function rrSwitchMode(m){try{persist();}catch(e){}
+  if(RR_BETA){try{if(window.parent&&window.parent!==window){window.parent.postMessage({rr:'exitBeta'},'*');return;}}catch(e){}if(history.length>1)history.back();return;}
+  try{localStorage.setItem('rr-mode',m);}catch(e){}location.reload();}
+function rrConfirmMode(m){const info=RR_MODE_INFO[m];openSheet(card=>{card.classList.add('rid','modec');
+  card.insertAdjacentHTML('beforeend','<p class="of-kick" style="color:'+info.col+'">Experimental</p><h2>Switch to '+info.name+'?</h2>');
+  const ic=rrIcon(m);if(ic){const im=document.createElement('img');im.src=ic;im.alt='';im.className='mode-icon';card.append(im);}
+  card.insertAdjacentHTML('beforeend','<p class="sub">'+info.desc+'</p><p class="sub"><b>Are you sure you want to switch to '+info.name+'?</b> You can come back any time from the ☰ menu.</p>');
+  const y=document.createElement('button');y.className='btn gold';y.textContent='Yes, switch to '+info.name;y.addEventListener('click',()=>{sfx('click');rrSwitchMode(m);});
+  const n=document.createElement('button');n.className='btn';n.textContent='No, stay here';n.addEventListener('click',closeSheet);card.append(y,n);});}
+function renderExperimental(){const el=$('#expPanel');if(!el)return;el.innerHTML='<h2>Experimental settings</h2><p class="hint">Try test versions of the game. '+(RR_MODE==='main'?'Your main game is safe.':'You’re in <b>'+RR_MODE_INFO[RR_MODE].name+'</b> right now.')+'</p>';
+  const g=document.createElement('div');g.className='exp-grid';
+  if(RR_MODE!=='main'){const b=document.createElement('button');b.className='btn green exp-back';b.textContent='⬅ Return to main game';b.addEventListener('click',()=>rrSwitchMode('main'));el.append(b);}
+  for(const m of['sandbox','d3','beta']){if(m===RR_MODE||(RR_BETA&&m!=='beta'))continue;if(RR_BETA)continue;const info=RR_MODE_INFO[m],b=document.createElement('button');b.className='exp-card';b.style.setProperty('--ec',info.col);
+    const ic=rrIcon(m);b.innerHTML=(ic?'<img src="'+ic+'" alt="">':'<span class="exp-emoji">'+info.emoji+'</span>')+'<b>'+info.name+'</b><small>'+(m==='sandbox'?'Have everything, set anything':m==='d3'?'Play in 3D':'The newest test version')+'</small>';
+    b.addEventListener('click',()=>{sfx('click');rrConfirmMode(m);});g.append(b);}
+  if(g.children.length)el.append(g);}
+{const _rs=renderSettings;renderSettings=function(){const r=_rs.apply(this,arguments);try{renderExperimental();}catch(e){}return r;};}
+/* the green "Return to main game" button at the top of the menu */
+{const _gm=openGameMenu;openGameMenu=function(){_gm();if(RR_MODE==='main')return;const ov=$('#gmenu'),pan=ov&&ov.querySelector('.gm-panel');if(!pan)return;
+  const info=RR_MODE_INFO[RR_MODE],b=document.createElement('button');b.className='btn green gm-return';b.innerHTML='⬅ Return to main game<small>You’re playing '+info.name+'</small>';
+  b.addEventListener('click',()=>{sfx('click');rrSwitchMode('main');});const head=pan.querySelector('.gm-head');if(head)head.after(b);else pan.prepend(b);};
+  const hb=$('#hambBtn');if(hb&&hb.removeEventListener){hb.removeEventListener('click',_gm);hb.addEventListener('click',()=>openGameMenu());}}
+if(!NETS){
+  /* page icon + title follow the mode */
+  try{const ic=rrIcon(RR_MODE);if(ic)for(const rel of['icon','apple-touch-icon']){let l=document.querySelector('link[rel="'+rel+'"]');if(!l){l=document.createElement('link');l.rel=rel;document.head.append(l);}l.href=ic;}
+    document.title=RR_MODE==='main'?'Rooftop Rumble':'Rooftop Rumble · '+RR_MODE_INFO[RR_MODE].name;}catch(e){}
+  /* a badge on the home screen so you always know which version you're in */
+  if(RR_MODE==='d3'||RR_MODE==='beta'){const tag=document.createElement('span');tag.className='sbx-tag mode-tag';tag.style.background=RR_MODE_INFO[RR_MODE].col;tag.textContent=RR_MODE==='d3'?'3D TEST':'BETA';const me=document.querySelector('.me');if(me)me.append(tag);}
+  /* beta build: tell the main app we're ready */
+  if(RR_BETA){try{if(window.parent!==window)window.parent.postMessage({rr:'betaReady'},'*');}catch(e){}}
+  /* main app in beta mode: show the beta from the server on top of everything */
+  if(RR_MODE==='beta'&&!RR_BETA){let open=true;
+    {const _mt=musicTick;musicTick=function(){if(open)return;return _mt.apply(this,arguments);};const _sf=sfx;sfx=function(){if(open)return;return _sf.apply(this,arguments);};}
+    const w=document.createElement('div');w.id='betaWrap';const ic=rrIcon('beta');
+    w.innerHTML='<div class="beta-load">'+(ic?'<img src="'+ic+'" alt="">':'')+'<h2>Loading the beta…</h2><p>The beta lives on the game server. If the server was asleep, it can take up to a minute to wake up.</p><p class="beta-off" hidden>You need internet for the beta.</p><button class="btn green">⬅ Return to main game</button></div>';
+    const f=document.createElement('iframe');f.src=BETA_URL+'?t='+Date.now();f.title='Rooftop Rumble beta';f.setAttribute('allow','autoplay; fullscreen; clipboard-write');w.append(f);document.body.append(w);
+    w.querySelector('.btn').addEventListener('click',()=>{open=false;rrSwitchMode('main');});
+    if(navigator.onLine===false)w.querySelector('.beta-off').hidden=false;
+    window.addEventListener('message',e=>{const d=e.data;if(!d||typeof d!=='object')return;if(d.rr==='betaReady')w.classList.add('ready');if(d.rr==='exitBeta'){open=false;rrSwitchMode('main');}});}
+}
+
+/* ================= Solars: 10 levels you climb with chromos ================= */
+S.sol=clamp(S.sol|0,0,SOLAR_MAX);
+const SOL_PF=[[1,'title','t_spark'],[3,'title','t_sun'],[5,'banner','b_solar'],[6,'ncol','n_solar'],[7,'frame','f_solar'],[9,'title','t_eclipse'],[10,'title','t_fame'],[10,'ncol','n_fame']];
+const SOL_KIND={banner:'banner',frame:'icon frame',title:'title',ncol:'name color'};
+function solRewards(lv){const out=[{label:(lv>=SOLAR_MAX?'Solars Fame':'Solars '+lv)+' profile icon',vis:s=>iconCanvas('o:'+lv,s)}];
+  for(const x of SOLAR_SKINS)if(x.lv===lv){const b=BY_ID[x.rid];out.push({label:x.skin.name+' '+b.name+' skin',vis:s=>thumb(b,getSkin(b,x.skin.id),s),skin:true});}
+  for(const[l,k,id]of SOL_PF)if(l===lv){const it=pfItem(k,id);out.push({label:'“'+it.name+'” '+SOL_KIND[k],vis:s=>{const d=document.createElement('span');d.className='sol-pf sol-pf-'+k;d.style.width=d.style.height=s+'px';
+    if(k==='banner')d.style.background=it.css;else if(k==='frame'){d.style.background=it.css;d.append(iconCanvas(S.icon||'r:ember',s-10));}else if(k==='ncol'){d.innerHTML='<b style="'+it.css+'">Aa</b>';}else d.textContent='🏷️';return d;}});}
+  return out;}
+function solSetLevel(v){v=clamp(v|0,0,SOLAR_MAX);for(let l=(S.sol|0)+1;l<=v;l++)for(const x of SOLAR_SKINS)if(x.lv===l)grantSkin(x.rid,x.skin.id);S.sol=v;persist();try{renderHome();}catch(e){}}
+function solLevelUp(){if((S.sol|0)>=SOLAR_MAX)return;const lv=(S.sol|0)+1,cost=SOLAR_LEVELS[lv-1].cost;
+  if(S.chromos<cost){sfx('tap');toast('You need '+fmtFull(cost-S.chromos)+' more chromos','chromos');return;}
+  if(!spend('chromos',cost))return;solSetLevel(lv);solReveal(lv);}
+function solReveal(lv){const L=SOLAR_LEVELS[lv-1],fame=lv>=SOLAR_MAX;sfx('unlock');openSheet(card=>{card.classList.add('sol','sol-reveal'+(fame?' fame':''));
+  card.insertAdjacentHTML('beforeend','<p class="of-kick sol-kick">'+(fame?'You made it!':'Solars level '+lv)+'</p><h2 style="text-align:center">'+esc(L.name)+(fame?'!':'')+'</h2>');
+  const w=document.createElement('div');w.className='ex-burst sol-burst';w.append(solarCanvas(lv,150));card.append(w);
+  const rl=document.createElement('div');rl.className='sol-rlist';for(const r of solRewards(lv)){const d=document.createElement('div');d.append(r.vis(40));d.insertAdjacentHTML('beforeend','<span>'+esc(r.label)+'</span>');rl.append(d);}card.append(rl);
+  if(fame)card.insertAdjacentHTML('beforeend','<p class="sub" style="text-align:center">You reached the very top of Solars. Only the most dedicated players ever get here.</p>');
+  const x=document.createElement('button');x.className='btn gold';x.textContent='Awesome!';x.addEventListener('click',openSolars);card.append(x);});}
+function openSolars(){const lv=S.sol|0;openSheet(card=>{card.classList.add('sol');
+  const head=document.createElement('div');head.className='sol-head';head.append(solarCanvas(lv,104));
+  head.insertAdjacentHTML('beforeend','<div><p class="of-kick sol-kick">☀️ Solars</p><h2>'+(lv?esc(SOLAR_LEVELS[lv-1].name):'Not started')+'</h2><small>'+(lv>=SOLAR_MAX?'Max level reached':'Level '+lv+' of '+SOLAR_MAX)+'</small><span class="sol-bal">'+ICON.chromos+fmtFull(S.chromos)+' chromos</span></div>');card.append(head);
+  card.insertAdjacentHTML('beforeend','<p class="sub">Spend the chromos you collect to climb 10 Solars levels. Every level gives a profile icon, and some give exclusive skins, banners, frames, titles and name colors. The last level, <b>Solars Fame</b>, costs 200,000 chromos.</p>');
+  if(lv<SOLAR_MAX){const nx=SOLAR_LEVELS[lv],c=document.createElement('div');c.className='sol-next'+(lv+1>=SOLAR_MAX?' fame':'');
+    c.innerHTML='<div class="sol-nt"><b>Next: '+esc(nx.name)+'</b><small>Level '+(lv+1)+'</small></div>';const rr=document.createElement('div');rr.className='sol-rw';for(const r of solRewards(lv+1)){const d=document.createElement('div');d.title=r.label;d.append(r.vis(48));d.insertAdjacentHTML('beforeend','<small>'+esc(r.label)+'</small>');rr.append(d);}c.append(rr);
+    const b=document.createElement('button');b.className='btn gold';b.innerHTML='Level up · '+ICON.chromos+fmtFull(nx.cost);if(S.chromos<nx.cost)b.classList.add('short');b.addEventListener('click',solLevelUp);c.append(b);
+    if(S.chromos<nx.cost)c.insertAdjacentHTML('beforeend','<p class="sol-need">'+fmtFull(nx.cost-S.chromos)+' more chromos needed</p>');card.append(c);}
+  else card.insertAdjacentHTML('beforeend','<div class="sol-next fame"><div class="sol-nt"><b>👑 Solars Fame</b><small>You reached the top!</small></div></div>');
+  const tr=document.createElement('div');tr.className='sol-track';
+  SOLAR_LEVELS.forEach((L,i)=>{const l=i+1,row=document.createElement('div');row.className='sol-row'+(l<=lv?' got':'')+(l===lv+1?' next':'')+(l===SOLAR_MAX?' fame':'');row.append(solarCanvas(l,42));
+    row.insertAdjacentHTML('beforeend','<div class="sol-rt"><b>'+esc(L.name)+'</b><small>'+(l<=lv?'✔ Reached':ICON.chromos+fmtFull(L.cost))+'</small></div>');const mini=document.createElement('div');mini.className='sol-mini';for(const r of solRewards(l))mini.append(r.vis(30));row.append(mini);tr.append(row);});
+  card.append(tr);const x=document.createElement('button');x.className='btn';x.textContent='Close';x.addEventListener('click',closeSheet);card.append(x);});}
 
 /* ---------- Shop ---------- */
 const GIFTS=[{coins:100},{gems:10},{pp:60}];

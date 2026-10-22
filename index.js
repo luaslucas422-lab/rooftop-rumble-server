@@ -89,7 +89,7 @@ function onMessage(ws, m) {
     p.name = clean(m.name, 14) || 'Player'; p.lower = p.name.toLowerCase(); p.rumbler = clean(m.rumbler, 20); p.skin = clean(m.skin, 30); p.trophies = Math.max(0, m.trophies | 0); p.invites = m.invites !== false;
     if (m.load) p.load = m.load;
     p.ageBand = ['u7', 'kid', 'teen'].includes(m.ageBand) ? m.ageBand : 'kid'; p.code = clean(m.code, 8).toUpperCase(); p.findByName = !!m.findByName; p.icon = clean(m.icon, 40);
-    if (m.profile && typeof m.profile === 'object') { const q = m.profile; p.profile = { name: p.name, icon: p.icon, code: p.code, trophies: q.trophies | 0, best: q.best | 0, coins: q.coins | 0, pp: q.pp | 0, wins: q.wins | 0, rank: clean(q.rank, 20), rumblers: q.rumblers | 0, pres: Array.isArray(q.pres) ? q.pres.slice(0, 8).map(x => [clean(x && x[0], 20), (x && x[1]) | 0]) : [], pf: q.pf && typeof q.pf === 'object' ? { banner: clean(q.pf.banner, 20), frame: clean(q.pf.frame, 20), title: clean(q.pf.title, 20), ncol: clean(q.pf.ncol, 20), show: Array.isArray(q.pf.show) ? [clean(q.pf.show[0], 20), clean(q.pf.show[1], 30)] : null } : null, exs: Array.isArray(q.exs) ? q.exs.slice(0, 16).map(x => clean(x, 20)) : [] }; }
+    if (m.profile && typeof m.profile === 'object') { const q = m.profile; p.profile = { name: p.name, icon: p.icon, code: p.code, trophies: q.trophies | 0, best: q.best | 0, coins: q.coins | 0, pp: q.pp | 0, wins: q.wins | 0, rank: clean(q.rank, 20), rumblers: q.rumblers | 0, pres: Array.isArray(q.pres) ? q.pres.slice(0, 8).map(x => [clean(x && x[0], 20), (x && x[1]) | 0]) : [], pf: q.pf && typeof q.pf === 'object' ? { banner: clean(q.pf.banner, 20), frame: clean(q.pf.frame, 20), title: clean(q.pf.title, 20), ncol: clean(q.pf.ncol, 20), show: Array.isArray(q.pf.show) ? [clean(q.pf.show[0], 20), clean(q.pf.show[1], 30)] : null } : null, exs: Array.isArray(q.exs) ? q.exs.slice(0, 16).map(x => clean(x, 20)) : [], sol: Math.max(0, Math.min(10, q.sol | 0)) }; }
     const pt = partyOf(p); if (pt) sendParty(pt); else send(p, partyInfo(null));
     return;
   }
@@ -187,6 +187,10 @@ setInterval(() => { for (const mode of queues.keys()) tryMatch(mode); }, 500);
 
 /* ---------- web server ---------- */
 const server = http.createServer((req, res) => {
+  if (req.url && req.url.split('?')[0].replace(/\/+$/, '') === '/beta') {   /* the beta version of the game, opened from Settings > Experimental */
+    let html = null; try { html = fs.readFileSync(path.join(__dirname, 'beta.html')); } catch (e) {}
+    if (!html) { res.writeHead(404, { 'Content-Type': 'text/plain' }); res.end('No beta right now.'); return; }
+    res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8', 'Cache-Control': 'no-cache' }); res.end(html); return; }
   res.writeHead(200, { 'Content-Type': 'text/plain', 'Access-Control-Allow-Origin': '*' });
   res.end('Rooftop Rumble server is running. Players online: ' + [...players.values()].filter(p => p.ws && p.ws.readyState === 1).length + ', matches: ' + matches.size + '\n');
 });
