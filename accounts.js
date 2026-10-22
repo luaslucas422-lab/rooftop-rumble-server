@@ -13,7 +13,7 @@ const EMAIL_RE = /^[^\s@<>()]{1,64}@[^\s@<>()]{1,180}\.[a-z]{2,24}$/i;
 
 /* ---------- storage ---------- */
 function fileStore(file) {
-  let db = { accounts: {}, sessions: {} };
+  let db = { accounts: {}, sessions: {}, testers: {} };
   try { db = JSON.parse(fs.readFileSync(file, 'utf8')); } catch (e) {}
   let t = null; const save = () => { clearTimeout(t); t = setTimeout(() => { try { fs.writeFileSync(file, JSON.stringify(db)); } catch (e) {} }, 300); };
   return {
@@ -26,6 +26,8 @@ function fileStore(file) {
     async sessionAdd(token, id) { db.sessions[token] = { id, created: now() }; save(); },
     async sessionGet(token) { const s = db.sessions[token]; return s ? s.id : null; },
     async sessionDel(token) { delete db.sessions[token]; save(); },
+    async testerAdd(pid, name) { db.testers = db.testers || {}; const old = db.testers[pid]; db.testers[pid] = { name, at: old ? old.at : now() }; save(); },
+    async testerList() { return Object.values(db.testers || {}).sort((a, b) => a.at - b.at).map(x => x.name); },
   };
 }
 function pgStore(url) {
@@ -37,6 +39,7 @@ function pgStore(url) {
     async init() {
       await pool.query(`CREATE TABLE IF NOT EXISTS rid_accounts (id TEXT PRIMARY KEY, email TEXT UNIQUE NOT NULL, hash TEXT NOT NULL, created BIGINT NOT NULL, gift BOOLEAN DEFAULT FALSE, save TEXT, save_t BIGINT DEFAULT 0, pc TEXT, parent BOOLEAN DEFAULT FALSE)`);
       await pool.query(`CREATE TABLE IF NOT EXISTS rid_sessions (token TEXT PRIMARY KEY, id TEXT NOT NULL, created BIGINT NOT NULL)`);
+      await pool.query(`CREATE TABLE IF NOT EXISTS rid_testers (pid TEXT PRIMARY KEY, name TEXT NOT NULL, at BIGINT NOT NULL)`);
     },
     async byEmail(email) { const r = await pool.query('SELECT * FROM rid_accounts WHERE email=$1', [email]); return row(r.rows[0]); },
     async byId(id) { const r = await pool.query('SELECT * FROM rid_accounts WHERE id=$1', [id]); return row(r.rows[0]); },
@@ -47,6 +50,8 @@ function pgStore(url) {
     async sessionAdd(token, id) { await pool.query('INSERT INTO rid_sessions (token,id,created) VALUES ($1,$2,$3)', [token, id, now()]); },
     async sessionGet(token) { const r = await pool.query('SELECT id FROM rid_sessions WHERE token=$1', [token]); return r.rows[0] ? r.rows[0].id : null; },
     async sessionDel(token) { await pool.query('DELETE FROM rid_sessions WHERE token=$1', [token]); },
+    async testerAdd(pid, name) { await pool.query('INSERT INTO rid_testers (pid,name,at) VALUES ($1,$2,$3) ON CONFLICT (pid) DO UPDATE SET name=EXCLUDED.name', [pid, name, now()]); },
+    async testerList() { const r = await pool.query('SELECT name FROM rid_testers ORDER BY at ASC LIMIT 500'); return r.rows.map(x => x.name); },
   };
 }
 
@@ -76,7 +81,8 @@ function checkPass(pass, stored) { try { const [, s, h] = String(stored).split('
 const newId = () => { const A = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'; let s = ''; const b = crypto.randomBytes(8); for (const x of b) s += A[x % A.length]; return 'RID-' + s.slice(0, 4) + '-' + s.slice(4); };
 const maskEmail = e => { const [u, d] = e.split('@'); return u.slice(0, 2) + '•••@' + d; };
 
-function createAccounts() {
+function createAccounts(opts) {
+  const cleanName = (opts && opts.cleanName) || (s => String(s || '').replace(/[<>]/g, '').slice(0, 14));
   const store = process.env.DATABASE_URL ? pgStore(process.env.DATABASE_URL) : fileStore(path.join(process.env.RID_FILE_DIR || __dirname, 'rid-accounts.json'));
   const mail = makeMailer();
   const pending = new Map();   // email -> {code, exp, tries, kind:'signup'|'login'|'pin', data}
@@ -98,6 +104,12 @@ function createAccounts() {
     await ready;
     const op = m.op, email = lower(m.email);
     if (op === 'status') return { op: 'status', twoStep: !!mail, google: false };
+    /* the Beta Testers list in the credits */
+    if (op === 'testerJoin') { const pid = String(m.pid || '').slice(0, 40), name = cleanName(m.name).trim();
+      if (!pid || !name || /\*/.test(name)) return { op: 'err', msg: 'Name not allowed.' };
+      if (hit('tj|' + ip, 20, 60 * 60e3)) return { op: 'err', msg: 'Too many tries.' };
+      await store.testerAdd(pid, name); return { op: 'testerOk' }; }
+    if (op === 'testers') return { op: 'testers', list: (await store.testerList()).slice(0, 500) };
     if (store.kind === 'file' && process.env.RENDER) return { op: 'err', msg: 'Rumble ID isn\u2019t switched on yet. It will work soon!' };
     if (op === 'signup' || op === 'login') {
       if (!EMAIL_RE.test(email)) return { op: 'err', msg: 'That doesn’t look like an email address.' };

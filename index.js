@@ -8,7 +8,7 @@ const path = require('path');
 const vm = require('vm');
 const { WebSocketServer } = require('ws');
 const { createAccounts } = require('./accounts');
-const RID = createAccounts();
+const RID = createAccounts({ cleanName: s => chatClean(String(s == null ? '' : s).replace(/[<>]/g, '').slice(0, 14)) });
 
 const PORT = process.env.PORT || 8080;
 const WAIT = +(process.env.WAIT_SECONDS || 2);   // seconds to wait for more players before bots fill in
