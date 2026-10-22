@@ -7,6 +7,8 @@ const fs = require('fs');
 const path = require('path');
 const vm = require('vm');
 const { WebSocketServer } = require('ws');
+const { createAccounts } = require('./accounts');
+const RID = createAccounts();
 
 const PORT = process.env.PORT || 8080;
 const WAIT = +(process.env.WAIT_SECONDS || 2);   // seconds to wait for more players before bots fill in
@@ -79,6 +81,7 @@ function unqueue(p) { for (const [mode, list] of queues) { const i = list.findIn
 
 function onMessage(ws, m) {
   let p = ws.player;
+  if (m.t === 'rid') { if (m.op !== 'save' && JSON.stringify(m).length > 4000) return; RID.handle(m, ws.ip || '?').then(r => { try { if (ws.readyState === 1) ws.send(JSON.stringify({ t: 'rid', rq: m.rq | 0, ...r })); } catch (e) {} }).catch(e => { console.log('rid error', e.message); try { ws.send(JSON.stringify({ t: 'rid', rq: m.rq | 0, op: 'err', msg: 'Server error. Try again.' })); } catch (x) {} }); return; }
   if (m.t === 'hello') {
     const pid = clean(m.pid, 40); if (!pid) return;
     if (m.v !== VER) { ws.send(JSON.stringify({ t: 'toast', msg: 'Your game and the server are different versions. Upload the newest game.js to your server.' })); }
@@ -187,12 +190,14 @@ const server = http.createServer((req, res) => {
   res.writeHead(200, { 'Content-Type': 'text/plain', 'Access-Control-Allow-Origin': '*' });
   res.end('Rooftop Rumble server is running. Players online: ' + [...players.values()].filter(p => p.ws && p.ws.readyState === 1).length + ', matches: ' + matches.size + '\n');
 });
-const wss = new WebSocketServer({ server, maxPayload: 16 * 1024, perMessageDeflate: { threshold: 512, zlibDeflateOptions: { level: 3 } } });
-wss.on('connection', ws => {
+const wss = new WebSocketServer({ server, maxPayload: 512 * 1024, perMessageDeflate: { threshold: 512, zlibDeflateOptions: { level: 3 } } });
+wss.on('connection', (ws, req) => {
+  ws.ip = String((req && req.headers['x-forwarded-for']) || (req && req.socket && req.socket.remoteAddress) || '').split(',')[0].trim();
   ws.isAlive = true; ws.on('pong', () => { ws.isAlive = true; });
   let count = 0, since = Date.now();
   ws.on('message', data => {
     if (Date.now() - since > 1000) { since = Date.now(); count = 0; } if (++count > 80) return;
+    if (data.length > 20 * 1024 && !String(data.slice(0, 40)).includes('"rid"')) return;
     let m; try { m = JSON.parse(data); } catch (e) { return; } if (!m || typeof m !== 'object') return;
     try { onMessage(ws, m); } catch (e) { console.log('message error', e); }
   });
