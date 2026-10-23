@@ -3407,7 +3407,7 @@ function renderTiles(){
   if(!S.daily.claimed){const g=GIFTS[S.daily.gift||0],k=Object.keys(g)[0],b=mk('wide gift','#6be39a',()=>go('shop'));
     b.innerHTML='<span class="tico">'+GIFT_SVG+'</span><span style="min-width:0"><span class="tk">Free daily gift</span><b>'+g[k]+' '+CUR_NAME[k]+' waiting</b><span class="tt">Tap to claim it in the shop</span></span>';}
   {const tier=passTier(S.pass.xp),done=tier>=PASS_TIERS,into=done?(S.pass.xp-PASS_TIERS*PASS_STEP)%PASS_BONUS_STEP:S.pass.xp%PASS_STEP,ready=passClaimable(),b=mk('wide passtile'+(ready?' passr':''),'#ffd36b',()=>go('pass'));
-    b.innerHTML='<span class="tico">'+passBadge(tier,46)+'</span><span style="min-width:0"><span class="tk">Rumble Pass · Starfall</span><b>'+(ready?ready+' reward'+(ready>1?'s':'')+' to claim':done?'Pass complete':'Tier '+tier+' of '+PASS_TIERS)+'</b><span class="tbar"><i style="width:'+Math.round(into/PASS_STEP*100)+'%;background:#ffd36b"></i></span></span>';}
+    b.innerHTML='<span class="tico rpe-t">'+passEmblem(46,{tier})+'</span><span style="min-width:0"><span class="tk">Rumble Pass · Starfall</span><b>'+(ready?ready+' reward'+(ready>1?'s':'')+' to claim':done?'Pass complete':'Tier '+tier+' of '+PASS_TIERS)+'</b><span class="tbar"><i style="width:'+Math.round(into/PASS_STEP*100)+'%;background:#ffd36b"></i></span></span>';}
   /* Banks: above Next unlock and Ranked */
   {const parts=bankSummary(),b=mk('wide banktile','#46b4ff',()=>openBanks());const ic=document.createElement('span');ic.className='tico bank-ico';ic.textContent='\ud83c\udfe6';b.append(ic);
     const tx=document.createElement('span');tx.style.minWidth='0';tx.innerHTML='<span class="tk">Banks</span><b>'+(parts.length?esc(parts.slice(0,2).join(' \u00b7 '))+(parts.length>2?' +'+(parts.length-2)+' more':''):'Save your chromos, coins & more')+'</b>';
@@ -3469,7 +3469,7 @@ function renderRumblers(){
     for(const b of list){const me=S.owned[b.id],el=document.createElement('button');
       el.className='card'+(me?'':' locked')+(S.selected===b.id?' sel':'');el.style.setProperty('--r',r.col);
       el.append(thumb(b,getSkin(b,me?me.skin:'classic'),84));
-      let foot;if(me)foot='<span class="tag">★ '+me.prestige+'</span>';else if(eventLocked(b))foot='<span class="tag on">\ud83c\udf83 Event</span>';else if(r.passOnly)foot='<span class="tag on">'+ICON.pass+'Tier '+PASS_TIERS+'</span>';else{const f=clamp(S.chromos/r.chromos,0,1);foot='<span class="tag'+(f>=1?' on':'')+'">'+ICON.chromos+fmt(r.chromos)+'</span><span class="cbar"><i style="width:'+Math.round(f*100)+'%"></i></span>';}
+      let foot;if(me)foot='<span class="tag">★ '+me.prestige+'</span>';else if(eventLocked(b))foot='<span class="tag on">\ud83c\udf83 Event</span>';else if(r.passOnly)foot='<span class="tag on">'+passEmblem(16)+'Tier '+PASS_TIERS+'</span>';else{const f=clamp(S.chromos/r.chromos,0,1);foot='<span class="tag'+(f>=1?' on':'')+'">'+ICON.chromos+fmt(r.chromos)+'</span><span class="cbar"><i style="width:'+Math.round(f*100)+'%"></i></span>';}
       el.insertAdjacentHTML('beforeend',(me?'<span class="lvtag">'+me.lvl+'</span>':LOCK_SVG)+'<span class="nm">'+b.name+'</span>'+foot);
       el.addEventListener('click',()=>{sfx('click');openRumbler(b.id);});grid.append(el);}
     g.append(grid);}
@@ -4980,7 +4980,7 @@ function renderShop(){
   gp.innerHTML='<div style="flex:1 1 180px;min-width:0"><h2>Daily gift</h2><p class="hint" style="margin:0">'+(S.daily.claimed?'Come back tomorrow for another one.':'Free, once a day: '+gift[gk]+' '+CUR_NAME[gk]+'.')+'</p></div>';
   const gb=document.createElement('button');gb.className='btn green';gb.innerHTML=S.daily.claimed?'Claimed':'Claim '+cost(gk,gift[gk]);gb.disabled=S.daily.claimed;
   gb.addEventListener('click',()=>{if(S.daily.claimed)return;S.daily.claimed=true;S[gk]+=gift[gk];persist();sfx('unlock');toast('+'+gift[gk]+' '+CUR_NAME[gk],gk);renderShop();updateShopDot();});gp.append(gb);body.append(gp);
-  if(!S.pass.premium){const pp=document.createElement('button');pp.className='tile wide';pp.style.setProperty('--tc','#ffd36b');pp.innerHTML='<span class="tico">'+passBadge(passTier(S.pass.xp),46)+'</span><span style="min-width:0"><span class="tk">Season 1 · Starfall</span><b>Rumble Pass</b><span class="tt">30 extra rewards, 5 Starfall skins and the exclusive rumbler Orion · '+PASS_GEMS+' gems</span></span>';pp.addEventListener('click',()=>go('pass'));body.append(pp);}
+  if(!S.pass.premium){const pp=document.createElement('button');pp.className='tile wide';pp.style.setProperty('--tc','#ffd36b');pp.innerHTML='<span class="tico rpe-t">'+passEmblem(50)+'</span><span style="min-width:0"><span class="tk">Season 1 · Starfall</span><b>Rumble Pass</b><span class="tt">30 extra rewards, 5 Starfall skins and the exclusive rumbler Orion · '+PASS_GEMS+' gems</span></span>';pp.addEventListener('click',()=>go('pass'));body.append(pp);}
   {const all=S.daily.dealSkins||[],feat=all[0],rest=all.slice(1).filter(([rid,sid])=>BY_ID[rid]&&!hasSkin(rid,sid));
    body.append(sectionTitle('Daily skins','New skins every day · new in '+untilMidnight()));body.append(rerollBtn('skins'));
    if(feat&&BY_ID[feat[0]]){const[rid,sid]=feat,b=BY_ID[rid],sk=getSkin(b,sid),pr=skinPrice(sk),own=hasSkin(rid,sid),d=document.createElement('button');d.className='pindeal skindeal';d.append(thumb(b,sk,96));
@@ -5284,6 +5284,31 @@ function untilMidnight(){const n=new Date(),m=new Date(n);m.setHours(24,0,0,0);c
 /* ---------- Rumble Pass ---------- */
 function passClaimable(){let n=0;const t=passTier(S.pass.xp);for(let i=0;i<t;i++){if(!S.pass.cf.includes(i))n++;if(S.pass.premium&&!S.pass.cp.includes(i))n++;}return n+Math.max(0,bonusAvail(S.pass.xp)-S.pass.bonus);}
 function passBadge(n,size){return '<svg viewBox="0 0 48 48" width="'+size+'" height="'+size+'" aria-hidden="true"><path d="'+starPath(24,24,23,18,10)+'" fill="#ffc93c" stroke="#120f26" stroke-width="3" stroke-linejoin="round"/><circle cx="24" cy="24" r="13.5" fill="#1d1b52" stroke="#120f26" stroke-width="2.5"/><text x="24" y="29.5" text-anchor="middle" font-family="Bungee, Impact, sans-serif" font-size="'+(n>9?13:15)+'" fill="#ffd36b">'+n+'</text></svg>';}
+
+/* The Rumble Pass emblem: a season banner on a gold rod with a big gold R. Each copy gets its own gradient ids. */
+const RPASS_R='M23 20H35C39 20 41.5 22.8 41.5 26.6C41.5 29.6 39.8 31.8 37.3 32.7L42.5 42H35.4L31 33.4H29.6V42H23ZM29.6 25.2V28.6H34C35.2 28.6 35.9 27.9 35.9 26.9C35.9 25.9 35.2 25.2 34 25.2Z',RPASS_CLOTH='M13 11H51V56.5L32 47.5L13 56.5Z';
+let _rpeN=0;
+function passEmblem(size,o){o=o||{};const u='rpe'+(++_rpeN),t=o.tier;
+  let s='<svg class="rpe" viewBox="0 0 64 64" width="'+size+'" height="'+size+'" aria-hidden="true"><defs>'+
+  '<linearGradient id="'+u+'g" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff2b8"/><stop offset=".5" stop-color="#ffc93c"/><stop offset="1" stop-color="#e08a10"/></linearGradient>'+
+  '<linearGradient id="'+u+'p" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#7a5cff"/><stop offset=".6" stop-color="#4a33c8"/><stop offset="1" stop-color="#2b1f86"/></linearGradient>'+
+  '<linearGradient id="'+u+'k" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffa3c0"/><stop offset="1" stop-color="#e23a6a"/></linearGradient>'+
+  '<clipPath id="'+u+'c"><path d="'+RPASS_CLOTH+'"/></clipPath></defs>'+
+  '<path d="'+RPASS_CLOTH+'" fill="url(#'+u+'p)" stroke="#120f26" stroke-width="3" stroke-linejoin="round"/>'+
+  '<g clip-path="url(#'+u+'c)"><path d="M13 11H51V20H13Z" fill="url(#'+u+'k)"/><path d="M13 20H51" stroke="#120f26" stroke-width="2"/>'+
+  '<path d="M17.5 23V50L32 43.2L46.5 50V23" fill="none" stroke="#ffc93c" stroke-width="1.8" opacity=".75"/>'+
+  '<path d="M15 21.5L22 11M24 21.5L31 11" stroke="#fff" stroke-width="2.4" opacity=".14"/></g>'+
+  '<circle cx="21" cy="15.6" r="1.5" fill="#fff"/><circle cx="32" cy="15.6" r="1.5" fill="#fff"/><circle cx="43" cy="15.6" r="1.5" fill="#fff"/>'+
+  '<rect x="6" y="6.5" width="52" height="6.5" rx="3.25" fill="url(#'+u+'g)" stroke="#120f26" stroke-width="2.6"/>'+
+  '<circle cx="6.5" cy="9.75" r="4.2" fill="#ff5e87" stroke="#120f26" stroke-width="2.4"/><circle cx="57.5" cy="9.75" r="4.2" fill="#ff5e87" stroke="#120f26" stroke-width="2.4"/>'+
+  '<g transform="translate(-0.3 4.5)"><path d="'+RPASS_R+'" fill="#120f26" stroke="#120f26" stroke-width="6" stroke-linejoin="round" fill-rule="evenodd" transform="translate(0 1.6)"/>'+
+  '<path d="'+RPASS_R+'" fill="url(#'+u+'g)" stroke="#120f26" stroke-width="2.6" stroke-linejoin="round" fill-rule="evenodd" paint-order="stroke"/>'+
+  '<path d="M24.6 21.6H34.6" stroke="#fff" stroke-width="1.4" stroke-linecap="round" opacity=".7"/></g>'+
+  '<path d="M53 17Q53.6 21.4 58 22Q53.6 22.6 53 27Q52.4 22.6 48 22Q52.4 21.4 53 17Z" fill="#fff" stroke="#120f26" stroke-width=".8"/>';
+  if(t!=null)s+='<circle cx="51" cy="51" r="10.5" fill="#1d1b52" stroke="#120f26" stroke-width="2.6"/><circle cx="51" cy="51" r="7.6" fill="none" stroke="#ffc93c" stroke-width="1.4" opacity=".6"/><text x="51" y="55.4" text-anchor="middle" font-family="Bungee, \'Arial Black\', Impact, sans-serif" font-weight="900" font-size="'+(t>9?10:12.5)+'" fill="#ffd36b">'+t+'</text>';
+  return s+'</svg>';}
+function passEmblemEl(size,o){const sp=document.createElement('span');sp.className='rpe-wrap'+(o&&o.cls?' '+o.cls:'');sp.innerHTML=passEmblem(size,o);return sp;}
+try{Object.defineProperty(ICON,'rpass',{get:()=>passEmblem(22),enumerable:false});}catch(e){}
 const rwKey=rw=>Object.keys(rw)[0];
 function rewardLabel(rw){const k=rwKey(rw),v=rw[k];
   if(k==='drop')return (rw.n>1?rw.n+' ':'')+dropName(v)+(rw.n>1?'s':'');if(k==='rumbler')return BY_ID[v].name+' · new rumbler';if(k==='skin')return 'Starfall '+BY_ID[v].name;if(k==='pin')return pinName(v)+' pin';return '+'+fmtFull(v)+' '+CUR_NAME[k];}
@@ -5302,18 +5327,19 @@ function claimAll(){let n=0;for(let i=0;i<PASS_TIERS;i++){if(claimPass(i,false,t
 function renderPass(scroll){
   const xp=S.pass.xp,tier=passTier(xp),done=tier>=PASS_TIERS,need=done?PASS_BONUS_STEP:PASS_STEP,into=done?(xp-PASS_TIERS*PASS_STEP)%PASS_BONUS_STEP:xp%PASS_STEP,ready=passClaimable(),zb=BY_ID.zenith;
   $('#passTokens').innerHTML=ICON.pass+'<span>'+fmtFull(xp)+' tokens</span>';
+  {const h=$('#passH1');if(h&&h.dataset&&!h.dataset.e){h.innerHTML=passEmblem(40)+'<span>Rumble Pass</span>';h.dataset.e='1';}}
   const body=$('#passBody');body.innerHTML='';
   const hero=document.createElement('div');hero.className='pass-hero';
   hero.innerHTML='<div class="ph-top"><span class="ph-season">Season 1</span><h2>Starfall</h2><p class="hint">Every match earns pass tokens: 40 for a win, 25 for a draw, 15 for a loss, plus 5 per takedown.</p></div><div class="ph-art"></div>'+
     '<div class="ph-prog"><span class="ph-badge"><small>TIER</small><b>'+tier+'</b></span><span class="ph-barwrap"><span class="ph-bar"><i style="width:'+Math.round(into/need*100)+'%"></i></span><span class="ph-sub">'+(done?'Pass complete! '+into+' / '+need+' tokens to the next bonus drop':into+' / '+need+' tokens to tier '+(tier+1))+'</span></span></div><div class="ph-wins"><span>Every '+PASS_WIN_EVERY+' wins = 1 free tier</span><span class="pips" aria-label="'+(S.pass.wins%PASS_WIN_EVERY)+' of '+PASS_WIN_EVERY+' wins">'+Array.from({length:PASS_WIN_EVERY},(_,k)=>'<i'+(k<S.pass.wins%PASS_WIN_EVERY?' class="on"':'')+'></i>').join('')+'</span></div><div class="ph-btns"></div>';
   const art=hero.querySelector('.ph-art');const ob=BY_ID.orion;art.append(thumb(ob,getSkin(ob,'classic'),96));art.insertAdjacentHTML('beforeend','<small>Tier '+PASS_TIERS+' · Orion</small>');
   const btns=hero.querySelector('.ph-btns');
-  if(!S.pass.premium){const b=document.createElement('button');b.className='btn gold';b.innerHTML='Unlock Rumble Pass · '+cost('gems',PASS_GEMS);
-    b.addEventListener('click',()=>confirmBuy('Rumble Pass · Season 1',thumb(BY_ID.orion,getSkin(BY_ID.orion,'classic'),110),[['gems',PASS_GEMS]],()=>{S.pass.premium=true;persist();sfx('unlock');toast('Rumble Pass unlocked! Claim your rewards.','pass');renderPass();updateShopDot();}));btns.append(b);}
-  else btns.insertAdjacentHTML('beforeend','<span class="tag on" style="align-self:center;padding:6px 10px">Rumble Pass unlocked</span>');
+  if(!S.pass.premium){const b=document.createElement('button');b.className='btn gold';b.innerHTML='<span class="rpe-btn">'+passEmblem(26)+'</span>Unlock Rumble Pass · '+cost('gems',PASS_GEMS);
+    b.addEventListener('click',()=>confirmBuy('Rumble Pass · Season 1',passEmblemEl(110,{cls:'rpe-buy'}),[['gems',PASS_GEMS]],()=>{S.pass.premium=true;persist();sfx('unlock');toast('Rumble Pass unlocked! Claim your rewards.','rpass');renderPass();updateShopDot();}));btns.append(b);}
+  else btns.insertAdjacentHTML('beforeend','<span class="tag on rpe-tag" style="align-self:center;padding:6px 10px">'+passEmblem(22)+'Rumble Pass unlocked</span>');
   if(ready){const b=document.createElement('button');b.className='btn green';b.textContent='Claim all ('+ready+')';b.addEventListener('click',claimAll);btns.append(b);}
   body.append(hero);
-  body.insertAdjacentHTML('beforeend','<div class="track-head"><span>Free</span><span></span><span>Rumble Pass</span></div>');
+  body.insertAdjacentHTML('beforeend','<div class="track-head"><span>Free</span><span></span><span class="rpe-th">'+passEmblem(20)+'Rumble Pass</span></div>');
   const tr=document.createElement('div');tr.className='ptrack';
   for(let i=0;i<PASS_TIERS;i++){
     const row=document.createElement('div');row.className='prow'+(i<tier?' reached':'')+(i===tier?' cur':'');row.dataset.t=i;
