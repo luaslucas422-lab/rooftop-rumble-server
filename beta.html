@@ -830,6 +830,8 @@ body.rot-game #game{position:fixed;inset:auto;left:0;top:0;transform:rotate(90de
 .sup-myst i{position:absolute;inset:0;display:grid;place-items:center;font-family:var(--display);font-style:normal;color:#ffd23f;text-shadow:0 2px 0 var(--edge)}
 .th-sup{display:block;font-size:9px;letter-spacing:.06em;color:#ff7aa0}
 .rpe-th{flex-wrap:wrap}.rpe-th .th-sup{flex-basis:100%}
+.boost-note{grid-column:1/-1;flex-basis:100%;margin:0;font-size:12px;font-weight:700;color:#ffe9a8;text-align:center}.boost-note b{color:#ffd23f}
+.boost-badge{display:grid;place-items:center;width:52px;height:52px;border-radius:50%;border:3px solid var(--edge);background:radial-gradient(circle at 35% 30%,#fff3a6,#ffc93c 55%,#e08a10);color:#3a1a00;font:400 15px var(--display);box-shadow:0 0 14px rgba(255,201,60,.55);transform:rotate(-8deg)}
 /* ================= Beta UI refresh (beta build only: body.beta-ui) ================= */
 body.beta-ui:not(.hw-theme) #app{background:radial-gradient(90% 40% at 0% 0%,rgba(124,92,255,.42),transparent 62%),radial-gradient(80% 40% at 100% 18%,rgba(45,212,191,.16),transparent 60%),radial-gradient(120% 45% at 50% 112%,rgba(255,94,135,.34),rgba(255,94,135,0) 62%),var(--sky)}
 body.beta-ui .screen:not(.game){padding-bottom:calc(var(--tabh) + 36px)}
@@ -2649,7 +2651,7 @@ const fmtFull=v=>Math.floor(Number(v)||0).toLocaleString('en-US');
 const KEY=RR_MODE==='sandbox'?'rooftop-rumble-sandbox':'rooftop-rumble-v2';
 function newRumbler(){return{pinSlots:[null,null],facePins:[null,null,null],lvl:1,skins:['classic'],skin:'classic',prestige:0,gadgets:[],stars:[],gadget:null,star:null};}
 function newSt(){return{kills:0,deaths:0,dmg:0,supers:0,gadgets:0,pins:0,time:0,bestStreak:0,tricksW:0,tricksL:0,sims:0,replays:0,watched:0,sdWins:0,modes:{},drops:{}};}
-function defaultSave(){return{st:newSt(),pf:{...PF_DEF,show:null},exNew:[],hw:{wins:0,used:0,spent:0,knocks:0,opened:0,doors:null},party:[],name:'You',trophies:0,best:0,coins:150,gems:30,pp:0,chromos:0,packs:[],pins:[],onboarded:false,nameChanges:0,nameLockUntil:0,pass:{xp:0,premium:false,super:false,superPick:null,cf:[],cp:[],cs:[],bonus:0,wins:0},drops:[],dropDay:{date:'',n:0},pendingSkins:[],owned:{[STARTER]:newRumbler()},selected:STARTER,mode:'ring',rp:0,rpBest:0,rankClaimed:0,road:0,streak:0,daily:{date:'',claimed:false,dealSkins:[],bought:[]},sound:true,music:true,voice:true,shake:true,matches:0,wins:0};}
+function defaultSave(){return{st:newSt(),pf:{...PF_DEF,show:null},exNew:[],hw:{wins:0,used:0,spent:0,knocks:0,opened:0,doors:null},party:[],name:'You',trophies:0,best:0,coins:150,gems:30,pp:0,chromos:0,packs:[],pins:[],onboarded:false,nameChanges:0,nameLockUntil:0,pass:{xp:0,premium:false,super:false,superPick:null,boost:false,cf:[],cp:[],cs:[],bonus:0,wins:0},drops:[],dropDay:{date:'',n:0},pendingSkins:[],owned:{[STARTER]:newRumbler()},selected:STARTER,mode:'ring',rp:0,rpBest:0,rankClaimed:0,road:0,streak:0,daily:{date:'',claimed:false,dealSkins:[],bought:[]},sound:true,music:true,voice:true,shake:true,matches:0,wins:0};}
 function loadSave(given){
   const d=defaultSave();let s=null;
   if(given)s=given;else try{const raw=localStorage.getItem(KEY);if(raw)s=JSON.parse(raw);}catch(e){}
@@ -2674,7 +2676,7 @@ function loadSave(given){
   o.daily={...d.daily,...(s.daily||{})};if(!Array.isArray(o.daily.dealSkins))o.daily.dealSkins=[];if(!Array.isArray(o.daily.bought))o.daily.bought=[];
   o.packs=Array.isArray(s.packs)?s.packs.filter(x=>BY_ID[x]):[];o.pins=Array.isArray(s.pins)?s.pins.filter(x=>PREMIUM_PINS.concat(PASS_PINS,TOXIC_PINS,RANK_PINS,SET_PINS,DAILY_ONLY_PINS,SEASON_PINS,TROLL_PINS,GEN_PINS,HALLOWEEN_PINS,SECRET_PINS,FRIENDLY_PINS,SOLAR_PINS,TESTER_PINS).some(p=>p[0]===x)||isPrestigePin(x)||isSkinPin(x)):[];
   const ps=s.pass||{},ints=a=>Array.isArray(a)?a.filter(n=>Number.isInteger(n)&&n>=0&&n<PASS_TIERS):[];
-  o.pass={xp:Math.max(0,Math.floor(+ps.xp||0)),premium:!!ps.premium||!!ps.super,super:!!ps.super,superPick:typeof ps.superPick==='string'?ps.superPick.slice(0,20):null,cf:ints(ps.cf),cp:ints(ps.cp),cs:ints(ps.cs),bonus:Math.max(0,Math.floor(+ps.bonus||0)),wins:Math.max(0,Math.floor(+ps.wins||0))};
+  o.pass={xp:Math.max(0,Math.floor(+ps.xp||0)),premium:!!ps.premium||!!ps.super,super:!!ps.super,boost:!!ps.boost,superPick:typeof ps.superPick==='string'?ps.superPick.slice(0,20):null,cf:ints(ps.cf),cp:ints(ps.cp),cs:ints(ps.cs),bonus:Math.max(0,Math.floor(+ps.bonus||0)),wins:Math.max(0,Math.floor(+ps.wins||0))};
   o.drops=Array.isArray(s.drops)?s.drops.filter(d=>d&&(d.r==null||DROP_RAR.includes(d.r)||isSpecialDrop(d.r))).map(d=>({r:d.r||null,min:DROP_RAR.includes(d.min)?d.min:null,g:d.g?1:0})).slice(0,300):[];
   o.dropDay={date:'',n:0,...(s.dropDay||{})};
   o.pendingSkins=Array.isArray(s.pendingSkins)?s.pendingSkins.filter(x=>{if(typeof x!=='string')return false;const[i,k]=x.split(':');return!!BY_ID[i]&&skinsOf(BY_ID[i]).some(q=>q.id===k);}):[];
@@ -5392,7 +5394,7 @@ function openSandbox(){openSheet(card=>{card.classList.add('sbx');
     sel.addEventListener('change',()=>{const i=+sel.value;S.rp=i*100;S.rankPeak=Math.max(S.rankPeak|0,i);S.rankTop=Math.max(S.rankTop|0,rankInfo(i*100).tier);persist();renderHome();sfx('tap');});rk.append(sel);s.append(rk);
     s.append(sbxPills('Rumble Pass',[[true,'Premium'],[false,'Free only']],()=>!!S.pass.premium,v=>{S.pass.premium=v;if(!v)S.pass.super=false;persist();}));
     s.append(sbxPills('Rumble Pass SUPER',[[true,'On'],[false,'Off']],()=>!!S.pass.super,v=>{S.pass.super=v;if(v)S.pass.premium=true;else S.pass.superPick=null;persist();renderHome();}));
-    s.append(sbxBtn('Reset pass claims','',()=>{S.pass.cf=[];S.pass.cp=[];S.pass.cs=[];S.pass.superPick=null;persist();sfx('tap');toast('Pass rewards can be claimed again');}));}
+    s.append(sbxBtn('Reset pass claims','',()=>{S.pass.cf=[];S.pass.cp=[];S.pass.cs=[];S.pass.superPick=null;S.pass.boost=false;persist();sfx('tap');toast('Pass rewards can be claimed again');}));}
   {const s=sbxSec(card,'Give drops & boxes','#9d7bff');let n=1;s.append(sbxPills('How many',[[1,'×1'],[5,'×5'],[10,'×10'],[25,'×25']],()=>n,v=>n=v));
     const g=document.createElement('div');g.className='sbx-drops';
     for(const r of DROP_RAR.concat(['season'],SPOOKY,BOXES)){if(!RARITY[r])continue;const b=document.createElement('button');b.className='sbx-drop';b.append(dropCanvas(r,46));b.insertAdjacentHTML('beforeend','<small>'+esc(dropName(r))+'</small>');
@@ -6013,6 +6015,10 @@ function passEmblem(size,o){o=o||{};const sup=o.super!=null?!!o.super:hasSuper()
 function passEmblemEl(size,o){const sp=document.createElement('span');sp.className='rpe-wrap'+(o&&o.cls?' '+o.cls:'');sp.innerHTML=passEmblem(size,o);return sp;}
 try{Object.defineProperty(ICON,'rpass',{get:()=>passEmblem(22),enumerable:false});}catch(e){}
 const PASS_SUPER_GEMS=300,PASS_SUPER_UP=150,SUPER_CHROMOS=11000;
+/* +25% instant progress the first time you get the Rumble Pass or SUPER (once per season, they don't stack) */
+const PASS_BOOST=Math.round(PASS_TIERS*PASS_STEP*.25),PASS_BOOST_TIERS=Math.floor(PASS_BOOST/PASS_STEP);
+function passBoost(){if(S.pass.boost)return 0;S.pass.xp+=PASS_BOOST;S.pass.boost=true;return PASS_BOOST;}
+function passBoostToast(n){if(n)setTimeout(()=>toast('+25% instant progress! +'+fmtFull(n)+' pass tokens','pass'),700);}
 function superPrice(){return S.pass.premium?PASS_SUPER_UP:PASS_SUPER_GEMS;}
 function superMythics(){return RUMBLERS.filter(b=>b.rarity==='mythic'&&!b.eventOnly&&!b.beta);}
 function superPickPending(){return hasSuper()&&(S.pass.cs||[]).includes(SUPER_MYTHIC_TIER)&&!S.pass.superPick;}
@@ -6039,7 +6045,7 @@ function superTab(){try{const t=document.querySelector('.tab[data-tab="pass"]');
 function superRefresh(){try{renderHome();}catch(e){}try{renderPass();}catch(e){}try{renderShop();}catch(e){}try{updateShopDot();}catch(e){}}
 function buySuper(){const up=!!S.pass.premium,price=superPrice();
   confirmBuy(up?'Upgrade to Rumble Pass SUPER':'Rumble Pass SUPER',passEmblemEl(110,{cls:'rpe-buy',super:true}),[['gems',price]],()=>{
-    S.pass.premium=true;S.pass.super=true;persist();sfx('unlock');try{if(typeof netHello==='function')netHello();}catch(e){}superRefresh();superReveal();});}
+    const bn=passBoost();S.pass.premium=true;S.pass.super=true;persist();sfx('unlock');try{if(typeof netHello==='function')netHello();}catch(e){}superRefresh();superReveal(bn);});}
 function superBannerSwatch(cls){const d=document.createElement('span');d.className=cls||'sup-ban';const bn=PF_BANNERS.find(x=>x.id==='b_super');if(bn)d.style.background=bn.css;return d;}
 function superTitleChip(){const t=document.createElement('span');t.className='sup-title';t.textContent='Super Rumbler';return t;}
 function superMythicStack(n){const w=document.createElement('span');w.className='sup-mys';const left=superMythics().filter(b=>!S.owned[b.id]),list=(left.length?left:superMythics()).slice(0,n||3);for(const b of list)w.append(thumb(b,getSkin(b,'classic'),40));return w;}
@@ -6054,19 +6060,20 @@ function superCard(){const c=document.createElement('div');c.className='sup-card
   li(superTitleChip(),'Super Rumbler title','Only SUPER owners have it');
   li(superBannerSwatch(),'Super Pass banner','A profile background for your card');
   li(iconCanvas('x:super',44),'SUPER profile icon','Plus the crowned SUPER pass emblem');
+  if(!S.pass.boost){const v=document.createElement('span');v.className='boost-badge';v.textContent='+25%';li(v,'+25% instant progress','Jump about '+PASS_BOOST_TIERS+' tiers ahead the moment you get it');}
   if(!up)li(passEmblemEl(40,{super:false}),'The whole Rumble Pass','All '+PASS_TIERS+' premium rewards, Starfall skins and Orion');
   c.append(ul);
   const b=document.createElement('button');b.className='btn super-btn';b.innerHTML='<span class="rpe-btn">'+passEmblem(26,{super:true})+'</span>'+(up?'Upgrade to SUPER · ':'Get Rumble Pass SUPER · ')+cost('gems',superPrice());b.addEventListener('click',()=>{sfx('click');buySuper();});c.append(b);
   c.insertAdjacentHTML('beforeend','<p class="hint sup-note">'+(up?'Half price because you already have the Rumble Pass (normally '+PASS_SUPER_GEMS+' gems).':'Already have the Rumble Pass? Then SUPER is only '+PASS_SUPER_UP+' gems.')+'</p>');
   return c;}
 /* "SUPER unlocked!" */
-function superReveal(){const auto=superGrantChromosIfDone();if(auto)superRefresh();
+function superReveal(bnShown){const auto=superGrantChromosIfDone();if(auto)superRefresh();
   openSheet(card=>{card.classList.add('rid','sup-sheet');
     card.insertAdjacentHTML('beforeend','<p class="of-kick sup-kick" style="text-align:center">Rumble Pass SUPER</p><h2 style="text-align:center">SUPER unlocked!</h2>');
     const w=document.createElement('div');w.className='ex-burst';w.append(passEmblemEl(140,{super:true,cls:'rpe-buy'}));card.append(w);
     const rw=document.createElement('div');rw.className='sol-rlist';
     const add=(vis,lab)=>{const d=document.createElement('div');d.append(vis);d.insertAdjacentHTML('beforeend','<span>'+lab+'</span>');rw.append(d);};
-    {const v=document.createElement('span');v.className='sup-mys';for(const d of['rbox','ultra'])v.append(dropCanvas(d,32));add(v,PASS_TIERS+' SUPER rewards, with a Mythic of your choice at tier '+(SUPER_MYTHIC_TIER+1));}add(superTitleChip(),'Super Rumbler title');add(superBannerSwatch('sup-ban sm'),'Super Pass banner');add(iconCanvas('x:super',40),'SUPER profile icon');add(passEmblemEl(40,{super:false}),'Every Rumble Pass reward');
+    {const v=document.createElement('span');v.className='sup-mys';for(const d of['rbox','ultra'])v.append(dropCanvas(d,32));add(v,PASS_TIERS+' SUPER rewards, with a Mythic of your choice at tier '+(SUPER_MYTHIC_TIER+1));}add(superTitleChip(),'Super Rumbler title');add(superBannerSwatch('sup-ban sm'),'Super Pass banner');add(iconCanvas('x:super',40),'SUPER profile icon');add(passEmblemEl(40,{super:false}),'Every Rumble Pass reward');if(bnShown){const v=document.createElement('span');v.className='boost-badge';v.textContent='+25%';add(v,'+25% instant pass progress');}
     if(auto){const sp=document.createElement('span');sp.className='sup-cico';sp.innerHTML=ICON.chromos;add(sp,'+'+fmtFull(SUPER_CHROMOS)+' chromos (you have every Mythic)');}
     card.append(rw);
     if(superPickPending()){const p=document.createElement('button');p.className='btn gold sup-pick-btn';p.textContent='Choose your free Mythic';p.addEventListener('click',openSuperPick);card.append(p);}
@@ -6162,8 +6169,8 @@ function renderShop(){
   gp.innerHTML='<div style="flex:1 1 180px;min-width:0"><h2>Daily gift</h2><p class="hint" style="margin:0">'+(S.daily.claimed?'Come back tomorrow for another one.':'Free, once a day: '+gift[gk]+' '+CUR_NAME[gk]+'.')+'</p></div>';
   const gb=document.createElement('button');gb.className='btn green';gb.innerHTML=S.daily.claimed?'Claimed':'Claim '+cost(gk,gift[gk]);gb.disabled=S.daily.claimed;
   gb.addEventListener('click',()=>{if(S.daily.claimed)return;S.daily.claimed=true;S[gk]+=gift[gk];persist();sfx('unlock');toast('+'+gift[gk]+' '+CUR_NAME[gk],gk);renderShop();updateShopDot();});gp.append(gb);body.append(gp);
-  if(!S.pass.premium){const pp=document.createElement('button');pp.className='tile wide';pp.style.setProperty('--tc','#ffd36b');pp.innerHTML='<span class="tico rpe-t">'+passEmblem(50)+'</span><span style="min-width:0"><span class="tk">Season 1 · Starfall</span><b>Rumble Pass</b><span class="tt">30 extra rewards, 5 Starfall skins and the exclusive rumbler Orion · '+PASS_GEMS+' gems</span></span>';pp.addEventListener('click',()=>go('pass'));body.append(pp);}
-  if(!hasSuper()){const sp=document.createElement('button');sp.className='tile wide sup-shop';sp.style.setProperty('--tc','#ff3d6e');sp.innerHTML='<span class="tico rpe-t">'+passEmblem(50,{super:true})+'</span><span style="min-width:0"><span class="tk">Version 2 of the Rumble Pass</span><b>Rumble Pass SUPER</b><span class="tt">Everything in the Rumble Pass + '+PASS_TIERS+' bigger SUPER rewards with a Mythic of your choice, plus an exclusive title, banner and icon · '+superPrice()+' gems'+(S.pass.premium?' (half price, you have the Rumble Pass)':'')+'</span></span>';sp.addEventListener('click',()=>go('pass'));body.append(sp);}
+  if(!S.pass.premium){const pp=document.createElement('button');pp.className='tile wide';pp.style.setProperty('--tc','#ffd36b');pp.innerHTML='<span class="tico rpe-t">'+passEmblem(50)+'</span><span style="min-width:0"><span class="tk">Season 1 · Starfall</span><b>Rumble Pass</b><span class="tt">'+PASS_TIERS+' extra rewards, 5 Starfall skins and the exclusive rumbler Orion'+(S.pass.boost?'':' · +25% instant progress')+' · '+PASS_GEMS+' gems</span></span>';pp.addEventListener('click',()=>go('pass'));body.append(pp);}
+  if(!hasSuper()){const sp=document.createElement('button');sp.className='tile wide sup-shop';sp.style.setProperty('--tc','#ff3d6e');sp.innerHTML='<span class="tico rpe-t">'+passEmblem(50,{super:true})+'</span><span style="min-width:0"><span class="tk">Version 2 of the Rumble Pass</span><b>Rumble Pass SUPER</b><span class="tt">Everything in the Rumble Pass + '+PASS_TIERS+' bigger SUPER rewards with a Mythic of your choice, plus an exclusive title, banner and icon'+(S.pass.boost?'':' · +25% instant progress')+' · '+superPrice()+' gems'+(S.pass.premium?' (half price, you have the Rumble Pass)':'')+'</span></span>';sp.addEventListener('click',()=>go('pass'));body.append(sp);}
   {const all=S.daily.dealSkins||[],feat=all[0],rest=all.slice(1).filter(([rid,sid])=>BY_ID[rid]&&!hasSkin(rid,sid));
    body.append(sectionTitle('Daily skins','New skins every day · new in '+untilMidnight()));body.append(rerollBtn('skins'));
    if(feat&&BY_ID[feat[0]]){const[rid,sid]=feat,b=BY_ID[rid],sk=getSkin(b,sid),pr=skinPrice(sk),own=hasSkin(rid,sid),d=document.createElement('button');d.className='pindeal skindeal';d.append(thumb(b,sk,96));
@@ -6494,10 +6501,11 @@ function renderPass(scroll){
   const art=hero.querySelector('.ph-art');const ob=BY_ID.orion;art.append(thumb(ob,getSkin(ob,'classic'),96));art.insertAdjacentHTML('beforeend','<small>Tier '+PASS_TIERS+' · Orion</small>');
   const btns=hero.querySelector('.ph-btns');
   if(!S.pass.premium){const b=document.createElement('button');b.className='btn gold';b.innerHTML='<span class="rpe-btn">'+passEmblem(26)+'</span>Unlock Rumble Pass · '+cost('gems',PASS_GEMS);
-    b.addEventListener('click',()=>confirmBuy('Rumble Pass · Season 1',passEmblemEl(110,{cls:'rpe-buy'}),[['gems',PASS_GEMS]],()=>{S.pass.premium=true;persist();sfx('unlock');toast('Rumble Pass unlocked! Claim your rewards.','rpass');renderPass();updateShopDot();}));btns.append(b);}
+    b.addEventListener('click',()=>confirmBuy('Rumble Pass · Season 1',passEmblemEl(110,{cls:'rpe-buy'}),[['gems',PASS_GEMS]],()=>{const bn=passBoost();S.pass.premium=true;persist();sfx('unlock');toast('Rumble Pass unlocked! Claim your rewards.','rpass');passBoostToast(bn);renderPass(true);renderHome();updateShopDot();}));btns.append(b);}
   else if(hasSuper()){btns.insertAdjacentHTML('beforeend','<span class="tag on rpe-tag sup-tag" style="align-self:center;padding:6px 10px">'+passEmblem(22)+'Rumble Pass SUPER</span>');
     if(superPickPending()){const b=document.createElement('button');b.className='btn gold sup-pick-btn';b.textContent='Choose your free Mythic';b.addEventListener('click',openSuperPick);btns.append(b);}}
   else btns.insertAdjacentHTML('beforeend','<span class="tag on rpe-tag" style="align-self:center;padding:6px 10px">'+passEmblem(22)+'Rumble Pass unlocked</span>');
+  if(!S.pass.boost&&!S.pass.premium)btns.insertAdjacentHTML('beforeend','<p class="boost-note">⚡ Get the Rumble Pass or SUPER and jump <b>+25%</b> ahead right away ('+fmtFull(PASS_BOOST)+' tokens, about '+PASS_BOOST_TIERS+' tiers).</p>');
   if(ready){const b=document.createElement('button');b.className='btn green';b.textContent='Claim all ('+ready+')';b.addEventListener('click',claimAll);btns.append(b);}
   body.append(hero);
   if(!hasSuper())body.append(superCard());
