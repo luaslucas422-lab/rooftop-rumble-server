@@ -1,6 +1,6 @@
 /* Engine tests: finds mates and wins material, speed check. Run: node test/engine.test.js */
 const assert = require('assert');
-const C = require('../chess/js/chess.js'), E = require('../chess/js/engine.js');
+const C = require('../public/js/chess.js'), E = require('../public/js/engine.js');
 const S = new E.Searcher(18);
 const best = (fen, opts) => { const pos = new C.Position(fen); const r = S.think(pos, opts); return { uci: C.toUci(r.best), r }; };
 const cases = [

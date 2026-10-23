@@ -1,5 +1,5 @@
 /* Online play test: starts the real server, two players find each other, play, resign, rematch, friend challenge.
-   Run: node test/online.test.js */
+   Run: node test/online.test.js [server entry file, default ../server.js] */
 const assert = require('assert');
 const { spawn } = require('child_process');
 const path = require('path');
@@ -7,7 +7,8 @@ const fs = require('fs');
 const WebSocket = require('ws');
 const PORT = 18000 + Math.floor(Math.random() * 1000);
 const dataFile = path.join(require('os').tmpdir(), 'chess-test-' + PORT + '.json');
-const srv = spawn(process.execPath, [path.join(__dirname, '..', 'index.js')], { env: Object.assign({}, process.env, { PORT, DATABASE_URL: '' , CHESS_DATA_FILE: dataFile }), stdio: ['ignore', 'pipe', 'inherit'] });
+const entry = process.argv[2] ? path.resolve(process.argv[2]) : path.join(__dirname, '..', 'server.js');
+const srv = spawn(process.execPath, [entry], { env: Object.assign({}, process.env, { PORT, DATABASE_URL: '' , CHESS_DATA_FILE: dataFile }), stdio: ['ignore', 'pipe', 'inherit'] });
 const wait = ms => new Promise(r => setTimeout(r, ms));
 function client(token, name) {
   const ws = new WebSocket('ws://127.0.0.1:' + PORT + '/chess/ws');
@@ -60,6 +61,11 @@ function client(token, name) {
   assert.strictEqual(html[0], 200); assert(html[1].includes('class Position'));
   const bad = await new Promise(res => require('http').get('http://127.0.0.1:' + PORT + '/chess/..%2findex.js', r => res(r.statusCode)));
   assert.notStrictEqual(bad, 200);
+  // a broken %-escape must not take the server down
+  const broken = await new Promise(res => require('http').get('http://127.0.0.1:' + PORT + '/chess/%E0%A4%A', r => res(r.statusCode)));
+  assert.strictEqual(broken, 400);
+  const alive = await new Promise(res => require('http').get('http://127.0.0.1:' + PORT + '/chess/', r => res(r.statusCode)));
+  assert.strictEqual(alive, 200);
   console.log('online ok');
   srv.kill(); try { fs.unlinkSync(dataFile); } catch (e) {} process.exit(0);
 })().catch(e => { console.error(e); srv.kill(); process.exit(1); });

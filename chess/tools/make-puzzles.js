@@ -3,7 +3,7 @@
    Usage: node tools/make-puzzles.js <seed> <games> <out.json>      then: node tools/make-puzzles.js merge <out.js> <in1.json> ... */
 const fs = require('fs');
 const path = require('path');
-const C = require('../chess/js/chess.js'), E = require('../chess/js/engine.js'), O = require('../chess/js/openings.js');
+const C = require('../public/js/chess.js'), E = require('../public/js/engine.js'), O = require('../public/js/openings.js');
 
 if (process.argv[2] === 'merge') {
   const out = process.argv[3], all = [], seen = new Set();

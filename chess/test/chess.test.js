@@ -1,6 +1,6 @@
 /* Rules tests: perft (move generator), SAN, PGN, game endings. Run: node test/chess.test.js */
 const assert = require('assert');
-const C = require('../chess/js/chess.js');
+const C = require('../public/js/chess.js');
 const t0 = Date.now();
 const PERFT = [
   [C.START_FEN, [20, 400, 8902, 197281, 4865609]],
@@ -44,14 +44,14 @@ console.log('perft ok', (Date.now() - t0) + 'ms');
 console.log('rules ok', (Date.now() - t0) + 'ms');
 
 // every opening line is legal and written exactly as the app writes SAN
-{ const O = require('../chess/js/openings.js');
+{ const O = require('../public/js/openings.js');
   for (const [name, line] of O.LINES) { const g = new C.Game(); for (const s of line.split(' ')) { const r = g.move(s); assert(r && r.san === s, name + ': ' + s + ' (got ' + (r && r.san) + ')'); } }
   assert.strictEqual(O.name(['e4', 'c5', 'Nf3', 'd6', 'd4', 'cxd4', 'Nxd4', 'Nf6', 'Nc3', 'a6', 'Be3']), 'Sicilian Defense: Najdorf Variation');
   assert(O.isBook(['e4', 'e5', 'Nf3'], 2) && !O.isBook(['e4', 'e5', 'Qh5'], 2));
   console.log('openings ok', O.LINES.length); }
 
 // every puzzle replays legally, ends on the solver's move, and mate puzzles really end in mate
-{ const P = require('../chess/js/puzzles.js');
+{ const P = require('../public/js/puzzles.js');
   assert(P.length >= 200, 'puzzle count ' + P.length);
   for (const [fen, line, rating, themes] of P) {
     const g = new C.Game(fen), ms = line.split(' ');

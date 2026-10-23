@@ -8,7 +8,7 @@ const path = require('path');
 const vm = require('vm');
 const { WebSocketServer } = require('ws');
 const { createAccounts } = require('./accounts');
-const { createChessServer } = require('./chess-server');
+const { createChessServer } = require('./chess/chess-server');
 const RID = createAccounts({ cleanName: s => chatClean(String(s == null ? '' : s).replace(/[<>]/g, '').slice(0, 14)) });
 
 const PORT = process.env.PORT || 8080;
@@ -207,14 +207,15 @@ async function getBeta(force) {
   return betaCache.html;
 }
 
-/* ---------- Rooftop Chess: the app's files at /chess/ (online play is in chess-server.js) ---------- */
-const CHESS_DIR = path.join(__dirname, 'chess');
+/* ---------- Rooftop Chess: the app's files at /chess/ (it's its own project in chess/, online play is chess/chess-server.js) ---------- */
+const CHESS_DIR = path.join(__dirname, 'chess', 'public');
 const CHESS = createChessServer({ cleanName: s => chatClean(String(s == null ? '' : s).replace(/[<>]/g, '').slice(0, 20)) });
 const TYPES = { '.html': 'text/html; charset=utf-8', '.js': 'text/javascript; charset=utf-8', '.css': 'text/css; charset=utf-8', '.json': 'application/json', '.webmanifest': 'application/manifest+json',
   '.svg': 'image/svg+xml', '.png': 'image/png', '.ico': 'image/x-icon', '.txt': 'text/plain; charset=utf-8' };
 function serveChess(req, res, url) {
   if (url === '/chess') { res.writeHead(301, { Location: '/chess/' }); res.end(); return; }
-  let rel = decodeURIComponent(url.slice('/chess/'.length)) || 'index.html';
+  let rel;
+  try { rel = decodeURIComponent(url.slice('/chess/'.length)) || 'index.html'; } catch (e) { res.writeHead(400); res.end(); return; }
   const file = path.normalize(path.join(CHESS_DIR, rel));
   if (!file.startsWith(CHESS_DIR + path.sep)) { res.writeHead(403); res.end(); return; }
   fs.readFile(file, (err, body) => {

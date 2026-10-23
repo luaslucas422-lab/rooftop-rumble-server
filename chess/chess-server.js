@@ -6,8 +6,8 @@ const crypto = require('crypto');
 const fs = require('fs');
 const path = require('path');
 const { WebSocketServer } = require('ws');
-const Chess = require('./chess/js/chess.js');
-const Rating = require('./chess/js/rating.js');
+const Chess = require('./public/js/chess.js');
+const Rating = require('./public/js/rating.js');
 
 const TIME_CONTROLS = ['1+0', '1+1', '2+1', '3+0', '3+2', '5+0', '5+3', '10+0', '10+5', '15+10', '30+0'];
 const FIRST_MOVE_MS = 30000;      // a player who doesn't make their first move in time: game aborted
