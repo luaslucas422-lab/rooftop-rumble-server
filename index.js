@@ -8,6 +8,7 @@ const path = require('path');
 const vm = require('vm');
 const { WebSocketServer } = require('ws');
 const { createAccounts } = require('./accounts');
+const { createChessServer } = require('./chess-server');
 const RID = createAccounts({ cleanName: s => chatClean(String(s == null ? '' : s).replace(/[<>]/g, '').slice(0, 14)) });
 
 const PORT = process.env.PORT || 8080;
@@ -206,17 +207,42 @@ async function getBeta(force) {
   return betaCache.html;
 }
 
+/* ---------- Rooftop Chess: the app's files at /chess/ (online play is in chess-server.js) ---------- */
+const CHESS_DIR = path.join(__dirname, 'chess');
+const CHESS = createChessServer({ cleanName: s => chatClean(String(s == null ? '' : s).replace(/[<>]/g, '').slice(0, 20)) });
+const TYPES = { '.html': 'text/html; charset=utf-8', '.js': 'text/javascript; charset=utf-8', '.css': 'text/css; charset=utf-8', '.json': 'application/json', '.webmanifest': 'application/manifest+json',
+  '.svg': 'image/svg+xml', '.png': 'image/png', '.ico': 'image/x-icon', '.txt': 'text/plain; charset=utf-8' };
+function serveChess(req, res, url) {
+  if (url === '/chess') { res.writeHead(301, { Location: '/chess/' }); res.end(); return; }
+  let rel = decodeURIComponent(url.slice('/chess/'.length)) || 'index.html';
+  const file = path.normalize(path.join(CHESS_DIR, rel));
+  if (!file.startsWith(CHESS_DIR + path.sep)) { res.writeHead(403); res.end(); return; }
+  fs.readFile(file, (err, body) => {
+    if (err) { res.writeHead(404, { 'Content-Type': 'text/plain' }); res.end('Not found'); return; }
+    const ext = path.extname(file);
+    res.writeHead(200, { 'Content-Type': TYPES[ext] || 'application/octet-stream', 'Cache-Control': ext === '.html' || rel === 'sw.js' ? 'no-cache' : 'public, max-age=300', 'X-Content-Type-Options': 'nosniff' });
+    res.end(body);
+  });
+}
+
 /* ---------- web server ---------- */
 const server = http.createServer((req, res) => {
+  const url = (req.url || '/').split('?')[0];
+  if (url === '/chess' || url.startsWith('/chess/')) return serveChess(req, res, url);
   if (req.url && req.url.split('?')[0].replace(/\/+$/, '') === '/beta') {   /* Beta test: built from the source files in the Test Supply repo */
     getBeta(/[?&]fresh/.test(req.url)).then(html => {
       if (!html) { res.writeHead(404, { 'Content-Type': 'text/plain' }); res.end('No beta right now.'); return; }
       res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8', 'Cache-Control': 'no-cache', 'X-Beta-Source': betaCache.src || '' }); res.end(html); });
     return; }
   res.writeHead(200, { 'Content-Type': 'text/plain', 'Access-Control-Allow-Origin': '*' });
-  res.end('Rooftop Rumble server is running. Players online: ' + [...players.values()].filter(p => p.ws && p.ws.readyState === 1).length + ', matches: ' + matches.size + '\n');
+  res.end('Rooftop Rumble server is running. Players online: ' + [...players.values()].filter(p => p.ws && p.ws.readyState === 1).length + ', matches: ' + matches.size + '\n' +
+    'Rooftop Chess: /chess/ – online now: ' + CHESS.stats().online + ', games: ' + CHESS.stats().games + '\n');
 });
-const wss = new WebSocketServer({ server, maxPayload: 512 * 1024, perMessageDeflate: { threshold: 512, zlibDeflateOptions: { level: 3 } } });
+const wss = new WebSocketServer({ noServer: true, maxPayload: 512 * 1024, perMessageDeflate: { threshold: 512, zlibDeflateOptions: { level: 3 } } });
+server.on('upgrade', (req, socket, head) => {
+  if ((req.url || '').split('?')[0] === '/chess/ws') return CHESS.handleUpgrade(req, socket, head);
+  wss.handleUpgrade(req, socket, head, ws => wss.emit('connection', ws, req));
+});
 wss.on('connection', (ws, req) => {
   ws.ip = String((req && req.headers['x-forwarded-for']) || (req && req.socket && req.socket.remoteAddress) || '').split(',')[0].trim();
   ws.isAlive = true; ws.on('pong', () => { ws.isAlive = true; });
