@@ -787,6 +787,28 @@ body.rot-game #game{position:fixed;inset:auto;left:0;top:0;transform:rotate(90de
 .rpe-buy{position:relative;width:110px;height:110px}.rpe-buy::before{content:"";position:absolute;inset:-10px;border-radius:50%;background:radial-gradient(circle,rgba(255,201,60,.4),transparent 65%);animation:rpeGlow 2.4s ease-in-out infinite}.rpe-buy svg{position:relative;animation:rpeBob 2.4s ease-in-out infinite}
 @keyframes rpeGlow{50%{transform:scale(1.12);opacity:.6}}@keyframes rpeBob{50%{transform:translateY(-4px) rotate(-3deg)}}
 @media (prefers-reduced-motion:reduce){.rpe-buy::before,.rpe-buy svg{animation:none}}
+/* Rumble Pass SUPER */
+.rpe-hw{position:relative;display:inline-block;flex:none;line-height:0}.sup-chip{position:absolute;left:50%;bottom:-9px;transform:translateX(-50%);font:900 9px/1 var(--body);font-style:normal;letter-spacing:.06em;padding:2px 4px;border-radius:5px;background:linear-gradient(90deg,#ffd23f,#ff6b93);color:#2b0010;border:2px solid var(--edge);-webkit-text-fill-color:#2b0010;text-shadow:none}
+.tab .tab-crown{display:none}.tab.super .tab-crown{display:inline}
+.sup-card{position:relative;overflow:hidden;display:flex;flex-direction:column;gap:12px;padding:16px;border:3px solid var(--edge);border-radius:24px;background:radial-gradient(120% 80% at 100% 0%,rgba(255,210,63,.32),transparent 55%),linear-gradient(160deg,#a10f45,#5c0626 62%,#2a0414);box-shadow:inset 0 2px 0 rgba(255,255,255,.15),0 6px 0 rgba(0,0,0,.25)}
+.sup-head{display:grid;grid-template-columns:auto minmax(0,1fr);gap:12px;align-items:center}
+.sup-head h2{font-family:var(--display);font-size:24px;line-height:1.05;text-shadow:0 3px 0 var(--edge)}
+.sup-head .hint,.sup-note{margin:4px 0 0;color:#ffd6e2}
+.sup-note{margin:0;font-size:12px;text-align:center}
+.sup-kick{color:#ffd23f!important}
+.sup-perks{list-style:none;margin:0;padding:0;display:grid;gap:8px}
+.sup-perks li{display:grid;grid-template-columns:72px minmax(0,1fr);gap:10px;align-items:center;padding:8px 10px;border-radius:16px;background:rgba(0,0,0,.28);border:2px solid rgba(0,0,0,.3)}
+.sup-perks .pv{display:flex;justify-content:center;align-items:center;min-height:44px}
+.sup-perks b{display:block;font-size:14px;line-height:1.2}.sup-perks small{display:block;font-size:12px;color:#ffd6e2;font-weight:600;line-height:1.3}
+.sup-mys{display:flex;align-items:center}.sup-mys canvas{margin-left:-16px}.sup-mys canvas:first-child{margin-left:0}
+.sup-ban{display:block;width:64px;height:36px;border-radius:9px;border:2px solid var(--edge);box-shadow:inset 0 1px 0 rgba(255,255,255,.25)}.sup-ban.sm{width:54px;height:30px}
+.sup-title{display:inline-block;font-family:var(--display);font-size:10px;line-height:1.1;padding:4px 6px;border-radius:8px;background:rgba(0,0,0,.45);border:2px solid #ffd23f;color:#ffe48a;white-space:nowrap;text-shadow:0 1px 0 var(--edge)}
+.btn.super-btn{background:linear-gradient(180deg,#ff9cbc,#ff3d6e 55%,#c2124a);color:#fff;text-shadow:0 2px 0 var(--edge);box-shadow:inset 0 2px 0 rgba(255,255,255,.4),inset 0 -6px 0 #8a0a33,0 5px 0 rgba(0,0,0,.3)}
+.tag.sup-tag{background:linear-gradient(90deg,#ffd23f,#ff6b93);color:#2b0010;border-color:var(--edge)}
+.sup-pick-btn{animation:pulsec 1.4s ease-in-out infinite}
+.sup-cico svg{width:40px;height:40px;display:block}
+.sheet-card.sup-sheet{background:radial-gradient(120% 50% at 50% 0%,rgba(255,210,63,.22),transparent 60%),linear-gradient(180deg,#7a0d38,#3a0618 45%,#2a2560)}
+.tile.sup-shop{background:linear-gradient(135deg,#7a0d38,#c2124a 55%,#ff8a3d)!important}
 /* ================= Beta UI refresh (beta build only: body.beta-ui) ================= */
 body.beta-ui:not(.hw-theme) #app{background:radial-gradient(90% 40% at 0% 0%,rgba(124,92,255,.42),transparent 62%),radial-gradient(80% 40% at 100% 18%,rgba(45,212,191,.16),transparent 60%),radial-gradient(120% 45% at 50% 112%,rgba(255,94,135,.34),rgba(255,94,135,0) 62%),var(--sky)}
 body.beta-ui .screen:not(.game){padding-bottom:calc(var(--tabh) + 36px)}
@@ -976,7 +998,7 @@ body.beta-ui .sheet-card .grab{width:52px;background:rgba(255,255,255,.35)}
   <nav class="tabbar" id="tabbar" aria-label="Main">
     <button class="tab" data-tab="home" aria-current="page"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 11.5 12 4l9 7.5V20a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z" fill="currentColor"/></svg>Play</button>
     <button class="tab" data-tab="rumblers"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12.5" r="8.5" fill="currentColor"/><circle cx="9" cy="11.5" r="2" fill="#16133a"/><circle cx="15" cy="11.5" r="2" fill="#16133a"/><path d="M5 6 3 2l5 2.5M19 6l2-4-5 2.5" fill="currentColor"/></svg>Rumblers<span class="dotnew" id="rumDot" hidden></span></button>
-    <button class="tab" data-tab="pass"><svg viewBox="0 0 64 64" aria-hidden="true"><path d="M12 10H52V58L32 48.5L12 58Z" fill="currentColor"/><rect x="5" y="4" width="54" height="9" rx="4.5" fill="currentColor"/><path d="M12 13.5H52" stroke="#16133a" stroke-width="2.6"/><path d="M23 20H35C39 20 41.5 22.8 41.5 26.6C41.5 29.6 39.8 31.8 37.3 32.7L42.5 42H35.4L31 33.4H29.6V42H23ZM29.6 25.2V28.6H34C35.2 28.6 35.9 27.9 35.9 26.9C35.9 25.9 35.2 25.2 34 25.2Z" fill="#16133a" fill-rule="evenodd" transform="translate(-4 -4) scale(1.1)"/></svg>Pass<span class="dotnew" id="passDot" hidden></span></button>
+    <button class="tab" data-tab="pass"><svg viewBox="0 0 64 64" aria-hidden="true"><path class="tab-crown" d="M22.5 10L24.6 1.6L28.8 5.4L32 .4L35.2 5.4L39.4 1.6L41.5 10Z" fill="currentColor"/><path d="M12 10H52V58L32 48.5L12 58Z" fill="currentColor"/><rect x="5" y="4" width="54" height="9" rx="4.5" fill="currentColor"/><path d="M12 13.5H52" stroke="#16133a" stroke-width="2.6"/><path d="M23 20H35C39 20 41.5 22.8 41.5 26.6C41.5 29.6 39.8 31.8 37.3 32.7L42.5 42H35.4L31 33.4H29.6V42H23ZM29.6 25.2V28.6H34C35.2 28.6 35.9 27.9 35.9 26.9C35.9 25.9 35.2 25.2 34 25.2Z" fill="#16133a" fill-rule="evenodd" transform="translate(-4 -4) scale(1.1)"/></svg>Pass<span class="dotnew" id="passDot" hidden></span></button>
     <button class="tab" data-tab="shop"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 8h14l-1.2 12.1a1 1 0 0 1-1 .9H7.2a1 1 0 0 1-1-.9z" fill="currentColor"/><path d="M8.5 9V7a3.5 3.5 0 0 1 7 0v2" fill="none" stroke="currentColor" stroke-width="2"/></svg>Shop<span class="dotnew" id="shopDot" hidden></span></button>
     <button class="tab" data-tab="ranked"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2 20 5v6c0 5-3.4 9-8 11-4.6-2-8-6-8-11V5z" fill="currentColor"/><path d="m12 7 1.5 3 3.3.5-2.4 2.3.6 3.2L12 14.5 9 16l.6-3.2-2.4-2.3 3.3-.5z" fill="#16133a"/></svg>Ranked</button>
     <button class="tab" data-tab="settings"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M10.3 2h3.4l.5 2.6 2 .9 2.2-1.5 2.4 2.4-1.5 2.2.9 2 2.6.5v3.4l-2.6.5-.9 2 1.5 2.2-2.4 2.4-2.2-1.5-2 .9-.5 2.6h-3.4l-.5-2.6-2-.9-2.2 1.5-2.4-2.4 1.5-2.2-.9-2L1.5 13.7v-3.4l2.6-.5.9-2-1.5-2.2 2.4-2.4 2.2 1.5 2-.9z" fill="currentColor"/><circle cx="12" cy="12" r="3.4" fill="#16133a"/></svg>Settings</button>
@@ -1633,7 +1655,8 @@ const PF_BANNERS=[
  {id:'b_exclusive',name:'Exclusive',css:'linear-gradient(135deg,#053a30,#1a9c80 55%,#7dffd9)',ok:()=>exCount()>=3,how:'Earn 3 exclusive skins'},
  {id:'b_gold',name:'Gold Rush',css:'linear-gradient(135deg,#7a4a00,#ffd23f 50%,#fff3a6)',ok:()=>S.best>=3000,how:'Reach 3,000 trophies'},
  {id:'b_solar',name:'Solar Flare',css:'radial-gradient(circle at 80% 30%,#fffbe6 0 8%,#ffd23f 12%,#ff8a1f 34%,#c4366f 66%,#3a0a24)',ok:()=>solDone(5),how:'Finish Solar level 5'},
- {id:'b_rainbow',name:'Rainbow',css:'linear-gradient(135deg,'+RB_LINE+')',ok:isMaster,how:'Reach Master in ranked'}];
+ {id:'b_rainbow',name:'Rainbow',css:'linear-gradient(135deg,'+RB_LINE+')',ok:isMaster,how:'Reach Master in ranked'},
+ {id:'b_super',name:'Super Pass',css:'radial-gradient(circle at 14% 26%,#fff 0 1.5px,transparent 2.5px),radial-gradient(circle at 84% 68%,#fff 0 1.5px,transparent 2.5px),radial-gradient(circle at 62% 18%,#ffe48a 0 1.3px,transparent 2.3px),radial-gradient(circle at 36% 78%,#ffe48a 0 1.1px,transparent 2px),repeating-linear-gradient(120deg,rgba(255,210,63,.2) 0 9px,transparent 9px 26px),linear-gradient(135deg,#4a0420,#d1124f 52%,#ffb000)',ok:()=>hasSuper(),how:'Get Rumble Pass SUPER'}];
 const PF_FRAMES=[
  {id:'f_none',name:'None',css:''},
  {id:'f_silver',name:'Silver',css:'linear-gradient(135deg,#ffffff,#9aa3c7)'},
@@ -1660,6 +1683,7 @@ const PF_TITLES=[
  {id:'t_king',name:'Takedown King',ok:()=>(S.st.kills|0)>=500,how:'Get 500 takedowns'},
  {id:'t_marathon',name:'Marathoner',ok:()=>stMatches()>=300,how:'Play 300 matches'},
  {id:'t_pass',name:'Pass Master',ok:()=>passTier(S.pass.xp|0)>=45,how:'Reach Rumble Pass tier 45'},
+ {id:'t_super',name:'Super Rumbler',ok:()=>hasSuper(),how:'Get Rumble Pass SUPER'},
  {id:'t_trend',name:'Trendsetter',ok:()=>exCount()>=5,how:'Earn 5 exclusive skins'},
  {id:'t_legend',name:'Legend',ok:()=>S.best>=3000,how:'Reach 3,000 trophies'},
  {id:'t_master',name:'Master',ok:isMaster,how:'Reach Master in ranked'},
@@ -2001,7 +2025,7 @@ function iconCanvas(id,size){if(id==='z:sec_afk'||id==='x:tester'||/^o:\d+a$/.te
   const tick=()=>{if(cv.isConnected)seen=true;else if(seen||Date.now()-born>5000)return;c.clearRect(0,0,size,size);drawProfileIcon(c,id,size);requestAnimationFrame(tick);};tick();return cv;}if(/^k:\d$/.test(id||'')){const t=+id[2],el=document.createElement('span');el.className='icon-emb';el.style.width=el.style.height=size+'px';el.innerHTML=emblem(t>=7?RANK_STEPS-1:t*3,Math.round(size*.92),true);return el;}
   const cv=document.createElement('canvas'),d=Math.min(2,window.devicePixelRatio||1);cv.width=cv.height=Math.round(size*d);cv.style.width=cv.style.height=size+'px';cv.setAttribute('aria-hidden','true');const c=cv.getContext('2d');c.scale(d,d);drawProfileIcon(c,id||'r:ember',size);return cv;}
 function drawProfileIcon(c,id,s){const p=String(id).split(':'),R=s*.18;let col='#3a3380',col2='#1b1546';
-  if(p[0]==='z'){col=(SECRET_ART[p[1]]||['','#8a5cf5'])[1];col2='#1b1046';}else if(p[0]==='t'){col='#ffb000';col2='#c4366f';}else if(p[0]==='x'){const sp=SPECIAL_ICONS.find(x=>x[0]===p[1]);col=p[1]==='tester'?'#2de0b0':sp?sp[2]:'#9d7bff';col2=p[1]==='tester'?'#3b1f6b':'#1b1546';}else if(p[0]==='o'){const lv=parseInt(p[1])||1,sp=SOL_PAL[clamp(lv,1,SOL_PAL.length)-1];col=lv>SOLAR_MAX?'#4a1a5a':sp[1];col2=lv>SOLAR_MAX?'#0b0820':lv>=SOLAR_MAX?'#3a0a24':'#2a1458';}else if(p[0]==='s'){col='#9d7bff';col2='#2a1458';const sb=BY_ID[p[1]],ss=sb&&getSkin(sb,p[2]);if(ss&&ss.tier==='exclusive'){col=ss.glow||ss.proj||EX_COL;col2='#06231d';}}else{const b=BY_ID[p[1]];if(b)col=RARITY[b.rarity].col;}
+  if(p[0]==='z'){col=(SECRET_ART[p[1]]||['','#8a5cf5'])[1];col2='#1b1046';}else if(p[0]==='t'){col='#ffb000';col2='#c4366f';}else if(p[0]==='x'){const sp=SPECIAL_ICONS.find(x=>x[0]===p[1]);col=p[1]==='tester'?'#2de0b0':p[1]==='super'?'#ff3d6e':sp?sp[2]:'#9d7bff';col2=p[1]==='tester'?'#3b1f6b':p[1]==='super'?'#3a0618':'#1b1546';}else if(p[0]==='o'){const lv=parseInt(p[1])||1,sp=SOL_PAL[clamp(lv,1,SOL_PAL.length)-1];col=lv>SOLAR_MAX?'#4a1a5a':sp[1];col2=lv>SOLAR_MAX?'#0b0820':lv>=SOLAR_MAX?'#3a0a24':'#2a1458';}else if(p[0]==='s'){col='#9d7bff';col2='#2a1458';const sb=BY_ID[p[1]],ss=sb&&getSkin(sb,p[2]);if(ss&&ss.tier==='exclusive'){col=ss.glow||ss.proj||EX_COL;col2='#06231d';}}else{const b=BY_ID[p[1]];if(b)col=RARITY[b.rarity].col;}
   const g=c.createLinearGradient(0,0,s,s);g.addColorStop(0,col);g.addColorStop(1,col2);rrect(c,s*.04,s*.04,s*.92,s*.92,R);c.fillStyle=(p[0]==='s'&&p[2]==='hw_surged')?rainbowGrad(c,0,0,s,s,0,58):(p[0]==='s'&&p[2]==='hw_grim')?(()=>{const q=c.createRadialGradient(s/2,s*.4,s*.05,s/2,s/2,s*.7);q.addColorStop(0,'#3dff8a');q.addColorStop(.55,'#0f3a22');q.addColorStop(1,'#030504');return q;})():g;c.fill();c.lineWidth=Math.max(2,s*.05);c.strokeStyle=OUT;c.stroke();
   c.save();rrect(c,s*.04,s*.04,s*.92,s*.92,R);c.clip();c.fillStyle='rgba(255,255,255,.18)';c.beginPath();c.ellipse(s*.3,s*.18,s*.4,s*.16,-.4,0,TAU);c.fill();
   if(p[0]==='r'||p[0]==='s'){const b=BY_ID[p[1]]||BY_ID[STARTER];drawFighter(c,s/2,s*.62,s*.36,b,getSkin(b,p[0]==='s'?p[2]:'classic'),Math.PI/2,0,{still:true,noShadow:true,happy:true});}
@@ -2011,6 +2035,7 @@ function drawProfileIcon(c,id,s){const p=String(id).split(':'),R=s*.18;let col='
   else if(p[0]==='z'&&p[1]==='sec_afk'){blinkFace(c,s/2,s*.52,s*.32,performance.now()/1000);}
   else if(p[0]==='z'){if(p[1]==='secretking'){if(SECRET_IMG&&SECRET_IMG.complete&&SECRET_IMG.naturalWidth)c.drawImage(SECRET_IMG,s*.1,s*.12,s*.8,s*.8);}else{c.font=(s*.55)+'px '+EMOJI_FONT;c.textAlign='center';c.textBaseline='middle';c.fillText((SECRET_ART[p[1]]||['?'])[0],s/2,s*.55);}c.fillStyle='#ffd23f';star(c,s*.82,s*.18,s*.09,s*.035,4);c.fill();}
   else if(p[0]==='x'&&p[1]==='tester'){drawTesterFlask(c,s/2,s*.5,s*.36,performance.now()/1000);}
+  else if(p[0]==='x'&&p[1]==='super'){drawSuperIcon(c,s);}
   else{const sp=SPECIAL_ICONS.find(x=>x[0]===p[1]);c.font=(s*.55)+'px system-ui, "Apple Color Emoji","Segoe UI Emoji","Noto Color Emoji", sans-serif';c.textAlign='center';c.textBaseline='middle';c.fillText(sp?sp[1]:'?',s/2,s*.55);}
   c.restore();}
 /* Solar emblems: a different sun design for every level. t > 0 animates it (spinning rays, pulsing glow, twinkles). */
@@ -2596,7 +2621,7 @@ const fmtFull=v=>Math.floor(Number(v)||0).toLocaleString('en-US');
 const KEY=RR_MODE==='sandbox'?'rooftop-rumble-sandbox':'rooftop-rumble-v2';
 function newRumbler(){return{pinSlots:[null,null],facePins:[null,null,null],lvl:1,skins:['classic'],skin:'classic',prestige:0,gadgets:[],stars:[],gadget:null,star:null};}
 function newSt(){return{kills:0,deaths:0,dmg:0,supers:0,gadgets:0,pins:0,time:0,bestStreak:0,tricksW:0,tricksL:0,sims:0,replays:0,watched:0,sdWins:0,modes:{},drops:{}};}
-function defaultSave(){return{st:newSt(),pf:{...PF_DEF,show:null},exNew:[],hw:{wins:0,used:0,spent:0,knocks:0,opened:0,doors:null},party:[],name:'You',trophies:0,best:0,coins:150,gems:30,pp:0,chromos:0,packs:[],pins:[],onboarded:false,nameChanges:0,nameLockUntil:0,pass:{xp:0,premium:false,cf:[],cp:[],bonus:0,wins:0},drops:[],dropDay:{date:'',n:0},pendingSkins:[],owned:{[STARTER]:newRumbler()},selected:STARTER,mode:'ring',rp:0,rpBest:0,rankClaimed:0,road:0,streak:0,daily:{date:'',claimed:false,dealSkins:[],bought:[]},sound:true,music:true,voice:true,shake:true,matches:0,wins:0};}
+function defaultSave(){return{st:newSt(),pf:{...PF_DEF,show:null},exNew:[],hw:{wins:0,used:0,spent:0,knocks:0,opened:0,doors:null},party:[],name:'You',trophies:0,best:0,coins:150,gems:30,pp:0,chromos:0,packs:[],pins:[],onboarded:false,nameChanges:0,nameLockUntil:0,pass:{xp:0,premium:false,super:false,superPick:null,cf:[],cp:[],bonus:0,wins:0},drops:[],dropDay:{date:'',n:0},pendingSkins:[],owned:{[STARTER]:newRumbler()},selected:STARTER,mode:'ring',rp:0,rpBest:0,rankClaimed:0,road:0,streak:0,daily:{date:'',claimed:false,dealSkins:[],bought:[]},sound:true,music:true,voice:true,shake:true,matches:0,wins:0};}
 function loadSave(given){
   const d=defaultSave();let s=null;
   if(given)s=given;else try{const raw=localStorage.getItem(KEY);if(raw)s=JSON.parse(raw);}catch(e){}
@@ -2621,7 +2646,7 @@ function loadSave(given){
   o.daily={...d.daily,...(s.daily||{})};if(!Array.isArray(o.daily.dealSkins))o.daily.dealSkins=[];if(!Array.isArray(o.daily.bought))o.daily.bought=[];
   o.packs=Array.isArray(s.packs)?s.packs.filter(x=>BY_ID[x]):[];o.pins=Array.isArray(s.pins)?s.pins.filter(x=>PREMIUM_PINS.concat(PASS_PINS,TOXIC_PINS,RANK_PINS,SET_PINS,DAILY_ONLY_PINS,SEASON_PINS,TROLL_PINS,GEN_PINS,HALLOWEEN_PINS,SECRET_PINS,FRIENDLY_PINS,SOLAR_PINS,TESTER_PINS).some(p=>p[0]===x)||isPrestigePin(x)||isSkinPin(x)):[];
   const ps=s.pass||{},ints=a=>Array.isArray(a)?a.filter(n=>Number.isInteger(n)&&n>=0&&n<PASS_TIERS):[];
-  o.pass={xp:Math.max(0,Math.floor(+ps.xp||0)),premium:!!ps.premium,cf:ints(ps.cf),cp:ints(ps.cp),bonus:Math.max(0,Math.floor(+ps.bonus||0)),wins:Math.max(0,Math.floor(+ps.wins||0))};
+  o.pass={xp:Math.max(0,Math.floor(+ps.xp||0)),premium:!!ps.premium||!!ps.super,super:!!ps.super,superPick:typeof ps.superPick==='string'?ps.superPick.slice(0,20):null,cf:ints(ps.cf),cp:ints(ps.cp),bonus:Math.max(0,Math.floor(+ps.bonus||0)),wins:Math.max(0,Math.floor(+ps.wins||0))};
   o.drops=Array.isArray(s.drops)?s.drops.filter(d=>d&&(d.r==null||DROP_RAR.includes(d.r)||isSpecialDrop(d.r))).map(d=>({r:d.r||null,min:DROP_RAR.includes(d.min)?d.min:null,g:d.g?1:0})).slice(0,300):[];
   o.dropDay={date:'',n:0,...(s.dropDay||{})};
   o.pendingSkins=Array.isArray(s.pendingSkins)?s.pendingSkins.filter(x=>{if(typeof x!=='string')return false;const[i,k]=x.split(':');return!!BY_ID[i]&&skinsOf(BY_ID[i]).some(q=>q.id===k);}):[];
@@ -2778,7 +2803,7 @@ function ownedIcons(){const out=[];for(const id in S.owned)out.push('r:'+id);for
   for(const id in S.owned)for(const sid of S.owned[id].skins){const sk=skinsOf(BY_ID[id]).find(k=>k.id===sid);if(sk&&(ICON_SKIN_TIERS.includes(sk.tier)||sk.ultraFx))out.push('s:'+id+':'+sid);}
   S.rankTop=Math.max(S.rankTop|0,rankInfo(S.rp|0).tier,rankInfo(S.rankPeak|0).tier);for(let t=0;t<=Math.min(7,S.rankTop);t++)out.push('k:'+t);
   for(const p of SECRET_PINS)if(S.pins.includes(p[0]))out.push('z:'+p[0]);
-  for(const x of S.icons||[])out.push('x:'+x);for(let l=1;l<=SOLAR_MAX;l++){if((S.sol|0)>=l*3-2)out.push('o:'+l);if((S.sol|0)>=l*3-1)out.push('o:'+l+'a');}if((S.sol|0)>SOLAR_STEPS)out.push('o:11','o:11a');if(S.betaTester)out.push('x:tester');return out;}
+  for(const x of S.icons||[])out.push('x:'+x);for(let l=1;l<=SOLAR_MAX;l++){if((S.sol|0)>=l*3-2)out.push('o:'+l);if((S.sol|0)>=l*3-1)out.push('o:'+l+'a');}if((S.sol|0)>SOLAR_STEPS)out.push('o:11','o:11a');if(S.betaTester)out.push('x:tester');if(S.pass&&S.pass.super)out.push('x:super');return out;}
 function playerCode(){const pid=myPid();let h=2166136261;for(const ch of pid)h=Math.imul(h^ch.charCodeAt(0),16777619)>>>0;const A='ABCDEFGHJKMNPQRSTUVWXYZ23456789';let o='';for(let i=0;i<6;i++){o+=A[h%A.length];h=((Math.floor(h/A.length)^Math.imul(h,2654435761))>>>0);}return o;}
 function grantRumbler(id){
   if(S.owned[id])return false;S.owned[id]=newRumbler();if(S.masterAll&&!S.owned[id].skins.includes('master'))S.owned[id].skins.push('master');const keep=[];
@@ -4408,8 +4433,8 @@ function renderTiles(){
     b.append(dropCanvas('pumpkin',52));b.insertAdjacentHTML('beforeend','<span style="min-width:0"><span class="tk">Halloween \u00b7 Trick or Treat</span><b>'+(tk>0?tk+' Halloween token'+(tk>1?'s':'')+' ready!':kl>0?kl+' door knock'+(kl>1?'s':'')+' ready!':(KNOCK_EVERY-into)+' more win'+(KNOCK_EVERY-into>1?'s':'')+' for a token')+'</b><span class="tbar"><i style="width:'+(tk>0?100:into/KNOCK_EVERY*100)+'%"></i></span></span>');}
   if(!S.daily.claimed){const g=GIFTS[S.daily.gift||0],k=Object.keys(g)[0],b=mk('wide gift','#6be39a',()=>go('shop'));
     b.innerHTML='<span class="tico">'+GIFT_SVG+'</span><span style="min-width:0"><span class="tk">Free daily gift</span><b>'+g[k]+' '+CUR_NAME[k]+' waiting</b><span class="tt">Tap to claim it in the shop</span></span>';}
-  {const tier=passTier(S.pass.xp),done=tier>=PASS_TIERS,into=done?(S.pass.xp-PASS_TIERS*PASS_STEP)%PASS_BONUS_STEP:S.pass.xp%PASS_STEP,ready=passClaimable(),b=mk('wide passtile'+(ready?' passr':''),'#ffd36b',()=>go('pass'));
-    b.innerHTML='<span class="tico rpe-t">'+passEmblem(46,{tier})+'</span><span style="min-width:0"><span class="tk">Rumble Pass · Starfall</span><b>'+(ready?ready+' reward'+(ready>1?'s':'')+' to claim':done?'Pass complete':'Tier '+tier+' of '+PASS_TIERS)+'</b><span class="tbar"><i style="width:'+Math.round(into/PASS_STEP*100)+'%;background:#ffd36b"></i></span></span>';}
+  {const tier=passTier(S.pass.xp),done=tier>=PASS_TIERS,into=done?(S.pass.xp-PASS_TIERS*PASS_STEP)%PASS_BONUS_STEP:S.pass.xp%PASS_STEP,ready=passClaimable(),pick=superPickPending(),b=mk('wide passtile'+(ready||pick?' passr':''),hasSuper()?'#ff3d6e':'#ffd36b',()=>{if(pick)openSuperPick();else go('pass');});
+    b.innerHTML='<span class="tico rpe-t">'+passEmblem(46,{tier})+'</span><span style="min-width:0"><span class="tk">Rumble Pass'+(hasSuper()?' SUPER':'')+' · Starfall</span><b>'+(pick?'Pick your free Mythic!':ready?ready+' reward'+(ready>1?'s':'')+' to claim':done?'Pass complete':'Tier '+tier+' of '+PASS_TIERS)+'</b><span class="tbar"><i style="width:'+Math.round(into/PASS_STEP*100)+'%;background:#ffd36b"></i></span></span>';}
   /* Banks: above Next unlock and Ranked */
   {const parts=bankSummary(),b=mk('wide banktile','#46b4ff',()=>openBanks());const ic=document.createElement('span');ic.className='tico bank-ico';ic.textContent='\ud83c\udfe6';b.append(ic);
     const tx=document.createElement('span');tx.style.minWidth='0';tx.innerHTML='<span class="tk">Banks</span><b>'+(parts.length?esc(parts.slice(0,2).join(' \u00b7 '))+(parts.length>2?' +'+(parts.length-2)+' more':''):'Save your chromos, coins & more')+'</b>';
@@ -4885,8 +4910,8 @@ function exRevealNext(){if(exShowing||!S.exNew||!S.exNew.length||view!=='home'||
     if(S.owned[e.rid]){const q=document.createElement('button');q.className='btn gold';q.textContent='Wear it now';q.addEventListener('click',()=>{S.owned[e.rid].skin=sid;persist();renderHome();done();});card.append(q);}
     const x=document.createElement('button');x.className='btn';x.textContent='Awesome!';x.addEventListener('click',done);card.append(x);});}
 function openIconPicker(){openSheet(card=>{card.insertAdjacentHTML('beforeend','<h2>Profile icon</h2><p class="sub">Unlock more with rumblers, trophies (250, 500, then every 500 up to 5,000), ranked (one for each rank you reach), special skins and Rumbler Boxes.</p>');const g=document.createElement('div');g.className='icon-grid';
-  const own=ownedIcons(),all=Object.keys(S.owned).map(id=>'r:'+id).concat(TROPHY_ICONS.map(n=>'t:'+n),[0,1,2,3,4,5,6,7].map(t=>'k:'+t),SPECIAL_ICONS.map(x=>'x:'+x[0]),SECRET_PINS.map(p=>'z:'+p[0]),SOLAR_LEVELS.flatMap((_,i)=>['o:'+(i+1),'o:'+(i+1)+'a']).concat(['o:11','o:11a','x:tester']));
-  for(const id of [...new Set(own.concat(all))]){const has=own.includes(id),b=document.createElement('button');b.className='icon-cell'+(S.icon===id?' on':'')+(has?'':' locked');b.append(iconCanvas(id,60));if(!has)b.insertAdjacentHTML('beforeend','<i>\ud83d\udd12</i><small>'+(id[0]==='t'?fmtFull(+id.split(':')[1])+' trophies':id[0]==='k'?'Reach '+(+id[2]>=7?'Master':TIERS[+id[2]][0]):id[0]==='z'?'Secret':id==='x:tester'?'Beta testers':id[0]==='o'?(parseInt(id.slice(2))>SOLAR_MAX?'Soldar':esc(SOLAR_LEVELS[(parseInt(id.slice(2))||1)-1].name)+(/a$/.test(id)?' II':' I')):'Rumbler Box')+'</small>');
+  const own=ownedIcons(),all=Object.keys(S.owned).map(id=>'r:'+id).concat(TROPHY_ICONS.map(n=>'t:'+n),[0,1,2,3,4,5,6,7].map(t=>'k:'+t),SPECIAL_ICONS.map(x=>'x:'+x[0]),SECRET_PINS.map(p=>'z:'+p[0]),SOLAR_LEVELS.flatMap((_,i)=>['o:'+(i+1),'o:'+(i+1)+'a']).concat(['o:11','o:11a','x:tester','x:super']));
+  for(const id of [...new Set(own.concat(all))]){const has=own.includes(id),b=document.createElement('button');b.className='icon-cell'+(S.icon===id?' on':'')+(has?'':' locked');b.append(iconCanvas(id,60));if(!has)b.insertAdjacentHTML('beforeend','<i>\ud83d\udd12</i><small>'+(id[0]==='t'?fmtFull(+id.split(':')[1])+' trophies':id[0]==='k'?'Reach '+(+id[2]>=7?'Master':TIERS[+id[2]][0]):id[0]==='z'?'Secret':id==='x:tester'?'Beta testers':id==='x:super'?'Pass SUPER':id[0]==='o'?(parseInt(id.slice(2))>SOLAR_MAX?'Soldar':esc(SOLAR_LEVELS[(parseInt(id.slice(2))||1)-1].name)+(/a$/.test(id)?' II':' I')):'Rumbler Box')+'</small>');
     if(!has)b.addEventListener('click',()=>{sfx('tap');secretTap('sec_lock',8,6000);b.animate&&b.animate([{transform:'translateX(0)'},{transform:'translateX(-4px)'},{transform:'translateX(4px)'},{transform:'translateX(0)'}],{duration:180});});
     if(has)b.addEventListener('click',()=>{S.icon=id;persist();sfx('click');renderHome();openProfile(null,true);if(typeof netHello==='function')netHello();});g.append(b);}
   card.append(g);const x=document.createElement('button');x.className='btn';x.textContent='Back';x.addEventListener('click',()=>openProfile(null,true));card.append(x);});}
@@ -5337,7 +5362,8 @@ function openSandbox(){openSheet(card=>{card.classList.add('sbx');
     const rk=document.createElement('div');rk.className='sbx-row';rk.innerHTML='<label><b>Rank</b><small>Ranked mode rank</small></label>';const sel=document.createElement('select');
     for(let i=0;i<RANK_STEPS;i++){const o=document.createElement('option');o.value=String(i);o.textContent=rankInfo(i*100).name;if(rankInfo(S.rp|0).i===i)o.selected=true;sel.append(o);}
     sel.addEventListener('change',()=>{const i=+sel.value;S.rp=i*100;S.rankPeak=Math.max(S.rankPeak|0,i);S.rankTop=Math.max(S.rankTop|0,rankInfo(i*100).tier);persist();renderHome();sfx('tap');});rk.append(sel);s.append(rk);
-    s.append(sbxPills('Rumble Pass',[[true,'Premium'],[false,'Free only']],()=>!!S.pass.premium,v=>{S.pass.premium=v;persist();}));
+    s.append(sbxPills('Rumble Pass',[[true,'Premium'],[false,'Free only']],()=>!!S.pass.premium,v=>{S.pass.premium=v;if(!v)S.pass.super=false;persist();}));
+    s.append(sbxPills('Rumble Pass SUPER',[[true,'On'],[false,'Off']],()=>!!S.pass.super,v=>{S.pass.super=v;if(v)S.pass.premium=true;else S.pass.superPick=null;persist();renderHome();}));
     s.append(sbxBtn('Reset pass claims','',()=>{S.pass.cf=[];S.pass.cp=[];persist();sfx('tap');toast('Pass rewards can be claimed again');}));}
   {const s=sbxSec(card,'Give drops & boxes','#9d7bff');let n=1;s.append(sbxPills('How many',[[1,'×1'],[5,'×5'],[10,'×10'],[25,'×25']],()=>n,v=>n=v));
     const g=document.createElement('div');g.className='sbx-drops';
@@ -5926,6 +5952,114 @@ function openBank(k){const bk=BANK_BY[k],st={fx:[]};openSheet(card=>{card.classL
     row.append(dep,wd,all1,all2);card.append(row);}
   const x=document.createElement('button');x.className='btn';x.textContent='Close';x.addEventListener('click',()=>{closeSheet();renderHome();});card.append(x);});}
 
+/* ================= Rumble Pass emblem + Rumble Pass SUPER =================
+   The emblem is a season banner on a gold rod with a big gold R. SUPER owners get the crimson banner with a crown.
+   SUPER = the whole Rumble Pass + a free Mythic of your choice (11,000 chromos if you have every Mythic),
+   the Super Rumbler title, the Super Pass banner and the SUPER profile icon. 300 gems, or 150 if you have the Rumble Pass. */
+const RPASS_R='M23 20H35C39 20 41.5 22.8 41.5 26.6C41.5 29.6 39.8 31.8 37.3 32.7L42.5 42H35.4L31 33.4H29.6V42H23ZM29.6 25.2V28.6H34C35.2 28.6 35.9 27.9 35.9 26.9C35.9 25.9 35.2 25.2 34 25.2Z',RPASS_CLOTH='M13 11H51V56.5L32 47.5L13 56.5Z',RPASS_CROWN='M22.5 9.5L24.4 1.6L28.6 5.6L32 .4L35.4 5.6L39.6 1.6L41.5 9.5Z';
+let _rpeN=0;
+function hasSuper(){try{return!!(S.pass&&S.pass.super);}catch(e){return false;}}
+function passEmblem(size,o){o=o||{};const sup=o.super!=null?!!o.super:hasSuper(),u='rpe'+(++_rpeN),t=o.tier,big=size>=60;
+  const cl=sup?['#ff7aa0','#d1124f','#5c0626']:['#7a5cff','#4a33c8','#2b1f86'];
+  let s='<svg class="rpe'+(sup?' rpe-super':'')+'" viewBox="0 0 64 64" width="'+size+'" height="'+size+'" aria-hidden="true"><defs>'+
+  '<linearGradient id="'+u+'g" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff2b8"/><stop offset=".5" stop-color="#ffc93c"/><stop offset="1" stop-color="#e08a10"/></linearGradient>'+
+  '<linearGradient id="'+u+'p" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="'+cl[0]+'"/><stop offset=".6" stop-color="'+cl[1]+'"/><stop offset="1" stop-color="'+cl[2]+'"/></linearGradient>'+
+  '<linearGradient id="'+u+'k" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffa3c0"/><stop offset="1" stop-color="#e23a6a"/></linearGradient>'+
+  '<clipPath id="'+u+'c"><path d="'+RPASS_CLOTH+'"/></clipPath></defs>'+
+  '<path d="'+RPASS_CLOTH+'" fill="url(#'+u+'p)" stroke="#120f26" stroke-width="3" stroke-linejoin="round"/>'+
+  '<g clip-path="url(#'+u+'c)"><path d="M13 11H51V20H13Z" fill="url(#'+u+(sup?'g':'k')+')"/><path d="M13 20H51" stroke="#120f26" stroke-width="2"/>'+
+  '<path d="M17.5 23V50L32 43.2L46.5 50V23" fill="none" stroke="'+(sup?'#ffe48a':'#ffc93c')+'" stroke-width="'+(sup?2.2:1.8)+'" opacity="'+(sup?.95:.75)+'"/>'+
+  '<path d="M15 21.5L22 11M24 21.5L31 11" stroke="#fff" stroke-width="2.4" opacity=".14"/></g>'+
+  ['21','32','43'].map(x=>'<circle cx="'+x+'" cy="15.6" r="1.5" fill="'+(sup?'#7a0a30':'#fff')+'"/>').join('')+
+  '<rect x="6" y="6.5" width="52" height="6.5" rx="3.25" fill="url(#'+u+'g)" stroke="#120f26" stroke-width="2.6"/>'+
+  '<circle cx="6.5" cy="9.75" r="4.2" fill="'+(sup?'#ffd23f':'#ff5e87')+'" stroke="#120f26" stroke-width="2.4"/><circle cx="57.5" cy="9.75" r="4.2" fill="'+(sup?'#ffd23f':'#ff5e87')+'" stroke="#120f26" stroke-width="2.4"/>'+
+  (sup?'<path d="'+RPASS_CROWN+'" fill="url(#'+u+'g)" stroke="#120f26" stroke-width="2.2" stroke-linejoin="round"/><circle cx="32" cy="6.6" r="1.3" fill="#ff3d6e"/>':'')+
+  '<g transform="translate(-0.3 4.5)"><path d="'+RPASS_R+'" fill="#120f26" stroke="#120f26" stroke-width="6" stroke-linejoin="round" fill-rule="evenodd" transform="translate(0 1.6)"/>'+
+  '<path d="'+RPASS_R+'" fill="url(#'+u+'g)" stroke="#120f26" stroke-width="2.6" stroke-linejoin="round" fill-rule="evenodd" paint-order="stroke"/>'+
+  '<path d="M24.6 21.6H34.6" stroke="#fff" stroke-width="1.4" stroke-linecap="round" opacity=".7"/></g>'+
+  '<path d="M53 17Q53.6 21.4 58 22Q53.6 22.6 53 27Q52.4 22.6 48 22Q52.4 21.4 53 17Z" fill="#fff" stroke="#120f26" stroke-width=".8"/>'+
+  (sup?'<path d="M10 28Q10.5 31.5 14 32Q10.5 32.5 10 36Q9.5 32.5 6 32Q9.5 31.5 10 28Z" fill="#ffe48a" stroke="#120f26" stroke-width=".7"/>':'')+
+  (sup&&big?'<path d="M8.5 47.5H55.5L52.5 51.6L55.5 55.7H8.5L11.5 51.6Z" fill="url(#'+u+'g)" stroke="#120f26" stroke-width="2" stroke-linejoin="round"/><text x="32" y="54.1" text-anchor="middle" font-family="Bungee, \'Arial Black\', Impact, sans-serif" font-weight="900" font-size="6.4" letter-spacing=".6" fill="#5c0626">SUPER</text>':'');
+  if(t!=null)s+='<circle cx="51" cy="51" r="10.5" fill="'+(sup?'#3a0618':'#1d1b52')+'" stroke="#120f26" stroke-width="2.6"/><circle cx="51" cy="51" r="7.6" fill="none" stroke="#ffc93c" stroke-width="1.4" opacity=".6"/><text x="51" y="55.4" text-anchor="middle" font-family="Bungee, \'Arial Black\', Impact, sans-serif" font-weight="900" font-size="'+(t>9?10:12.5)+'" fill="#ffd36b">'+t+'</text>';
+  return s+'</svg>';}
+function passEmblemEl(size,o){const sp=document.createElement('span');sp.className='rpe-wrap'+(o&&o.cls?' '+o.cls:'');sp.innerHTML=passEmblem(size,o);return sp;}
+try{Object.defineProperty(ICON,'rpass',{get:()=>passEmblem(22),enumerable:false});}catch(e){}
+const PASS_SUPER_GEMS=300,PASS_SUPER_UP=150,SUPER_CHROMOS=11000;
+function superPrice(){return S.pass.premium?PASS_SUPER_UP:PASS_SUPER_GEMS;}
+function superMythics(){return RUMBLERS.filter(b=>b.rarity==='mythic'&&!b.eventOnly&&!b.beta);}
+function superPickPending(){return hasSuper()&&!S.pass.superPick;}
+/* if you already have every Mythic, SUPER gives 11,000 chromos instead */
+function superGrantChromosIfDone(){if(!superPickPending())return false;if(superMythics().some(b=>!S.owned[b.id]))return false;S.chromos+=SUPER_CHROMOS;S.pass.superPick='chromos';persist();return true;}
+function superTab(){try{const t=document.querySelector('.tab[data-tab="pass"]');if(t&&t.classList)t.classList.toggle('super',hasSuper());}catch(e){}}
+function superRefresh(){try{renderHome();}catch(e){}try{renderPass();}catch(e){}try{renderShop();}catch(e){}try{updateShopDot();}catch(e){}}
+function buySuper(){const up=!!S.pass.premium,price=superPrice();
+  confirmBuy(up?'Upgrade to Rumble Pass SUPER':'Rumble Pass SUPER',passEmblemEl(110,{cls:'rpe-buy',super:true}),[['gems',price]],()=>{
+    S.pass.premium=true;S.pass.super=true;persist();sfx('unlock');try{if(typeof netHello==='function')netHello();}catch(e){}superRefresh();superReveal();});}
+function superBannerSwatch(cls){const d=document.createElement('span');d.className=cls||'sup-ban';const bn=PF_BANNERS.find(x=>x.id==='b_super');if(bn)d.style.background=bn.css;return d;}
+function superTitleChip(){const t=document.createElement('span');t.className='sup-title';t.textContent='Super Rumbler';return t;}
+function superMythicStack(n){const w=document.createElement('span');w.className='sup-mys';const left=superMythics().filter(b=>!S.owned[b.id]),list=(left.length?left:superMythics()).slice(0,n||3);for(const b of list)w.append(thumb(b,getSkin(b,'classic'),40));return w;}
+/* the offer card under the pass hero */
+function superCard(){const c=document.createElement('div');c.className='sup-card';const up=!!S.pass.premium,left=superMythics().filter(b=>!S.owned[b.id]).length;
+  const hd=document.createElement('div');hd.className='sup-head';hd.append(passEmblemEl(72,{super:true}));
+  hd.insertAdjacentHTML('beforeend','<div style="min-width:0"><p class="of-kick sup-kick">Version 2 of the Rumble Pass</p><h2>Rumble Pass SUPER</h2><p class="hint">Everything in the Rumble Pass, plus:</p></div>');c.append(hd);
+  const ul=document.createElement('ul');ul.className='sup-perks';
+  const li=(vis,b,sm)=>{const l=document.createElement('li');const pv=document.createElement('span');pv.className='pv';pv.append(vis);l.append(pv);l.insertAdjacentHTML('beforeend','<span style="min-width:0"><b>'+b+'</b>'+(sm?'<small>'+sm+'</small>':'')+'</span>');ul.append(l);};
+  li(superMythicStack(3),'A free Mythic of your choice',left?'Pick any of the '+left+' Mythic'+(left>1?'s':'')+' you don’t have yet':'You have every Mythic, so you get '+fmtFull(SUPER_CHROMOS)+' chromos instead');
+  li(superTitleChip(),'Super Rumbler title','Only SUPER owners have it');
+  li(superBannerSwatch(),'Super Pass banner','A profile background for your card');
+  li(iconCanvas('x:super',44),'SUPER profile icon','Plus the crowned SUPER pass emblem');
+  if(!up)li(passEmblemEl(40,{super:false}),'The whole Rumble Pass','All '+PASS_TIERS+' premium rewards, Starfall skins and Orion');
+  c.append(ul);
+  const b=document.createElement('button');b.className='btn super-btn';b.innerHTML='<span class="rpe-btn">'+passEmblem(26,{super:true})+'</span>'+(up?'Upgrade to SUPER · ':'Get Rumble Pass SUPER · ')+cost('gems',superPrice());b.addEventListener('click',()=>{sfx('click');buySuper();});c.append(b);
+  c.insertAdjacentHTML('beforeend','<p class="hint sup-note">'+(up?'Half price because you already have the Rumble Pass (normally '+PASS_SUPER_GEMS+' gems).':'Already have the Rumble Pass? Then SUPER is only '+PASS_SUPER_UP+' gems.')+'</p>');
+  return c;}
+/* "SUPER unlocked!" */
+function superReveal(){const auto=superGrantChromosIfDone();if(auto)superRefresh();
+  openSheet(card=>{card.classList.add('rid','sup-sheet');
+    card.insertAdjacentHTML('beforeend','<p class="of-kick sup-kick" style="text-align:center">Rumble Pass SUPER</p><h2 style="text-align:center">SUPER unlocked!</h2>');
+    const w=document.createElement('div');w.className='ex-burst';w.append(passEmblemEl(140,{super:true,cls:'rpe-buy'}));card.append(w);
+    const rw=document.createElement('div');rw.className='sol-rlist';
+    const add=(vis,lab)=>{const d=document.createElement('div');d.append(vis);d.insertAdjacentHTML('beforeend','<span>'+lab+'</span>');rw.append(d);};
+    add(superTitleChip(),'Super Rumbler title');add(superBannerSwatch('sup-ban sm'),'Super Pass banner');add(iconCanvas('x:super',40),'SUPER profile icon');add(passEmblemEl(40,{super:false}),'Every Rumble Pass reward');
+    if(auto){const sp=document.createElement('span');sp.className='sup-cico';sp.innerHTML=ICON.chromos;add(sp,'+'+fmtFull(SUPER_CHROMOS)+' chromos (you have every Mythic)');}
+    card.append(rw);
+    if(superPickPending()){const p=document.createElement('button');p.className='btn gold sup-pick-btn';p.textContent='Choose your free Mythic';p.addEventListener('click',openSuperPick);card.append(p);}
+    const wr=document.createElement('button');wr.className='btn super-btn';wr.textContent='Wear the title and banner';wr.addEventListener('click',()=>{S.pf=S.pf||{};S.pf.title='t_super';S.pf.banner='b_super';persist();sfx('click');toast('Super Rumbler title and Super Pass banner on');try{if(typeof netHello==='function')netHello();}catch(e){}renderHome();wr.disabled=true;wr.textContent='Wearing them!';});card.append(wr);
+    const x=document.createElement('button');x.className='btn';x.textContent=superPickPending()?'Later':'Awesome!';x.addEventListener('click',()=>{closeSheet();superRefresh();});card.append(x);});}
+/* pick the free Mythic */
+function openSuperPick(){if(!superPickPending())return;
+  if(superGrantChromosIfDone()){sfx('unlock');toast('+'+fmtFull(SUPER_CHROMOS)+' chromos','chromos');superRefresh();return;}
+  const all=superMythics();
+  openSheet(card=>{card.classList.add('rid','sup-sheet');
+    card.insertAdjacentHTML('beforeend','<p class="of-kick sup-kick">Rumble Pass SUPER</p><h2>Pick a free Mythic</h2><p class="sub">Choose any Mythic rumbler you don’t have yet. You can only pick one, so choose carefully!</p>');
+    const g=document.createElement('div');g.className='rid-pick';
+    for(const b of all){const own=!!S.owned[b.id],c=document.createElement('button');c.className='cz-cell'+(own?' locked':'');c.append(thumb(b,getSkin(b,'classic'),64));c.insertAdjacentHTML('beforeend','<b>'+esc(b.name)+'</b><small>'+(own?'Owned':esc(b.role))+'</small>');
+      if(!own)c.addEventListener('click',()=>{sfx('tap');openSheet(c2=>{c2.classList.add('rid','sup-sheet');c2.insertAdjacentHTML('beforeend','<h2 style="text-align:center">'+esc(b.name)+'?</h2>');const pv=document.createElement('div');pv.className='d-set';pv.append(thumb(b,getSkin(b,'classic'),130));c2.append(pv);
+        c2.insertAdjacentHTML('beforeend','<p class="sub" style="text-align:center">'+esc(b.role)+'. You can only pick one.</p>');
+        const y=document.createElement('button');y.className='btn gold';y.textContent='Pick '+b.name;y.addEventListener('click',()=>{if(!superPickPending()){closeSheet();return;}y.disabled=true;
+          S.pass.superPick=b.id;grantRumbler(b.id);persist();sfx('unlock');superRefresh();
+          openSheet(c3=>{c3.classList.add('rid','sup-sheet');c3.insertAdjacentHTML('beforeend','<p class="of-kick sup-kick" style="text-align:center">It’s yours!</p><h2 style="text-align:center">'+esc(b.name)+' unlocked</h2>');const w=document.createElement('div');w.className='ex-burst';w.append(thumb(b,getSkin(b,'classic'),150));c3.append(w);
+            const u=document.createElement('button');u.className='btn gold';u.textContent='Use '+b.name;u.addEventListener('click',()=>{S.selected=b.id;persist();closeSheet();renderHome();go('home');});const k=document.createElement('button');k.className='btn';k.textContent='Done';k.addEventListener('click',()=>{closeSheet();superRefresh();});c3.append(u,k);});});
+        const n=document.createElement('button');n.className='btn';n.textContent='Back';n.addEventListener('click',openSuperPick);c2.append(y,n);});});g.append(c);}
+    card.append(g);const l=document.createElement('button');l.className='btn';l.textContent='Later';l.addEventListener('click',closeSheet);card.append(l);});}
+/* the SUPER profile icon, drawn on a canvas from the same shapes as the emblem */
+function drawSuperIcon(c,s){if(typeof Path2D!=='function')return;const k=s/64*.84;c.save();c.translate(s/2-32*k,s/2-30*k);c.scale(k,k);c.lineJoin='round';c.strokeStyle='#120f26';
+  const gold=c.createLinearGradient(0,0,0,64);gold.addColorStop(0,'#fff2b8');gold.addColorStop(.5,'#ffc93c');gold.addColorStop(1,'#e08a10');
+  const cloth=c.createLinearGradient(0,11,0,57);cloth.addColorStop(0,'#ff7aa0');cloth.addColorStop(.6,'#d1124f');cloth.addColorStop(1,'#5c0626');
+  const cp=new Path2D(RPASS_CLOTH);c.fillStyle=cloth;c.fill(cp);c.save();c.clip(cp);c.fillStyle=gold;c.fillRect(13,11,38,9);c.restore();
+  c.lineWidth=2;c.beginPath();c.moveTo(13,20);c.lineTo(51,20);c.stroke();
+  c.strokeStyle='#ffe48a';c.lineWidth=2.2;c.beginPath();c.moveTo(17.5,23);c.lineTo(17.5,50);c.lineTo(32,43.2);c.lineTo(46.5,50);c.lineTo(46.5,23);c.stroke();
+  c.strokeStyle='#120f26';c.lineWidth=3;c.stroke(cp);
+  c.fillStyle='#7a0a30';for(const x of[21,32,43]){c.beginPath();c.arc(x,15.6,1.5,0,TAU);c.fill();}
+  const rod=new Path2D('M9.25 6.5H54.75A3.25 3.25 0 0 1 54.75 13H9.25A3.25 3.25 0 0 1 9.25 6.5Z');c.fillStyle=gold;c.fill(rod);c.lineWidth=2.6;c.stroke(rod);
+  for(const x of[6.5,57.5]){c.beginPath();c.arc(x,9.75,4.2,0,TAU);c.fillStyle='#ffd23f';c.fill();c.lineWidth=2.4;c.stroke();}
+  const cr=new Path2D(RPASS_CROWN);c.fillStyle=gold;c.fill(cr);c.lineWidth=2.2;c.stroke(cr);c.fillStyle='#ff3d6e';c.beginPath();c.arc(32,6.6,1.3,0,TAU);c.fill();
+  const r=new Path2D(RPASS_R);c.save();c.translate(-.3,6.1);c.fillStyle='#120f26';c.lineWidth=6;c.stroke(r);c.fill(r,'evenodd');c.restore();
+  c.save();c.translate(-.3,4.5);c.lineWidth=2.6;c.stroke(r);c.fillStyle=gold;c.fill(r,'evenodd');c.strokeStyle='rgba(255,255,255,.7)';c.lineWidth=1.4;c.lineCap='round';c.beginPath();c.moveTo(24.6,21.6);c.lineTo(34.6,21.6);c.stroke();c.restore();
+  const sp=(x,y,a,col)=>{c.beginPath();c.moveTo(x,y-a);c.quadraticCurveTo(x+a*.12,y-a*.12,x+a,y);c.quadraticCurveTo(x+a*.12,y+a*.12,x,y+a);c.quadraticCurveTo(x-a*.12,y+a*.12,x-a,y);c.quadraticCurveTo(x-a*.12,y-a*.12,x,y-a);c.fillStyle=col;c.fill();c.lineWidth=.8;c.strokeStyle='#120f26';c.stroke();};
+  sp(53,22,5,'#fff');sp(10,32,4,'#ffe48a');c.restore();}
+if(!NETS){const _rh=renderHome;renderHome=function(){const r=_rh.apply(this,arguments);superTab();return r;};}
+
 /* ================= Beta UI refresh =================
    Only switched on in the beta build (RR_BETA). The look itself lives in a_css.html under body.beta-ui,
    so the main game is not changed at all. Here we turn it on and tidy the home tiles into pairs. */
@@ -5983,6 +6117,7 @@ function renderShop(){
   const gb=document.createElement('button');gb.className='btn green';gb.innerHTML=S.daily.claimed?'Claimed':'Claim '+cost(gk,gift[gk]);gb.disabled=S.daily.claimed;
   gb.addEventListener('click',()=>{if(S.daily.claimed)return;S.daily.claimed=true;S[gk]+=gift[gk];persist();sfx('unlock');toast('+'+gift[gk]+' '+CUR_NAME[gk],gk);renderShop();updateShopDot();});gp.append(gb);body.append(gp);
   if(!S.pass.premium){const pp=document.createElement('button');pp.className='tile wide';pp.style.setProperty('--tc','#ffd36b');pp.innerHTML='<span class="tico rpe-t">'+passEmblem(50)+'</span><span style="min-width:0"><span class="tk">Season 1 · Starfall</span><b>Rumble Pass</b><span class="tt">30 extra rewards, 5 Starfall skins and the exclusive rumbler Orion · '+PASS_GEMS+' gems</span></span>';pp.addEventListener('click',()=>go('pass'));body.append(pp);}
+  if(!hasSuper()){const sp=document.createElement('button');sp.className='tile wide sup-shop';sp.style.setProperty('--tc','#ff3d6e');sp.innerHTML='<span class="tico rpe-t">'+passEmblem(50,{super:true})+'</span><span style="min-width:0"><span class="tk">Version 2 of the Rumble Pass</span><b>Rumble Pass SUPER</b><span class="tt">Everything in the Rumble Pass + a free Mythic of your choice, an exclusive title, banner and icon · '+superPrice()+' gems'+(S.pass.premium?' (half price, you have the Rumble Pass)':'')+'</span></span>';sp.addEventListener('click',()=>go('pass'));body.append(sp);}
   {const all=S.daily.dealSkins||[],feat=all[0],rest=all.slice(1).filter(([rid,sid])=>BY_ID[rid]&&!hasSkin(rid,sid));
    body.append(sectionTitle('Daily skins','New skins every day · new in '+untilMidnight()));body.append(rerollBtn('skins'));
    if(feat&&BY_ID[feat[0]]){const[rid,sid]=feat,b=BY_ID[rid],sk=getSkin(b,sid),pr=skinPrice(sk),own=hasSkin(rid,sid),d=document.createElement('button');d.className='pindeal skindeal';d.append(thumb(b,sk,96));
@@ -6287,30 +6422,6 @@ function untilMidnight(){const n=new Date(),m=new Date(n);m.setHours(24,0,0,0);c
 function passClaimable(){let n=0;const t=passTier(S.pass.xp);for(let i=0;i<t;i++){if(!S.pass.cf.includes(i))n++;if(S.pass.premium&&!S.pass.cp.includes(i))n++;}return n+Math.max(0,bonusAvail(S.pass.xp)-S.pass.bonus);}
 function passBadge(n,size){return '<svg viewBox="0 0 48 48" width="'+size+'" height="'+size+'" aria-hidden="true"><path d="'+starPath(24,24,23,18,10)+'" fill="#ffc93c" stroke="#120f26" stroke-width="3" stroke-linejoin="round"/><circle cx="24" cy="24" r="13.5" fill="#1d1b52" stroke="#120f26" stroke-width="2.5"/><text x="24" y="29.5" text-anchor="middle" font-family="Bungee, Impact, sans-serif" font-size="'+(n>9?13:15)+'" fill="#ffd36b">'+n+'</text></svg>';}
 
-/* The Rumble Pass emblem: a season banner on a gold rod with a big gold R. Each copy gets its own gradient ids. */
-const RPASS_R='M23 20H35C39 20 41.5 22.8 41.5 26.6C41.5 29.6 39.8 31.8 37.3 32.7L42.5 42H35.4L31 33.4H29.6V42H23ZM29.6 25.2V28.6H34C35.2 28.6 35.9 27.9 35.9 26.9C35.9 25.9 35.2 25.2 34 25.2Z',RPASS_CLOTH='M13 11H51V56.5L32 47.5L13 56.5Z';
-let _rpeN=0;
-function passEmblem(size,o){o=o||{};const u='rpe'+(++_rpeN),t=o.tier;
-  let s='<svg class="rpe" viewBox="0 0 64 64" width="'+size+'" height="'+size+'" aria-hidden="true"><defs>'+
-  '<linearGradient id="'+u+'g" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff2b8"/><stop offset=".5" stop-color="#ffc93c"/><stop offset="1" stop-color="#e08a10"/></linearGradient>'+
-  '<linearGradient id="'+u+'p" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#7a5cff"/><stop offset=".6" stop-color="#4a33c8"/><stop offset="1" stop-color="#2b1f86"/></linearGradient>'+
-  '<linearGradient id="'+u+'k" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffa3c0"/><stop offset="1" stop-color="#e23a6a"/></linearGradient>'+
-  '<clipPath id="'+u+'c"><path d="'+RPASS_CLOTH+'"/></clipPath></defs>'+
-  '<path d="'+RPASS_CLOTH+'" fill="url(#'+u+'p)" stroke="#120f26" stroke-width="3" stroke-linejoin="round"/>'+
-  '<g clip-path="url(#'+u+'c)"><path d="M13 11H51V20H13Z" fill="url(#'+u+'k)"/><path d="M13 20H51" stroke="#120f26" stroke-width="2"/>'+
-  '<path d="M17.5 23V50L32 43.2L46.5 50V23" fill="none" stroke="#ffc93c" stroke-width="1.8" opacity=".75"/>'+
-  '<path d="M15 21.5L22 11M24 21.5L31 11" stroke="#fff" stroke-width="2.4" opacity=".14"/></g>'+
-  '<circle cx="21" cy="15.6" r="1.5" fill="#fff"/><circle cx="32" cy="15.6" r="1.5" fill="#fff"/><circle cx="43" cy="15.6" r="1.5" fill="#fff"/>'+
-  '<rect x="6" y="6.5" width="52" height="6.5" rx="3.25" fill="url(#'+u+'g)" stroke="#120f26" stroke-width="2.6"/>'+
-  '<circle cx="6.5" cy="9.75" r="4.2" fill="#ff5e87" stroke="#120f26" stroke-width="2.4"/><circle cx="57.5" cy="9.75" r="4.2" fill="#ff5e87" stroke="#120f26" stroke-width="2.4"/>'+
-  '<g transform="translate(-0.3 4.5)"><path d="'+RPASS_R+'" fill="#120f26" stroke="#120f26" stroke-width="6" stroke-linejoin="round" fill-rule="evenodd" transform="translate(0 1.6)"/>'+
-  '<path d="'+RPASS_R+'" fill="url(#'+u+'g)" stroke="#120f26" stroke-width="2.6" stroke-linejoin="round" fill-rule="evenodd" paint-order="stroke"/>'+
-  '<path d="M24.6 21.6H34.6" stroke="#fff" stroke-width="1.4" stroke-linecap="round" opacity=".7"/></g>'+
-  '<path d="M53 17Q53.6 21.4 58 22Q53.6 22.6 53 27Q52.4 22.6 48 22Q52.4 21.4 53 17Z" fill="#fff" stroke="#120f26" stroke-width=".8"/>';
-  if(t!=null)s+='<circle cx="51" cy="51" r="10.5" fill="#1d1b52" stroke="#120f26" stroke-width="2.6"/><circle cx="51" cy="51" r="7.6" fill="none" stroke="#ffc93c" stroke-width="1.4" opacity=".6"/><text x="51" y="55.4" text-anchor="middle" font-family="Bungee, \'Arial Black\', Impact, sans-serif" font-weight="900" font-size="'+(t>9?10:12.5)+'" fill="#ffd36b">'+t+'</text>';
-  return s+'</svg>';}
-function passEmblemEl(size,o){const sp=document.createElement('span');sp.className='rpe-wrap'+(o&&o.cls?' '+o.cls:'');sp.innerHTML=passEmblem(size,o);return sp;}
-try{Object.defineProperty(ICON,'rpass',{get:()=>passEmblem(22),enumerable:false});}catch(e){}
 const rwKey=rw=>Object.keys(rw)[0];
 function rewardLabel(rw){const k=rwKey(rw),v=rw[k];
   if(k==='drop')return (rw.n>1?rw.n+' ':'')+dropName(v)+(rw.n>1?'s':'');if(k==='rumbler')return BY_ID[v].name+' · new rumbler';if(k==='skin')return 'Starfall '+BY_ID[v].name;if(k==='pin')return pinName(v)+' pin';return '+'+fmtFull(v)+' '+CUR_NAME[k];}
@@ -6329,7 +6440,7 @@ function claimAll(){let n=0;for(let i=0;i<PASS_TIERS;i++){if(claimPass(i,false,t
 function renderPass(scroll){
   const xp=S.pass.xp,tier=passTier(xp),done=tier>=PASS_TIERS,need=done?PASS_BONUS_STEP:PASS_STEP,into=done?(xp-PASS_TIERS*PASS_STEP)%PASS_BONUS_STEP:xp%PASS_STEP,ready=passClaimable(),zb=BY_ID.zenith;
   $('#passTokens').innerHTML=ICON.pass+'<span>'+fmtFull(xp)+' tokens</span>';
-  {const h=$('#passH1');if(h&&h.dataset&&!h.dataset.e){h.innerHTML=passEmblem(40)+'<span>Rumble Pass</span>';h.dataset.e='1';}}
+  {const h=$('#passH1');if(h)h.innerHTML='<span class="rpe-hw">'+passEmblem(40)+(hasSuper()?'<em class="sup-chip">SUPER</em>':'')+'</span><span>Rumble Pass</span>';}superTab();
   const body=$('#passBody');body.innerHTML='';
   const hero=document.createElement('div');hero.className='pass-hero';
   hero.innerHTML='<div class="ph-top"><span class="ph-season">Season 1</span><h2>Starfall</h2><p class="hint">Every match earns pass tokens: 40 for a win, 25 for a draw, 15 for a loss, plus 5 per takedown.</p></div><div class="ph-art"></div>'+
@@ -6338,9 +6449,12 @@ function renderPass(scroll){
   const btns=hero.querySelector('.ph-btns');
   if(!S.pass.premium){const b=document.createElement('button');b.className='btn gold';b.innerHTML='<span class="rpe-btn">'+passEmblem(26)+'</span>Unlock Rumble Pass · '+cost('gems',PASS_GEMS);
     b.addEventListener('click',()=>confirmBuy('Rumble Pass · Season 1',passEmblemEl(110,{cls:'rpe-buy'}),[['gems',PASS_GEMS]],()=>{S.pass.premium=true;persist();sfx('unlock');toast('Rumble Pass unlocked! Claim your rewards.','rpass');renderPass();updateShopDot();}));btns.append(b);}
+  else if(hasSuper()){btns.insertAdjacentHTML('beforeend','<span class="tag on rpe-tag sup-tag" style="align-self:center;padding:6px 10px">'+passEmblem(22)+'Rumble Pass SUPER</span>');
+    if(superPickPending()){const b=document.createElement('button');b.className='btn gold sup-pick-btn';b.textContent='Choose your free Mythic';b.addEventListener('click',openSuperPick);btns.append(b);}}
   else btns.insertAdjacentHTML('beforeend','<span class="tag on rpe-tag" style="align-self:center;padding:6px 10px">'+passEmblem(22)+'Rumble Pass unlocked</span>');
   if(ready){const b=document.createElement('button');b.className='btn green';b.textContent='Claim all ('+ready+')';b.addEventListener('click',claimAll);btns.append(b);}
   body.append(hero);
+  if(!hasSuper())body.append(superCard());
   body.insertAdjacentHTML('beforeend','<div class="track-head"><span>Free</span><span></span><span class="rpe-th">'+passEmblem(20)+'Rumble Pass</span></div>');
   const tr=document.createElement('div');tr.className='ptrack';
   for(let i=0;i<PASS_TIERS;i++){
