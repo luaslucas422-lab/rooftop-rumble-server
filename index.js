@@ -207,29 +207,13 @@ async function getBeta(force) {
   return betaCache.html;
 }
 
-/* ---------- Rooftop Chess: the app's files at /chess/ (it's its own project in chess/, online play is chess/chess-server.js) ---------- */
-const CHESS_DIR = path.join(__dirname, 'chess', 'public');
+/* ---------- Rooftop Chess (its own project in chess/): the app at /chess/, online games on /chess/ws ---------- */
 const CHESS = createChessServer({ cleanName: s => chatClean(String(s == null ? '' : s).replace(/[<>]/g, '').slice(0, 20)) });
-const TYPES = { '.html': 'text/html; charset=utf-8', '.js': 'text/javascript; charset=utf-8', '.css': 'text/css; charset=utf-8', '.json': 'application/json', '.webmanifest': 'application/manifest+json',
-  '.svg': 'image/svg+xml', '.png': 'image/png', '.ico': 'image/x-icon', '.txt': 'text/plain; charset=utf-8' };
-function serveChess(req, res, url) {
-  if (url === '/chess') { res.writeHead(301, { Location: '/chess/' }); res.end(); return; }
-  let rel;
-  try { rel = decodeURIComponent(url.slice('/chess/'.length)) || 'index.html'; } catch (e) { res.writeHead(400); res.end(); return; }
-  const file = path.normalize(path.join(CHESS_DIR, rel));
-  if (!file.startsWith(CHESS_DIR + path.sep)) { res.writeHead(403); res.end(); return; }
-  fs.readFile(file, (err, body) => {
-    if (err) { res.writeHead(404, { 'Content-Type': 'text/plain' }); res.end('Not found'); return; }
-    const ext = path.extname(file);
-    res.writeHead(200, { 'Content-Type': TYPES[ext] || 'application/octet-stream', 'Cache-Control': ext === '.html' || rel === 'sw.js' ? 'no-cache' : 'public, max-age=300', 'X-Content-Type-Options': 'nosniff' });
-    res.end(body);
-  });
-}
 
 /* ---------- web server ---------- */
 const server = http.createServer((req, res) => {
   const url = (req.url || '/').split('?')[0];
-  if (url === '/chess' || url.startsWith('/chess/')) return serveChess(req, res, url);
+  if (url === '/chess' || url.startsWith('/chess/')) return CHESS.serve(req, res, url);
   if (req.url && req.url.split('?')[0].replace(/\/+$/, '') === '/beta') {   /* Beta test: built from the source files in the Test Supply repo */
     getBeta(/[?&]fresh/.test(req.url)).then(html => {
       if (!html) { res.writeHead(404, { 'Content-Type': 'text/plain' }); res.end('No beta right now.'); return; }

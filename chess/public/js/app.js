@@ -8,17 +8,19 @@
   const tcText = t => t.replace('+', ' | ');
   const catOf = t => { const [b, i] = t.split('+').map(Number); return Rating.category(b * 60, i); };
   const S = () => Store.data.settings;
-  const FULL = new Set(['game', 'puzzle', 'rush', 'analysis', 'review', 'lesson', 'drill']);
+  const FULL = new Set(['game', 'puzzle', 'rush', 'analysis', 'review', 'lesson', 'drill', 'editor']);
   const TAB_OF = { home: 'home', online: 'home', friend: 'home', bots: 'home', local: 'home', puzzles: 'puzzles', learn: 'learn', watch: 'watch', profile: 'profile', settings: 'profile', leaders: 'profile', games: 'profile' };
-  let cleanup = null, current = { route: 'home', params: {} }, installEvt = null;
+  let cleanup = null, current = { route: 'home', params: {} }, installEvt = null, depth = 0;   // depth: how many screens back we can go inside the app
 
   /* ---------- navigation ---------- */
   const App = {
     go(route, params, replace) {
       const st = { route, params: params || {} };
-      try { if (replace) history.replaceState(st, '', '#' + route); else history.pushState(st, '', '#' + route); } catch (e) {}
+      try { if (replace) history.replaceState(st, '', '#' + route); else { history.pushState(st, '', '#' + route); depth++; } } catch (e) {}
       render(st);
     },
+    /* back to the previous screen – but never out of the app (e.g. when it was opened from a link) */
+    back(fallback) { if (depth > 0) history.back(); else App.go(fallback || 'home', {}, true); },
     get route() { return current.route; },
     settingsSheet,
   };
@@ -30,16 +32,21 @@
     document.body.classList.toggle('full', FULL.has(st.route));
     for (const b of $$('#tabs button')) b.classList.toggle('on', b.dataset.tab === TAB_OF[st.route]);
     const fn = SCREENS[st.route] || SCREENS.home;
-    try { cleanup = fn(fresh, st.params || {}) || null; } catch (e) { console.error(e); fresh.innerHTML = '<div class="page"><h2>Something went wrong</h2><p class="muted">' + esc(e.message) + '</p><button class="btn" onclick="location.hash=\'\';location.reload()">Reload</button></div>'; }
+    try { cleanup = fn(fresh, st.params || {}) || null; } catch (e) {
+      console.error(e);
+      fresh.innerHTML = '<div class="page"><h2>Something went wrong</h2><p class="muted">' + esc(e.message) + '</p><button class="btn" data-reload>Reload</button></div>';
+      $('[data-reload]', fresh).onclick = () => { location.hash = ''; location.reload(); };
+    }
     fresh.scrollTop = 0;
   }
   addEventListener('popstate', e => {
     if (UI.closeSheet()) { try { history.pushState(current, '', '#' + current.route); } catch (x) {} return; }
+    depth = Math.max(0, depth - 1);
     render(e.state || { route: 'home', params: {} });
   });
 
   const top = (title, right) => '<div class="topbar"><button class="iconbtn" data-back aria-label="Back">' + icon('back') + '</button><h2>' + esc(title) + '</h2>' + (right || '') + '</div>';
-  const back = el => el.addEventListener('click', e => { if (e.target.closest('[data-back]')) history.length > 1 ? history.back() : App.go('home'); });
+  const back = el => el.addEventListener('click', e => { if (e.target.closest('[data-back]')) App.back(); });
   const miniBoard = (fen, flip) => { const d = document.createElement('div'); d.className = 'mini-board'; const b = new Board(d, { coords: false, animMs: 0, orientation: flip ? 'b' : 'w' }); b.set({ fen, animate: false }); return d; };
   const rr = r => r && r.games ? Math.round(r.r) + (r.provisional ? '?' : '') : '–';
 
@@ -56,12 +63,13 @@
       '<span class="chip net"></span><button class="iconbtn" data-go="settings" aria-label="Settings">' + icon('gear') + '</button></div>' +
       (og ? '<button class="banner" data-a="return" style="width:100%;color:inherit;text-align:left"><b class="grow">Your game vs ' + esc(og.players[og.me === 'w' ? 'b' : 'w'].name) + ' is on</b><span class="btn sm primary">Return</span></button>' : '') +
       (curBot && !og ? '<div class="banner"><span class="av" style="width:36px;height:36px">' + curBot.faceSvg + '</span><div class="grow"><b>Unfinished game vs ' + esc(curBot.name) + '</b><div class="small muted">' + cur.moves.length + ' moves played</div></div><button class="btn sm primary" data-a="resume">Continue</button></div>' : '') +
+      installBanner() +
       '<div class="hero"><svg class="skyline" viewBox="0 0 200 90"><path fill="currentColor" d="M0 90V60h14V40h10v20h8V30l8-8 8 8v30h10V48h18v42zm88 0V36h8V24h10v12h8v54zm34 0V56h12V44h4v-8h6v8h4v12h12v34zm44 0V30l10-10 10 10v60z"/></svg>' +
       '<div class="small muted">Rated games against real people</div><div style="font-size:22px;font-weight:900;margin:2px 0 12px">Play chess online</div>' +
       '<button class="btn primary big" data-go="online">' + icon('globe') + ' Play Online</button>' +
       '<div class="row gap" style="margin-top:10px;font-size:13px"><span class="chip">Bullet ' + rr(R.bullet) + '</span><span class="chip">Blitz ' + rr(R.blitz) + '</span><span class="chip">Rapid ' + rr(R.rapid) + '</span></div></div>' +
       '<div class="tiles" style="margin-top:12px">' +
-      '<button class="tile" data-go="bots"><span class="ic" style="background:#7aa7f022;color:#7aa7f0">' + icon('robot') + '</span><span><b>Play a bot</b><small>11 characters, 250 to 2300</small></span></button>' +
+      '<button class="tile" data-go="bots"><span class="ic" style="background:#7aa7f022;color:#7aa7f0">' + icon('robot') + '</span><span><b>Play a bot</b><small>12 characters, 250 to 2800</small></span></button>' +
       '<button class="tile" data-go="friend"><span class="ic" style="background:#6cc4a122;color:#6cc4a1">' + icon('friend') + '</span><span><b>Play a friend</b><small>Send a code or link</small></span></button>' +
       '<button class="tile" data-go="local"><span class="ic" style="background:#e27fa722;color:#e27fa7">' + icon('flip') + '</span><span><b>Pass & play</b><small>Two players, one phone</small></span></button>' +
       '<button class="tile" data-go="analysis"><span class="ic" style="background:#f2cc5b22;color:#f2cc5b">' + icon('chart') + '</span><span><b>Analysis</b><small>Engine, PGN & FEN</small></span></button>' +
@@ -75,7 +83,9 @@
     if (Net.state === 'online') Net.raw({ t: 'stats' });
     el.addEventListener('click', e => {
       const g = e.target.closest('[data-go]'); if (g) return App.go(g.dataset.go);
-      const a = e.target.closest('[data-a]'); if (a) { const k = a.dataset.a; if (k === 'return') { Play.current = Play.player; App.go('game'); } if (k === 'resume') Play.resumeBot(); if (k === 'daily') App.go('puzzle', { mode: 'daily' }); }
+      const a = e.target.closest('[data-a]'); if (a) { const k = a.dataset.a; if (k === 'return') { Play.current = Play.player; App.go('game'); } if (k === 'resume') Play.resumeBot(); if (k === 'daily') App.go('puzzle', { mode: 'daily' });
+        if (k === 'install') install();
+        if (k === 'noinstall') { Store.data.installHidden = true; Store.save(); const bn = $('.install-banner', el); if (bn) bn.remove(); } }
       const gi = e.target.closest('[data-game]'); if (gi) gameSheet(gi.dataset.game);
     });
     return () => { off(); off2(); };
@@ -269,11 +279,26 @@
       '<button class="btn sm" style="margin-top:6px" data-a="name">Edit name</button></div><button class="iconbtn" data-go="settings" aria-label="Settings">' + icon('gear') + '</button></div>' +
       '<div class="section-title">Ratings</div><div class="stat-grid">' + card('Bullet', rr(R.bullet), (R.bullet ? R.bullet.games : 0) + ' games') + card('Blitz', rr(R.blitz), (R.blitz ? R.blitz.games : 0) + ' games') + card('Rapid', rr(R.rapid), (R.rapid ? R.rapid.games : 0) + ' games') +
       card('Puzzles', Math.round(P.r), P.solved + ' solved') + card('Rush', Store.data.rush.best, 'best score') + card('Record', w + '/' + l + '/' + d, 'win/loss/draw') + '</div>' +
+      '<div class="section-title">Rating history</div><div class="card"><div class="seg" style="margin-bottom:10px">' + [['puzzle', 'Puzzles'], ['bullet', 'Bullet'], ['blitz', 'Blitz'], ['rapid', 'Rapid']].map(([k, n]) => '<button data-hist="' + k + '">' + n + '</button>').join('') + '</div><div class="hist"></div></div>' +
       '<div class="section-title">Bots beaten</div><div class="row wrap gap4">' + BOTS.map(b => '<span title="' + esc(b.name) + '" style="position:relative;opacity:' + (Store.data.beaten[b.id] ? 1 : .35) + '"><span class="av" style="width:44px;height:44px">' + b.faceSvg + '</span></span>').join('') + '</div>' +
       '<div class="section-title">Games</div>' + (G.length ? '<div class="list">' + G.slice(0, 8).map(gameItem).join('') + '</div>' + (G.length > 8 ? '<button class="btn ghost block" style="margin-top:10px" data-go="games">All ' + G.length + ' games</button>' : '') : '<div class="card empty">No games yet.</div>') +
       '<div class="tiles" style="margin-top:16px"><button class="tile" data-go="leaders"><span class="ic" style="background:#f2cc5b22;color:#f2cc5b">🏆</span><span><b>Leaderboard</b><small>Top online players</small></span></button>' +
       '<button class="tile" data-a="install"><span class="ic" style="background:#ff9f4322;color:var(--accent)">' + icon('plus') + '</span><span><b>Install app</b><small>Add to your home screen</small></span></button></div></div>';
+    const drawHist = kind => {
+      for (const b of $$('[data-hist]', el)) b.classList.toggle('on', b.dataset.hist === kind);
+      const pts = (Store.data.ratingLog || []).filter(x => x.k === kind).slice(-120), box = $('.hist', el);
+      if (pts.length < 2) { box.innerHTML = '<p class="small muted center" style="margin:14px 0">' + (kind === 'puzzle' ? 'Solve a few rated puzzles' : 'Play a few rated ' + kind + ' games') + ' to see your graph.</p>'; return; }
+      const W = 300, H = 90, rs = pts.map(p => p.r), lo = Math.min(...rs) - 10, hi = Math.max(...rs) + 10;
+      const xy = pts.map((p, i) => [i / (pts.length - 1) * W, H - (p.r - lo) / (hi - lo) * H]);
+      const line = xy.map((q, i) => (i ? 'L' : 'M') + q[0].toFixed(1) + ' ' + q[1].toFixed(1)).join(' ');
+      box.innerHTML = '<div class="row" style="margin-bottom:6px"><b style="font-size:22px">' + rs[rs.length - 1] + '</b><span class="small muted right">best ' + Math.max(...rs) + ' · low ' + Math.min(...rs) + '</span></div>' +
+        '<svg viewBox="0 0 ' + W + ' ' + H + '" preserveAspectRatio="none" style="width:100%;height:90px;display:block"><path d="' + line + ' L' + W + ' ' + H + ' L0 ' + H + ' Z" fill="rgba(255,159,67,.15)"/><path d="' + line + '" fill="none" stroke="var(--accent)" stroke-width="2" vector-effect="non-scaling-stroke"/></svg>' +
+        '<div class="row tiny faint" style="margin-top:4px"><span>' + new Date(pts[0].t).toLocaleDateString() + '</span><span class="right">' + new Date(pts[pts.length - 1].t).toLocaleDateString() + '</span></div>';
+    };
+    const kinds = ['puzzle', 'blitz', 'rapid', 'bullet'];
+    drawHist(kinds.find(k => (Store.data.ratingLog || []).filter(x => x.k === k).length >= 2) || 'puzzle');
     el.addEventListener('click', async e => {
+      const h = e.target.closest('[data-hist]'); if (h) return drawHist(h.dataset.hist);
       const g = e.target.closest('[data-go]'); if (g) return App.go(g.dataset.go);
       const gi = e.target.closest('[data-game]'); if (gi) return gameSheet(gi.dataset.game);
       const a = e.target.closest('[data-a]'); if (!a) return;
@@ -303,7 +328,7 @@
 
   /* ---------- settings ---------- */
   const BOARDS = [['grass', 'Grass', '#eeeed2', '#769656'], ['walnut', 'Walnut', '#f0d9b5', '#b58863'], ['ocean', 'Ocean', '#dee3e6', '#8ca2ad'], ['dusk', 'Dusk', '#e8e2f3', '#8f7bb5'], ['sunset', 'Sunset', '#f7e4c9', '#d18b55'], ['slate', 'Slate', '#c9ced6', '#6b7686']];
-  const TOGGLES = [['sound', 'Sounds'], ['dests', 'Show legal moves'], ['coords', 'Board coordinates'], ['lastMove', 'Highlight the last move'], ['autoQueen', 'Always promote to a queen'], ['premoves', 'Premoves in online games'], ['confirmResign', 'Ask before resigning'], ['bigClock', 'Big clock']];
+  const TOGGLES = [['sound', 'Sounds'], ['vibrate', 'Vibrate on moves'], ['dests', 'Show legal moves'], ['coords', 'Board coordinates'], ['lastMove', 'Highlight the last move'], ['autoQueen', 'Always promote to a queen'], ['premoves', 'Premoves in online games'], ['botChat', 'Bots talk during games'], ['confirmResign', 'Ask before resigning'], ['bigClock', 'Big clock']];
   function settingsHtml(full) {
     const s = S();
     return '<div class="section-title" style="margin-top:4px">Board</div><div class="row wrap gap">' + BOARDS.map(([k, n, l, d]) => '<button data-boardtheme="' + k + '" style="border:2px solid ' + (s.board === k ? 'var(--accent)' : 'transparent') + ';border-radius:12px;padding:4px;background:var(--card2)"><span style="display:grid;grid-template-columns:1fr 1fr;width:46px;height:46px;border-radius:8px;overflow:hidden"><i style="background:' + l + '"></i><i style="background:' + d + '"></i><i style="background:' + d + '"></i><i style="background:' + l + '"></i></span><div class="tiny" style="margin-top:3px">' + n + '</div></button>').join('') + '</div>' +
@@ -312,7 +337,7 @@
       '<div class="tc-label">App theme</div><div class="seg">' + [['dark', 'Dark'], ['light', 'Light']].map(([v, n]) => '<button data-apptheme="' + v + '" class="' + (s.theme === v ? 'on' : '') + '">' + n + '</button>').join('') + '</div>' +
       (full ? '<div class="section-title">Online server</div><div class="card"><p class="small muted">Leave empty to use the server this app came from. If you opened the app from somewhere else, paste your Rooftop server link (like https://your-server.onrender.com).</p>' +
         '<div class="row gap"><input class="field" id="server" placeholder="This site" value="' + esc(s.server) + '"><button class="btn" data-a="server">Save</button></div><p class="small" style="margin:8px 0 0" id="srvstate"></p></div>' +
-        '<div class="section-title">Your data</div><div class="list"><button class="item" data-a="export"><span class="grow">Copy a backup of my data</span></button><button class="item" data-a="import"><span class="grow">Restore from a backup</span></button><button class="item" data-a="reset"><span class="grow bad">Reset everything on this device</span></button></div>' +
+        '<div class="section-title">Your data</div><div class="list"><button class="item" data-a="pgns"><span class="grow">Copy all my games (PGN)</span><span class="small muted">' + Store.data.games.length + '</span></button><button class="item" data-a="export"><span class="grow">Copy a backup of my data</span></button><button class="item" data-a="import"><span class="grow">Restore from a backup</span></button><button class="item" data-a="reset"><span class="grow bad">Reset everything on this device</span></button></div>' +
         '<p class="faint small center" style="margin-top:18px">Rooftop Chess ' + VERSION + ' · pieces, characters and puzzles made for this app</p>' : '');
   }
   function bindSettings(root, redraw, onChange) {
@@ -333,6 +358,7 @@
       const a = e.target.closest('[data-a]'); if (!a) return;
       if (a.dataset.a === 'server') { S().server = $('#server', el).value.trim(); Store.save(); Net.reconnect(); toast('Saved'); }
       if (a.dataset.a === 'export') UI.copy(JSON.stringify(Store.data));
+      if (a.dataset.a === 'pgns') { if (!Store.data.games.length) return toast('No games yet'); UI.copy(Store.data.games.slice().reverse().map(g => g.pgn.trim()).join('\n\n') + '\n'); }
       if (a.dataset.a === 'import') {
         const s = sheet('<h3>Restore a backup</h3><p class="small muted">Paste the backup text. This replaces what’s on this device.</p><textarea class="field"></textarea><button class="btn primary block" style="margin-top:10px" data-ok>Restore</button>');
         $('[data-ok]', s).onclick = () => { try { const d = JSON.parse($('textarea', s).value); if (!d || d.v !== 1 || !d.profile) throw 0; localStorage.setItem('rooftop-chess.v1', JSON.stringify(d)); location.reload(); } catch (x) { toast('That isn’t a Rooftop Chess backup'); } };
@@ -351,7 +377,7 @@
     const s = S(), d = document.documentElement;
     d.dataset.theme = s.theme; d.dataset.board = s.board;
     document.body.classList.toggle('nolast', !s.lastMove); document.body.classList.toggle('bigclock', !!s.bigClock);
-    Sound.enabled = s.sound;
+    Sound.enabled = s.sound; Sound.vibrate = s.vibrate !== false;
     const m = $('meta[name="theme-color"]'); if (m) m.content = s.theme === 'light' ? '#f2f0ea' : '#15181d';
   }
 
@@ -377,7 +403,17 @@
       }
     });
   }
-  addEventListener('beforeinstallprompt', e => { e.preventDefault(); installEvt = e; });
+  addEventListener('beforeinstallprompt', e => { e.preventDefault(); installEvt = e; if (current.route === 'home' && !$('.install-banner')) App.go('home', {}, true); });
+  addEventListener('appinstalled', () => { installEvt = null; Store.data.installHidden = true; Store.save(); toast('Installed! Find Rooftop Chess on your home screen.'); });
+  const isStandalone = () => matchMedia('(display-mode: standalone)').matches || navigator.standalone === true;
+  const isIos = () => /iphone|ipad|ipod/i.test(navigator.userAgent);
+  /* a gentle nudge to install the app (until it's installed or dismissed) */
+  function installBanner() {
+    if (Store.data.installHidden || isStandalone() || !(installEvt || isIos())) return '';
+    return '<div class="banner install-banner"><img src="icons/icon.svg" width="38" height="38" alt="" style="border-radius:10px"><div class="grow"><b>Get the app</b><div class="small muted">' +
+      (installEvt ? 'Install Rooftop Chess on this device – it works offline too.' : 'Tap Share, then “Add to Home Screen”.') + '</div></div>' +
+      (installEvt ? '<button class="btn sm primary" data-a="install">Install</button>' : '') + '<button class="iconbtn" data-a="noinstall" aria-label="Not now">' + icon('x') + '</button></div>';
+  }
   function install() {
     if (installEvt) { installEvt.prompt(); installEvt.userChoice.finally(() => { installEvt = null; }); return; }
     if (matchMedia('(display-mode: standalone)').matches) return toast('You’re already using the app');
@@ -390,7 +426,7 @@
     game: (el) => Play.screen(el),
     puzzles: el => Puzzles.screenHome(el), puzzle: (el, p) => Puzzles.screenSolve(el, p), rush: el => Puzzles.screenRush(el),
     learn: el => Learn.screenLearn(el), lesson: (el, p) => Learn.screenLesson(el, p), drill: (el, p) => Learn.screenDrill(el, p),
-    analysis: (el, p) => Analysis.screenAnalysis(el, p), review: (el, p) => Analysis.screenReview(el, p),
+    analysis: (el, p) => Analysis.screenAnalysis(el, p), review: (el, p) => Analysis.screenReview(el, p), editor: (el, p) => Analysis.screenEditor(el, p),
   };
 
   /* ---------- start ---------- */

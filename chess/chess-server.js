@@ -1,7 +1,9 @@
 /* Rooftop Chess – online play: matchmaking, friend challenges, clocks, ratings, rematches and spectating.
    Every move is checked on the server with the same rules file the app uses (chess/js/chess.js).
    Players are known by a secret token kept on their device; only its hash is stored.
-   Storage: Postgres when DATABASE_URL is set, otherwise a JSON file (wiped on redeploy on free hosting). */
+   Storage: Postgres when DATABASE_URL is set, otherwise a JSON file. Free hosting wipes that file whenever the
+   server restarts, so each player's phone also keeps a "rating card" signed with CHESS_SECRET: after a restart the
+   phone hands it back and the rating is restored. Nobody can make or edit a card without the secret. */
 const crypto = require('crypto');
 const fs = require('fs');
 const path = require('path');
@@ -9,10 +11,35 @@ const { WebSocketServer } = require('ws');
 const Chess = require('./public/js/chess.js');
 const Rating = require('./public/js/rating.js');
 
+/* the app's own files, served at /chess/ */
+const PUBLIC_DIR = path.join(__dirname, 'public');
+/* the page may only run this app's own scripts (a guard in case something ever slips past the name filter) */
+const CSP = "default-src 'self'; script-src 'self'; worker-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; connect-src 'self' ws: wss: https:; " +
+  "manifest-src 'self'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'; object-src 'none'";
+const TYPES = { '.html': 'text/html; charset=utf-8', '.js': 'text/javascript; charset=utf-8', '.css': 'text/css; charset=utf-8', '.json': 'application/json', '.webmanifest': 'application/manifest+json',
+  '.svg': 'image/svg+xml', '.png': 'image/png', '.ico': 'image/x-icon', '.txt': 'text/plain; charset=utf-8' };
+/* answer a request for /chess or /chess/... (url is the path without the query) */
+function serveApp(req, res, url) {
+  if (url === '/chess') { res.writeHead(301, { Location: '/chess/' }); res.end(); return; }
+  let rel;
+  try { rel = decodeURIComponent(url.slice('/chess/'.length)) || 'index.html'; } catch (e) { res.writeHead(400); res.end(); return; }   // a broken %-escape
+  const file = path.normalize(path.join(PUBLIC_DIR, rel));
+  if (!file.startsWith(PUBLIC_DIR + path.sep)) { res.writeHead(403); res.end(); return; }
+  fs.readFile(file, (err, body) => {
+    if (err) { res.writeHead(404, { 'Content-Type': 'text/plain' }); res.end('Not found'); return; }
+    const ext = path.extname(file);
+    const headers = { 'Content-Type': TYPES[ext] || 'application/octet-stream', 'Cache-Control': ext === '.html' || rel === 'sw.js' ? 'no-cache' : 'public, max-age=300', 'X-Content-Type-Options': 'nosniff' };
+    if (ext === '.html') { headers['Content-Security-Policy'] = CSP; headers['Referrer-Policy'] = 'no-referrer'; }
+    res.writeHead(200, headers);
+    res.end(body);
+  });
+}
+
 const TIME_CONTROLS = ['1+0', '1+1', '2+1', '3+0', '3+2', '5+0', '5+3', '10+0', '10+5', '15+10', '30+0'];
 const FIRST_MOVE_MS = 30000;      // a player who doesn't make their first move in time: game aborted
 const ABANDON_MS = 90000;         // gone this long during a game: it counts as a loss
 const REMATCH_MS = 120000;
+const LAG_CREDIT_MAX = 300;       // at most this much of a player's measured network delay is given back per move
 const CHAT = ['Hi!', 'Good luck!', 'Have fun!', 'Nice move!', 'Oops', 'Thanks!', 'Good game!', 'Well played!', 'Rematch?', 'Thinking…'];
 const now = () => Date.now();
 const sha = s => crypto.createHash('sha256').update(String(s)).digest('hex');
@@ -54,6 +81,38 @@ function createChessServer(opts) {
   const dataFile = opts.dataFile || process.env.CHESS_DATA_FILE;
   const store = process.env.DATABASE_URL && !dataFile ? pgStore(process.env.DATABASE_URL) : fileStore(dataFile || path.join(__dirname, 'chess-data.json'));
   const ready = store.init().catch(e => console.log('chess storage problem:', e.message));
+  const secret = opts.secret || process.env.CHESS_SECRET;
+  if (!secret) console.log('Rooftop Chess: set CHESS_SECRET so ratings survive server restarts');
+  const cardKey = secret ? crypto.createHash('sha256').update('rooftop-chess-card:' + secret).digest() : crypto.randomBytes(32);
+  const sign = s => crypto.createHmac('sha256', cardKey).update(s).digest('base64url');
+  /* a rating card: the player's ratings, signed, for their phone to keep */
+  function makeCard(pr) {
+    const ratings = {};
+    for (const c in pr.ratings) { const r = pr.ratings[c]; ratings[c] = { r: r.r, rd: r.rd, at: r.at || 0, games: r.games || 0, w: r.w || 0, l: r.l || 0, d: r.d || 0, best: Math.round(r.best || r.r) }; }
+    const body = Buffer.from(JSON.stringify({ id: pr.id, ratings, t: pr.updated || 0 })).toString('base64url');
+    return body + '.' + sign(body);
+  }
+  function readCard(card, id) {
+    if (typeof card !== 'string' || card.length > 4000) return null;
+    const [body, sig] = card.split('.');
+    if (!body || !sig) return null;
+    const want = sign(body);
+    if (sig.length !== want.length || !crypto.timingSafeEqual(Buffer.from(sig), Buffer.from(want))) return null;
+    let o; try { o = JSON.parse(Buffer.from(body, 'base64url').toString('utf8')); } catch (e) { return null; }
+    if (!o || o.id !== id || !o.ratings || typeof o.ratings !== 'object') return null;
+    return o;
+  }
+  /* bring back ratings from a card if it is newer than what the server has (e.g. the server lost its data) */
+  function restoreFromCard(pr, card) {
+    const o = readCard(card, pr.id);
+    if (!o || !(o.t > (pr.updated || 0))) return false;
+    for (const c of ['bullet', 'blitz', 'rapid']) {
+      const r = o.ratings[c]; if (!r || !Number.isFinite(r.r) || !Number.isFinite(r.rd)) continue;
+      pr.ratings[c] = { r: Math.max(100, Math.min(4000, r.r)), rd: Math.max(45, Math.min(350, r.rd)), at: +r.at || 0, games: r.games | 0, w: r.w | 0, l: r.l | 0, d: r.d | 0, best: Math.max(100, Math.min(4000, +r.best || r.r)) };
+    }
+    pr.updated = o.t;
+    return true;
+  }
   const wss = new WebSocketServer({ noServer: true, maxPayload: 8 * 1024 });
 
   const people = new Map();     // id -> { id, ws, profile, game, seek, challenge, watching }
@@ -147,7 +206,9 @@ function createChessServer(opts) {
         const na = Rating.update(ra, rb, sw), nb = Rating.update(rb, ra, 1 - sw);
         g.ratingChange = { w: { old: Math.round(ra.r), now: Math.round(na.r) }, b: { old: Math.round(rb.r), now: Math.round(nb.r) } };
         a.ratings[g.cat] = na; b.ratings[g.cat] = nb;
+        a.updated = b.updated = now();
         await store.put(a); await store.put(b);
+        sendTo(g.ids.w, { t: 'card', card: makeCard(a) }); sendTo(g.ids.b, { t: 'card', card: makeCard(b) });
       } catch (e) { console.log('chess rating save failed', e.message); }
     }
     const pgn = g.chess.pgn({ Event: (g.rated ? 'Rated ' : 'Casual ') + g.cat + ' game', Site: 'Rooftop Chess', White: g.players.w.name, Black: g.players.b.name, WhiteElo: g.players.w.rating, BlackElo: g.players.b.rating, TimeControl: g.tc.base / 1000 + '+' + g.tc.inc / 1000, Termination: reason });
@@ -163,13 +224,15 @@ function createChessServer(opts) {
     const color = g.ids.w === p.id ? 'w' : g.ids.b === p.id ? 'b' : null;
     if (!color || g.chess.turn !== color) return send(p.ws, { t: 'error', msg: 'Not your turn' });
     if (typeof m.ply === 'number' && m.ply !== g.chess.history.length) return send(p.ws, gameState(g, p.id));   // out of step: resync
+    const uci = String(m.uci || '').slice(0, 5);
+    if (!/^[a-h][1-8][a-h][1-8][qrbn]?$/.test(uci) || g.chess.find(uci) == null) return send(p.ws, gameState(g, p.id));   // not a legal move: resync, clock untouched
     const t = now(), n = g.chess.history.length;
     const ci = color === 'w' ? 0 : 1;
     if (n >= 2) {
-      g.clock[ci] -= t - g.turnStart;
+      g.clock[ci] -= Math.max(0, t - g.turnStart - Math.min(p.lag || 0, LAG_CREDIT_MAX));
       if (g.clock[ci] <= 0) { g.clock[ci] = 0; const winner = g.chess.timeoutResult(color); return finish(g, winner, winner ? 'timeout' : 'timeout vs insufficient material'); }
     }
-    const rec = g.chess.move(String(m.uci || '').slice(0, 5));
+    const rec = g.chess.move(uci);
     if (!rec) return send(p.ws, gameState(g, p.id));
     if (n >= 2) g.clock[ci] += g.tc.inc;
     g.turnStart = t;
@@ -209,6 +272,15 @@ function createChessServer(opts) {
     }
   }
   setInterval(matchmake, 700);
+  /* measure each playing person's network delay now and then (used to give back clock time lost in transit) */
+  let probeSeq = 1;
+  setInterval(() => {
+    for (const p of people.values()) {
+      if (!p.game || !isOnline(p.id)) continue;
+      if (p.probe && now() - p.probe.at < 10000) continue;
+      p.probe = { i: probeSeq++, at: now() }; send(p.ws, { t: 'p', i: p.probe.i });
+    }
+  }, 4000);
   const code = () => { const A = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'; let s = ''; for (let i = 0; i < 6; i++) s += A[crypto.randomInt(A.length)]; return challenges.has(s) ? code() : s; };
 
   function stats() {
@@ -229,14 +301,19 @@ function createChessServer(opts) {
       const id = sha('rooftop-chess:' + token).slice(0, 16);
       let p = people.get(id);
       if (p && p.ws && p.ws !== ws) { send(p.ws, { t: 'replaced' }); try { p.ws.close(); } catch (e) {} }
-      if (!p) { p = { id, ws, profile: await loadProfile(id), game: null, seek: null, challenge: null, watching: null }; people.set(id, p); }
-      p.ws = ws; ws.pid = id; clearTimeout(p.forget);
+      if (!p) {
+        const profile = await loadProfile(id);
+        p = people.get(id);   // another connection may have arrived while loading
+        if (!p) { p = { id, ws, profile, game: null, seek: null, challenge: null, watching: null, lag: 0 }; people.set(id, p); }
+      }
+      p.ws = ws; ws.pid = id; clearTimeout(p.forget); p.probe = null;
+      if (m.card && restoreFromCard(p.profile, m.card)) console.log('chess: ratings restored from a card for', id);
       const name = cleanName(String(m.name || '').trim()).trim();
       if (name) p.profile.name = name.slice(0, 20);
       if (Number.isFinite(m.face)) p.profile.face = Math.abs(m.face | 0);
       p.profile.seen = now();
-      store.put(p.profile).catch(() => {});
-      send(ws, { t: 'welcome', id, name: p.profile.name, ratings: ratingsOut(p.profile), chat: CHAT, tcs: TIME_CONTROLS, stats: stats() });
+      if (p.profile.updated) store.put(p.profile).catch(() => {});   // only players with rated games are kept (no storage for drive-by visitors)
+      send(ws, { t: 'welcome', id, name: p.profile.name, ratings: ratingsOut(p.profile), card: makeCard(p.profile), chat: CHAT, tcs: TIME_CONTROLS, stats: stats() });
       const g = p.game && games.get(p.game);
       if (g) { const c = g.ids.w === id ? 'w' : 'b'; if (g.gone[c]) { g.gone[c] = 0; arm(g); } send(ws, gameState(g, id)); broadcast(g, { t: 'presence', id: g.id, color: c, online: true }); }
       return;
@@ -312,6 +389,12 @@ function createChessServer(opts) {
       case 'me': return send(ws, { t: 'me', ratings: ratingsOut(p.profile), name: p.profile.name });
       case 'stats': return send(ws, { t: 'stats', stats: stats() });
       case 'ping': return send(ws, { t: 'pong', at: m.at });
+      case 'pp': {   // reply to a lag probe: keep a smoothed round-trip time
+        if (!p.probe || m.i !== p.probe.i) return;
+        const rtt = Math.min(5000, now() - p.probe.at); p.probe = null;
+        p.lag = p.lag ? p.lag * 0.7 + rtt * 0.3 : rtt;
+        return;
+      }
     }
   }
 
@@ -335,6 +418,7 @@ function createChessServer(opts) {
 
   return {
     handleUpgrade(req, socket, head) { wss.handleUpgrade(req, socket, head, ws => wss.emit('connection', ws, req)); },
+    serve: serveApp,   // the app's files: call for /chess and /chess/...
     stats, store,
   };
 }

@@ -85,13 +85,24 @@
         '<div class="gv-main"><div class="gv-wrap">' +
           '<div class="pbar" data-side="top"></div><div class="gv-boardrow" style="position:relative"><div class="board"></div></div><div class="pbar" data-side="bottom"></div>' +
         '</div><div class="gv-status"></div><div class="opening"></div><div class="moves"></div><div class="actions"></div></div>' +
-        '<div class="gv-side"><div class="side-head"><h3 class="gv-title"></h3><button class="iconbtn" data-act="menu" aria-label="Menu">' + icon('menu') + '</button></div><div class="gv-status"></div><div class="opening"></div><div class="moves"></div><div class="actions"></div></div>' +
+        '<div class="gv-side"><div class="side-head"><h3 class="gv-title"></h3><button class="iconbtn" data-act="menu" aria-label="Menu">' + icon('menu') + '</button></div><div class="gv-status"></div><div class="opening"></div><div class="moves"></div>' +
+        (this.mode === 'watch' || this.mode === 'battle' ? '' : '<input class="field moveinput" placeholder="Type a move, like Nf3 or e2e4" aria-label="Type a move" autocomplete="off" spellcheck="false">') + '<div class="actions"></div></div>' +
         '</div>';
       const s = Store.data.settings;
       this.board = new Board($('.board', el), { orientation: this.orientation, coords: s.coords, showDests: s.dests, autoQueen: s.autoQueen, animMs: s.anim, premoves: s.premoves && this.mode === 'online',
         onMove: (f, t, p) => this.userMove(f, t, p), onPremove: (f, t, p) => { this.premove = f ? { from: f, to: t, promo: p } : null; },
         premoveDests: sq => this.premoveDests(sq) });
       el.addEventListener('click', e => { const b = e.target.closest('[data-act]'); if (b && !b.disabled) this.act(b.dataset.act, b); });
+      const typed = $('.moveinput', el);
+      if (typed) typed.addEventListener('keydown', e => {
+        if (e.key !== 'Enter') return;
+        const v = typed.value.trim(); if (!v) return;
+        if (!this.myTurn() || this.thinking || (this.view != null && this.view < this.game.history.length)) { toast('It’s not your move'); return; }
+        const m = this.game.find(v);
+        if (m == null) { Sound.play('illegal'); toast('“' + v + '” isn’t a legal move here'); return; }
+        typed.value = '';
+        this.userMove(Chess.sqName(Chess.mFrom(m)), Chess.sqName(Chess.mTo(m)), Chess.mFlags(m) & Chess.F_PROMO ? Chess.LETTERS[Chess.mPromo(m)] : null);
+      });
       this.timer = setInterval(() => this.tick(), 100);
       this.draw(false);
     }
@@ -204,6 +215,7 @@
     drawStatus() {
       let s = '';
       if (this.over) s = '<span>' + esc(this.resultTitle()) + ' <span class="muted">· ' + esc(this.reasonText()) + '</span></span>';
+      else if (this.mode === 'online' && Net.state !== 'online') s = '<span class="warn">Reconnecting… your clock keeps running</span>';
       else if (this.mode === 'online' && this.drawOffer && this.drawOffer !== this.me) s = '<span>Your opponent offers a draw</span><button class="btn sm primary" data-act="draw">Accept</button><button class="btn sm" data-act="decline">No</button>';
       else if (this.mode === 'online' && this.online[otherC(this.me)] === false) s = '<span class="warn">Your opponent disconnected – they have 90 seconds to come back</span>';
       else if (this.mode === 'online' && this.game.history.length < 2 && this.firstDeadline) { const left = Math.max(0, Math.ceil((this.firstDeadline - performance.now()) / 1000)); s = '<span class="muted">' + (this.game.turn === this.me ? 'Your move' : 'Waiting for their first move') + (left < 25 ? ' · ' + left + 's' : '') + '</span>'; }
@@ -242,6 +254,8 @@
     afterMove(rec, mine) {
       this.view = null; this.hintMove = null;
       Sound.forMove(rec);
+      if (this.mode === 'bot') this.botReacts(rec);
+      if (this.mode !== 'battle') Sound.buzz(rec);
       if (this.clock && this.mode === 'local') {
         const n = this.game.history.length, i = rec.color === 'w' ? 0 : 1, t = performance.now();
         if (this.running) this.clock[i] = Math.max(0, this.clock[i] - (t - this.clockAt)) + this.tc.inc;
@@ -256,6 +270,22 @@
       this.save();
     }
 
+    /* the bot says something now and then: when it takes or loses a piece, or gives check */
+    botSay(kind) {
+      const lines = this.bot && this.bot.chat; if (!lines || !lines[kind] || !Store.data.settings.botChat) return;
+      const n = this.game.history.length;
+      if (kind !== 'hello' && !['win', 'lose', 'draw'].includes(kind) && n - (this.saidAt == null ? -9 : this.saidAt) < 6) return;
+      this.saidAt = n;
+      setTimeout(() => this.showChat(otherC(this.me), lines[kind]), 250);
+    }
+    botReacts(rec) {
+      const byBot = rec.color !== this.me;
+      let taken = 0;
+      if (rec.capture) { const p = new Chess.Position(rec.fenBefore).pieceAt(rec.ep ? rec.to[0] + rec.from[1] : rec.to); taken = p ? { p: 1, n: 3, b: 3, r: 5, q: 9 }[p.type] || 0 : 0; }
+      if (byBot && /\+$/.test(rec.san) && Math.random() < 0.35) this.botSay('check');
+      else if (byBot && taken >= 3 && Math.random() < 0.6) this.botSay('gotcha');
+      else if (!byBot && taken >= 3 && Math.random() < 0.6) this.botSay('ouch');
+    }
     async botTurn() {
       const token = ++this.token;
       this.thinking = true; this.drawActions(); this.drawBars(this.game.fen());
@@ -264,7 +294,7 @@
       const res = await engine('bot').request('bot', { fen: this.game.startFen, moves: this.ucis, sans: this.sans, level: L });
       if (token !== this.token || this.over) return;
       // people take a moment to move – the weaker bots don't snap back instantly either
-      const want = L.time ? 250 : 450 + Math.random() * 700;
+      const want = L.time ? 250 : 400 + Math.random() * 800;
       const wait = Math.max(0, want - (performance.now() - t0));
       await new Promise(r => setTimeout(r, wait));
       if (token !== this.token || this.over) return;
@@ -284,7 +314,8 @@
       const rec = this.game.move(m.uci);
       if (!rec) { Net.send({ t: 'sync' }); return; }
       this.view = null;
-      Sound.forMove(rec);
+      Sound.forMove(rec); Sound.buzz(rec);
+      if (document.hidden && this.mode === 'online') document.title = '● Your move – Rooftop Chess';
       this.draw();
       // play the queued premove if it's still legal
       if (this.premove && this.mode === 'online') {
@@ -306,6 +337,7 @@
       this.game.finish(m.winner, m.reason);
       this.ratingChange = m.ratings || null;
       this.serverPgn = m.pgn;
+      if (this.ratingChange && this.me && this.cat) { Store.logRating(this.cat, this.ratingChange[this.me].now); Net.raw({ t: 'me' }); }   // refresh the ratings shown around the app
       this.end({ over: true, winner: m.winner, reason: m.reason, result: m.result });
     }
 
@@ -317,6 +349,7 @@
       engine('bot').stop(); engine('hint').stop();
       const won = this.me && st.winner === this.me;
       Sound.play(won ? 'win' : 'end');
+      if (this.mode === 'bot' && st.reason !== 'aborted') this.botSay(!st.winner ? 'draw' : won ? 'lose' : 'win');
       this.record();
       if (this.mode === 'bot') Store.data.current = null;
       if (this.mode === 'bot' && won && !this.assisted) Store.data.beaten[this.bot.id] = true;
@@ -480,7 +513,7 @@
       ctl.assisted = !!opts.assisted;
       this.current = ctl;
       App.go('game');
-      if (!opts.moves || !opts.moves.length) Sound.play('start');
+      if (!opts.moves || !opts.moves.length) { Sound.play('start'); setTimeout(() => ctl.botSay('hello'), 400); }
       if (ctl.game.turn !== mine && !ctl.over) ctl.botTurn();
       ctl.save();
     },
@@ -516,6 +549,8 @@
     },
   };
 
+  document.addEventListener('visibilitychange', () => { if (!document.hidden) document.title = 'Rooftop Chess'; });
+
   /* online events */
   Net.on('game', s => {
     if (s.you) {
@@ -542,7 +577,15 @@
   Net.on('presence', m => { const c = forGame(m.id); if (!c) return; c.online[m.color] = m.online; c.draw(false); });
   Net.on('chat', m => { const c = forGame(m.id); if (c) { c.showChat(m.from, Net.chat[m.i] || ''); if (m.from !== c.me) Sound.play('notify'); } });
   Net.on('error', m => toast(m.msg));
-  Net.on('nogame', () => { if (Play.player && !Play.player.over) { Play.player.over = { over: true, winner: null, reason: 'aborted', result: '*' }; Play.player.draw(false); } });
+  Net.on('nogame', () => {
+    const c = Play.player; if (!c || c.over) return;
+    // the server no longer knows this game (it restarted): it can't be finished, so call it off
+    c.game.finish(null, 'aborted'); c.over = { over: true, winner: null, reason: 'aborted', result: '*' }; c.ended = true;
+    c.draw(false); toast('That game was interrupted (the server restarted). No rating change.', 4500);
+  });
+  // after reconnecting, make sure the server still has our game
+  Net.on('welcome', () => { const c = Play.player; if (c && !c.over) Net.raw({ t: 'sync' }); });
+  Net.on('state', () => { for (const c of new Set([Play.player, Play.current])) if (c && c.el && (c.mode === 'online')) c.drawStatus(); });
 
   root.Play = Play;
 })(typeof self !== 'undefined' ? self : this);
