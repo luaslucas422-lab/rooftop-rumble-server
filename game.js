@@ -216,61 +216,6 @@ const RUMBLERS=[
   supName:'Meteor Fall',supDesc:'Calls down a meteor that knocks out anything it lands on. Up to 3 shadows of rumblers Meteorite has absorbed rise from the crater, wearing their skins, and fight for him at half strength.',
   look:{body:'#ffb347',belly:'#2a2766',accent:'#fff3a6',proj:'#ffd36b',hat:'none'},sig:{name:'Black Sun',body:'#ff3d6e',belly:'#140b2e',accent:'#ff9a3d',proj:'#ff7a5c',hat:'none',glow:'#ff3d6e'}},
 ];
-/* Beta-only rumblers: they only exist in the Beta test (Test Supply). They might never come to the main game. */
-const BETA_RUMBLERS=[
- {id:'b_glint',name:'Glint',rarity:'rare',role:'Mirror sniper',rad:18,hp:2800,speed:150,reload:1.1,superNeed:3200,pref:.8,
-  atk:{kind:'single',range:430,spd:1000,dmg:820,r:7},sup:{kind:'spread',n:5,arc:.5,range:380,spd:900,dmg:520,r:8,pierce:true},
-  atkName:'Flash Shot',atkDesc:'Fires a sharp beam of light.',supName:'Prism Burst',supDesc:'Splits light into five piercing beams.',
-  look:{body:'#bfefff',belly:'#ffffff',accent:'#46b4ff',proj:'#9be8ff',hat:'visor'},sig:{name:'Disco Glint',body:'#ff5ad1',belly:'#fff3fb',accent:'#ffd23f',proj:'#ffd23f',hat:'visor'}},
- {id:'b_puff',name:'Puff',rarity:'rare',role:'Cloud bouncer',rad:20,hp:3600,speed:145,reload:1.2,superNeed:3300,pref:.6,
-  atk:{kind:'lob',range:340,flight:.55,dmg:950,splash:62},sup:{kind:'field',range:360,radius:120,dur:3.2,dps:700,flight:.45},
-  atkName:'Puff Ball',atkDesc:'Lobs a fluffy cloud that pops on landing.',supName:'Rain Cloud',supDesc:'Drops a rain cloud that hurts enemies under it.',
-  look:{body:'#e8f2ff',belly:'#ffffff',accent:'#8fa3ff',proj:'#c9d6ff',hat:'propeller'},sig:{name:'Storm Puff',body:'#5b6380',belly:'#c9cfe0',accent:'#ffd23f',proj:'#ffd23f',hat:'propeller'}},
- {id:'b_tink',name:'Tink',rarity:'rare',role:'Toy tinkerer',rad:18,hp:3000,speed:152,reload:1.0,superNeed:3100,pref:.7,
-  atk:{kind:'burst',n:3,gap:.1,range:340,spd:780,dmg:330,r:6},sup:{kind:'nova',radius:150,dmg:1300,kb:320},
-  atkName:'Gear Spray',atkDesc:'Fires three little gears.',supName:'Spring Pop',supDesc:'Pops a giant spring that knocks enemies back.',
-  look:{body:'#ff9a3d',belly:'#ffe2c4',accent:'#46b4ff',proj:'#c9c2b6',hat:'hardhat'},sig:{name:'Clockwork Tink',body:'#c89a5e',belly:'#f0d9a8',accent:'#3a2d22',proj:'#ffd23f',hat:'hardhat'}},
- {id:'b_sizzle',name:'Sizzle',rarity:'rare',role:'Pepper flinger',rad:19,hp:3200,speed:150,reload:1.1,superNeed:3400,pref:.6,
-  atk:{kind:'spread',n:3,arc:.26,range:330,spd:620,dmg:420,r:9},sup:{kind:'dash',range:320,spd:720,dmg:1500,kb:380},
-  atkName:'Hot Peppers',atkDesc:'Flings three spicy peppers.',supName:'Spicy Rush',supDesc:'Rushes forward in a fiery dash.',
-  look:{body:'#ff3b5c',belly:'#ffd1d9',accent:'#6be39a',proj:'#ff6a00',hat:'stem'},sig:{name:'Ghost Pepper',body:'#f2f2f2',belly:'#ffffff',accent:'#ff3b5c',proj:'#ff3b5c',hat:'stem'}},
- {id:'b_muddle',name:'Muddle',rarity:'rare',role:'Mud slinger',rad:21,hp:4200,speed:140,reload:1.2,superNeed:3600,pref:.4,
-  atk:{kind:'wave',range:300,spd:400,dmg:900,r:22,pierce:true},sup:{kind:'root',radius:170,dmg:900,stun:1.6},
-  atkName:'Mud Wave',atkDesc:'Sends a wave of mud through enemies.',supName:'Sticky Swamp',supDesc:'Covers the ground in mud that stops enemies in place.',
-  look:{body:'#8a6038',belly:'#d9b98a',accent:'#6be39a',proj:'#8a6038',hat:'leaf'},sig:{name:'Golden Muddle',body:'#ffd23f',belly:'#fff3a6',accent:'#c47a00',proj:'#ffb000',hat:'crown'}},
- {id:'b_echoes',name:'Rhythm',rarity:'epic',role:'Beat dancer',rad:19,hp:3400,speed:160,reload:.9,superNeed:3400,pref:.5,
-  atk:{kind:'pulse',range:125,dmg:720},sup:{kind:'nova',radius:170,dmg:1500,kb:360},
-  atkName:'Bass Drop',atkDesc:'Thumps the floor around her.',supName:'Big Beat',supDesc:'A huge beat that blasts enemies away.',
-  look:{body:'#9d7bff',belly:'#efe6ff',accent:'#ff5ad1',proj:'#ff9ae6',hat:'headphones'},sig:{name:'Neon Rhythm',body:'#120f26',belly:'#46e0ff',accent:'#ff5ad1',proj:'#46e0ff',hat:'headphones'}},
- {id:'b_frosty',name:'Flurry',rarity:'epic',role:'Snow sprinter',rad:18,hp:3000,speed:168,reload:1.0,superNeed:3300,pref:.6,
-  atk:{kind:'burst',n:2,gap:.12,range:380,spd:860,dmg:560,r:7},sup:{kind:'dash',range:380,spd:900,dmg:1200,kb:200},
-  atkName:'Snowball Pair',atkDesc:'Throws two quick snowballs.',supName:'Ice Slide',supDesc:'Slides across the ice, bumping enemies.',
-  look:{body:'#bfefff',belly:'#ffffff',accent:'#46b4ff',proj:'#ffffff',hat:'beanie'},sig:{name:'Aurora Flurry',body:'#2de0b0',belly:'#e9fff6',accent:'#9d7bff',proj:'#c8fff0',hat:'beanie'}},
- {id:'b_bramblet',name:'Thorn',rarity:'epic',role:'Cactus guard',rad:22,hp:5600,speed:135,reload:1.1,superNeed:3800,pref:.3,
-  atk:{kind:'spread',n:5,arc:.5,range:235,spd:560,dmg:250,r:9,pierce:true},sup:{kind:'root',radius:150,dmg:1100,stun:1.2},
-  atkName:'Needle Spray',atkDesc:'Sprays piercing cactus needles.',supName:'Desert Grip',supDesc:'Roots grab enemies nearby.',
-  look:{body:'#5fb36a',belly:'#d9f2c9',accent:'#ff7ad9',proj:'#e6f7d9',hat:'flower'},sig:{name:'Night Bloom',body:'#2a2150',belly:'#7ed957',accent:'#ff7ad9',proj:'#ff7ad9',hat:'flower'}},
- {id:'b_bolt2',name:'Volt Kid',rarity:'epic',role:'Spark thrower',rad:18,hp:3100,speed:158,reload:.8,superNeed:3500,pref:.6,
-  atk:{kind:'single',range:360,spd:950,dmg:620,r:7},sup:{kind:'field',range:360,radius:120,dur:3.2,dps:900,flight:.45},
-  atkName:'Zap',atkDesc:'Throws a quick spark.',supName:'Static Pad',supDesc:'Electrifies the ground for a few seconds.',
-  look:{body:'#ffd23f',belly:'#fff6d0',accent:'#46b4ff',proj:'#fff3a6',hat:'antenna'},sig:{name:'Blackout Kid',body:'#1b1546',belly:'#46b4ff',accent:'#ffd23f',proj:'#46e0ff',hat:'antenna'}},
- {id:'b_shelly',name:'Snapper',rarity:'epic',role:'Turtle tank',rad:23,hp:6200,speed:130,reload:1.0,superNeed:4000,pref:.2,
-  atk:{kind:'melee',range:82,arc:2.1,dmg:700,double:true},sup:{kind:'leap',zone:420,dmg:1600,radius:120,T:.45},
-  atkName:'Snap Snap',atkDesc:'Snaps twice at enemies up close.',supName:'Shell Slam',supDesc:'Jumps and slams down shell-first.',
-  look:{body:'#3fa66a',belly:'#e6d39a',accent:'#2a7f4a',proj:'#e6d39a',hat:'none'},sig:{name:'Lava Snapper',body:'#3a1f24',belly:'#ff6a00',accent:'#ffb000',proj:'#ff6a00',hat:'none'}},
- {id:'b_wisp',name:'Wisp',rarity:'epic',role:'Lantern healer',rad:18,hp:3000,speed:155,reload:1.1,superNeed:3200,pref:.7,
-  atk:{kind:'lob',range:370,flight:.65,dmg:900,splash:70},sup:{kind:'heal',radius:180,heal:2400},
-  atkName:'Glow Drop',atkDesc:'Lobs a glowing orb.',supName:'Warm Light',supDesc:'Heals every teammate close by.',
-  look:{body:'#fff3a6',belly:'#ffffff',accent:'#9d7bff',proj:'#ffe680',hat:'halo'},sig:{name:'Spooky Wisp',body:'#3dff8a',belly:'#e9fff0',accent:'#120f26',proj:'#3dff8a',hat:'halo'}},
- {id:'b_drift',name:'Drift',rarity:'epic',role:'Skate racer',rad:18,hp:3200,speed:170,reload:.9,superNeed:3300,pref:.5,
-  atk:{kind:'spread',n:3,arc:.26,range:330,spd:640,dmg:440,r:9},sup:{kind:'dash',range:380,spd:900,dmg:1300,kb:260},
-  atkName:'Trick Shot',atkDesc:'Fires three paint pellets.',supName:'Kickflip',supDesc:'Kickflips forward into enemies.',
-  look:{body:'#46b4ff',belly:'#e3f4ff',accent:'#ff5ad1',proj:'#ff9ae6',hat:'cap'},sig:{name:'Sunset Drift',body:'#ff8a5c',belly:'#ffe2c4',accent:'#9d7bff',proj:'#ffd23f',hat:'cap'}},
- {id:'b_oracle',name:'Oracle',rarity:'mythic',role:'Star seer',rad:19,hp:3800,speed:150,reload:1.0,superNeed:3600,pref:.7,
-  atk:{kind:'burst',n:3,gap:.1,range:400,spd:880,dmg:420,r:7},sup:{kind:'root',radius:190,dmg:1300,stun:1.8},
-  atkName:'Star Darts',atkDesc:'Throws three magic star darts.',supName:'Foresight',supDesc:'Sees what’s coming and freezes enemies in a wide circle.',
-  look:{body:'#2a2766',belly:'#c9c3ff',accent:'#ffd23f',proj:'#ffe680',hat:'witch'},sig:{name:'Cosmic Oracle',body:'#120f26',belly:'#ff9ae6',accent:'#46e0ff',proj:'#46e0ff',hat:'starcrest'}}];
-if(RR_BETA)for(const b of BETA_RUMBLERS){b.beta=true;RUMBLERS.push(b);}
 const BY_ID={};RUMBLERS.forEach(b=>BY_ID[b.id]=b);
 const STARTER='ember';
 
@@ -354,7 +299,6 @@ const GEAR={
  astra:{g:[G('astra-g1','Gravity Well','pull',240,'Drags nearby enemies toward Astra.'),G('astra-g2','Warp','dash',260,'Warps a short distance.')],
         s:[G('astra-s1','Event Horizon','range',.12,'Lasers reach 12% farther.'),G('astra-s2','Stardust','charge',.2,'Super charges 20% faster.')]},
 };
-if(RR_BETA)for(const b of BETA_RUMBLERS)GEAR[b.id]={g:[G(b.id+'-g1','Quick Fix','heal',.3,'Heals 30% of max health.'),G(b.id+'-g2','Zoom','speed',.4,'Moves 40% faster for 3 seconds.')],s:[G(b.id+'-s1','Power Up','dmg',.1,'Attacks deal 10% more damage.'),G(b.id+'-s2','Tough','hp',.12,'12% more health.')]};
 const gearOf=b=>GEAR[b.id];
 function gearById(id){for(const k in GEAR){for(const x of GEAR[k].g)if(x.id===id)return x;for(const x of GEAR[k].s)if(x.id===id)return x;}return null;}
 
@@ -3462,7 +3406,7 @@ function renderTiles(){
     b.append(dropCanvas('pumpkin',52));b.insertAdjacentHTML('beforeend','<span style="min-width:0"><span class="tk">Halloween \u00b7 Trick or Treat</span><b>'+(tk>0?tk+' Halloween token'+(tk>1?'s':'')+' ready!':kl>0?kl+' door knock'+(kl>1?'s':'')+' ready!':(KNOCK_EVERY-into)+' more win'+(KNOCK_EVERY-into>1?'s':'')+' for a token')+'</b><span class="tbar"><i style="width:'+(tk>0?100:into/KNOCK_EVERY*100)+'%"></i></span></span>');}
   if(!S.daily.claimed){const g=GIFTS[S.daily.gift||0],k=Object.keys(g)[0],b=mk('wide gift','#6be39a',()=>go('shop'));
     b.innerHTML='<span class="tico">'+GIFT_SVG+'</span><span style="min-width:0"><span class="tk">Free daily gift</span><b>'+g[k]+' '+CUR_NAME[k]+' waiting</b><span class="tt">Tap to claim it in the shop</span></span>';}
-  {const tier=passTier(S.pass.xp),done=tier>=PASS_TIERS,into=done?(S.pass.xp-PASS_TIERS*PASS_STEP)%PASS_BONUS_STEP:S.pass.xp%PASS_STEP,ready=passClaimable(),b=mk('wide'+(ready?' passr':''),'#ffd36b',()=>go('pass'));
+  {const tier=passTier(S.pass.xp),done=tier>=PASS_TIERS,into=done?(S.pass.xp-PASS_TIERS*PASS_STEP)%PASS_BONUS_STEP:S.pass.xp%PASS_STEP,ready=passClaimable(),b=mk('wide passtile'+(ready?' passr':''),'#ffd36b',()=>go('pass'));
     b.innerHTML='<span class="tico">'+passBadge(tier,46)+'</span><span style="min-width:0"><span class="tk">Rumble Pass · Starfall</span><b>'+(ready?ready+' reward'+(ready>1?'s':'')+' to claim':done?'Pass complete':'Tier '+tier+' of '+PASS_TIERS)+'</b><span class="tbar"><i style="width:'+Math.round(into/PASS_STEP*100)+'%;background:#ffd36b"></i></span></span>';}
   /* Banks: above Next unlock and Ranked */
   {const parts=bankSummary(),b=mk('wide banktile','#46b4ff',()=>openBanks());const ic=document.createElement('span');ic.className='tico bank-ico';ic.textContent='\ud83c\udfe6';b.append(ic);
@@ -4979,6 +4923,20 @@ function openBank(k){const bk=BANK_BY[k],st={fx:[]};openSheet(card=>{card.classL
     const all2=document.createElement('button');all2.className='btn sm';all2.textContent='Take everything';all2.addEventListener('click',()=>{const n=bankHas(k);if(n>0){S.bank[k]=0;S[k]+=n;done(-1,n);}else{sfx('tap');say('The bank is empty right now.');}});
     row.append(dep,wd,all1,all2);card.append(row);}
   const x=document.createElement('button');x.className='btn';x.textContent='Close';x.addEventListener('click',()=>{closeSheet();renderHome();});card.append(x);});}
+
+/* ================= Beta UI refresh =================
+   Only switched on in the beta build (RR_BETA). The look itself lives in a_css.html under body.beta-ui,
+   so the main game is not changed at all. Here we turn it on and tidy the home tiles into pairs. */
+function betaTiles(){const t=$('#tiles');if(!t||!t.querySelector)return;
+  const pass=t.querySelector('.passtile'),bank=t.querySelector('.banktile');
+  if(pass&&bank){pass.classList.remove('wide');bank.classList.remove('wide');
+    const pk=pass.querySelector('.tk');if(pk)pk.textContent='Rumble Pass';
+    const parts=bankSummary(),bb=bank.querySelector('b');if(bb)bb.textContent=parts.length?parts.length+' bank'+(parts.length>1?'s':'')+' in use':'Save your stuff';}
+  const nx=[...t.children].filter(x=>!x.classList.contains('wide'));for(const x of nx)x.classList.add('bt-mini');}
+if(RR_BETA&&!NETS){
+  try{if(document.body&&document.body.classList)document.body.classList.add('beta-ui');}catch(e){}
+  {const _rt=renderTiles;renderTiles=function(){const r=_rt.apply(this,arguments);try{betaTiles();}catch(e){}return r;};}
+}
 
 /* ---------- Shop ---------- */
 const GIFTS=[{coins:100},{gems:10},{pp:60}];
