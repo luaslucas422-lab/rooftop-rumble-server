@@ -14,3 +14,12 @@ Runs the online matches, player search, invites and parties for Rooftop Rumble.
    and paste it in the game: Settings → Online server.
 
 `game.js` must match the game version on the phones. It's updated here whenever the game is updated.
+
+# Rooftop Chess
+
+A full chess app lives in the **`chess/`** folder. Its main home is its own repository,
+[luaslucas422-lab/rooftop-chess](https://github.com/luaslucas422-lab/rooftop-chess) – `chess/` is a copy of it, so this server can host the app too:
+at **`/chess/`** (for example `https://rooftop-rumble-server.onrender.com/chess/`), with online games on `/chess/ws`.
+See [`chess/README.md`](chess/README.md) for everything it does. To update it, copy that repository's files into `chess/`.
+
+For online ratings to survive restarts, add an environment variable `CHESS_SECRET` on Render (any long random text, and keep it the same).

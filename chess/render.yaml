@@ -1,0 +1,12 @@
+services:
+  - type: web
+    name: rooftop-chess
+    runtime: node
+    plan: free
+    buildCommand: npm install
+    startCommand: npm start
+    healthCheckPath: /health
+    envVars:
+      # signs the players' rating cards, so ratings survive restarts (made for you, keep it secret)
+      - key: CHESS_SECRET
+        generateValue: true
