@@ -213,7 +213,7 @@ button, a { -webkit-user-select: none; user-select: none; }
 .menu-icon .ic { width: 30px; height: 30px; }
 .menu-label { font-family: var(--font-display); font-weight: 800; font-size: clamp(1.05rem, .62rem + 1.9vw, 1.45rem); letter-spacing: .04em; text-transform: uppercase; line-height: 1; }
 .menu-meta { font-size: var(--fs-xs); color: var(--ink-3); line-height: 1.2; }
-.menu-item.is-main .menu-meta { color: var(--gold-text); font-weight: 600; }
+.menu-item.is-main .menu-meta { color: hsl(var(--h) var(--s) var(--tone-l)); font-weight: 600; }
 
 .daily {
   display: flex; flex-direction: column; gap: 14px; width: 100%;
@@ -350,8 +350,8 @@ button, a { -webkit-user-select: none; user-select: none; }
 .q-actions .primary { flex: 1; min-width: 0; }
 
 /* ---------- saved ---------- */
-.saved-head { display: flex; flex-direction: column; gap: 12px; padding-block: 6px 22px; }
-.saved-head .display { font-size: clamp(2.6rem, 1.9rem + 3.4vw, 3.5rem); }
+.page-head { display: flex; flex-direction: column; gap: 12px; padding-block: 6px 22px; }
+.page-head .display { font-size: clamp(2.6rem, 1.9rem + 3.4vw, 3.5rem); }
 .saved-list { list-style: none; margin: 0; padding: 0 0 40px; display: flex; flex-direction: column; gap: 12px; }
 .saved-item {
   display: flex; flex-direction: column; gap: 14px; padding: 18px; border-radius: var(--r-m);
@@ -367,6 +367,92 @@ button, a { -webkit-user-select: none; user-select: none; }
 .empty .ic { width: 34px; height: 34px; color: var(--ink-3); }
 .empty strong { color: var(--ink); font-size: var(--fs-l); }
 .empty p { margin: 0 0 8px; max-width: 30ch; }
+
+/* ---------- motivation ---------- */
+.mo { display: flex; flex-direction: column; gap: 14px; padding-bottom: 40px; }
+.panel {
+  display: flex; flex-direction: column; gap: 16px; padding: 20px;
+  border-radius: var(--r-l); border: 1px solid var(--line);
+  background: color-mix(in srgb, var(--card) 90%, transparent);
+}
+.panel > .eyebrow, .push-head .eyebrow { color: hsl(var(--h) var(--s) var(--tone-l)); }
+
+.streak-top { display: flex; align-items: center; gap: 14px; }
+.streak-flame {
+  width: 64px; height: 64px; flex: none; display: grid; place-items: center; border-radius: 22px;
+  background: hsl(var(--h) var(--s) var(--tint-l) / calc(var(--tint-a) * 1.7));
+  border: 1px solid hsl(var(--h) var(--s) var(--tint-l) / var(--edge-a));
+  color: hsl(var(--h) var(--s) var(--tone-l)); transition: filter .4s, opacity .4s;
+}
+.streak-flame .ic { width: 34px; height: 34px; }
+.streak-flame.is-cold { filter: grayscale(1); opacity: .6; }
+.streak-count { display: flex; flex-direction: column; gap: 6px; min-width: 0; }
+.streak-num { font-family: var(--font-display); font-weight: 800; font-size: 3.4rem; line-height: .8; font-variant-numeric: tabular-nums; }
+.streak-label { font-size: var(--fs-s); font-weight: 600; color: var(--ink-2); }
+.streak-best { margin-left: auto; display: flex; flex-direction: column; align-items: flex-end; gap: 6px; }
+.streak-best-num { font-family: var(--font-display); font-weight: 800; font-size: 1.9rem; line-height: .85; font-variant-numeric: tabular-nums; color: var(--ink-2); }
+.streak-status { margin: 0; color: var(--ink-2); text-wrap: pretty; }
+.week { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 6px; }
+.day { display: flex; flex-direction: column; align-items: center; gap: 6px; font-size: var(--fs-xs); font-weight: 600; color: var(--ink-3); }
+.day-dot { width: 100%; max-width: 40px; aspect-ratio: 1; display: grid; place-items: center; border-radius: 50%; border: 1.5px dashed var(--line); }
+.day-dot .ic { width: 18px; height: 18px; fill: currentColor; }
+.day.is-done .day-dot { border: 0; background: hsl(var(--h) var(--s) var(--tint-l)); color: var(--bg); }
+.day.is-today { color: var(--ink); }
+.day.is-today .day-dot { border: 2px solid hsl(var(--h) var(--s) var(--tone-l)); }
+.day.is-today.is-done .day-dot { border: 0; box-shadow: 0 0 0 3px var(--card), 0 0 0 5px hsl(var(--h) var(--s) var(--tone-l)); }
+.meter-wrap { display: flex; flex-direction: column; gap: 8px; }
+.meter { height: 8px; border-radius: 99px; background: var(--line); overflow: hidden; }
+.meter span { display: block; height: 100%; width: 0; border-radius: inherit; background: linear-gradient(90deg, hsl(40 90% 58%), hsl(var(--h) var(--s) 58%)); transition: width .7s var(--ease); }
+.meter-label { margin: 0; font-size: var(--fs-s); color: var(--ink-3); }
+
+.push {
+  border-color: hsl(var(--h) var(--s) var(--tint-l) / var(--edge-a));
+  background: linear-gradient(160deg, hsl(var(--h) var(--s) var(--tint-l) / var(--tint-a)), transparent 70%), color-mix(in srgb, var(--card) 90%, transparent);
+}
+.push-head { display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap; }
+.push-body { display: flex; flex-direction: column; gap: 8px; }
+.push-text { margin: 0; font-size: 1.5rem; font-weight: 700; line-height: 1.22; letter-spacing: -.01em; text-wrap: balance; }
+.push-tip { margin: 0; color: var(--ink-2); text-wrap: pretty; }
+.push.is-done .push-text { color: var(--ink-2); }
+.push-actions { display: flex; align-items: center; gap: 10px; }
+.push-actions .primary { flex: 1; min-width: 0; }
+.push-done { display: flex; align-items: center; gap: 14px; padding: 14px; border-radius: var(--r-m); background: hsl(var(--h) var(--s) var(--tint-l) / calc(var(--tint-a) * 1.5)); }
+.push-check { width: 44px; height: 44px; flex: none; display: grid; place-items: center; border-radius: 50%; background: hsl(var(--h) var(--s) var(--tint-l)); color: var(--bg); }
+.push-check .ic { stroke-width: 2.6; }
+.push-done div { display: flex; flex-direction: column; }
+.push-done strong { font-size: 1.0625rem; }
+.push-done span { color: var(--ink-2); font-size: var(--fs-s); }
+
+.hype-line { margin: 0; min-height: 2.94em; display: flex; align-items: center; font-family: var(--font-display); font-weight: 800; text-transform: uppercase; font-size: clamp(1.8rem, 1.35rem + 2vw, 2.3rem); line-height: .98; letter-spacing: .01em; text-wrap: balance; }
+.ghost-btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: 10px; min-height: 54px; padding-inline: 22px;
+  border-radius: 99px; border: 1.5px solid hsl(var(--h) var(--s) var(--tint-l) / .6);
+  background: hsl(var(--h) var(--s) var(--tint-l) / var(--tint-a)); color: hsl(var(--h) var(--s) var(--tone-l));
+  font-family: var(--font-display); font-weight: 800; font-size: 1.3rem; letter-spacing: .05em; text-transform: uppercase;
+  cursor: pointer; transition: transform .15s, background .15s;
+}
+.ghost-btn:hover { background: hsl(var(--h) var(--s) var(--tint-l) / calc(var(--tint-a) * 2)); }
+.ghost-btn:active { transform: scale(.97); }
+.ghost-btn .ic { width: 22px; height: 22px; }
+.ghost-btn.flare .ic { animation: flare .5s var(--ease); }
+@keyframes flare { 40% { transform: scale(1.35) rotate(-8deg); } }
+
+.why-goal { margin: 0; font-family: var(--font-display); font-weight: 800; text-transform: uppercase; font-size: 2rem; line-height: .95; text-wrap: balance; overflow-wrap: anywhere; }
+.why-reason { margin: 10px 0 0; font-family: var(--font-quote); font-style: italic; font-size: 1.2rem; line-height: 1.35; color: var(--ink-2); text-wrap: pretty; overflow-wrap: anywhere; }
+.why-meta { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-top: 8px; font-size: var(--fs-s); color: var(--ink-3); }
+.why-form { display: flex; flex-direction: column; gap: 14px; }
+.why-ask { margin: 0; color: var(--ink-2); text-wrap: pretty; }
+.field { display: flex; flex-direction: column; gap: 6px; font-size: var(--fs-s); font-weight: 600; color: var(--ink-2); }
+.field input, .field textarea {
+  width: 100%; padding: 13px 14px; border-radius: 14px; border: 1px solid var(--line);
+  background: var(--raise); color: var(--ink); font: 500 var(--fs-m)/1.4 var(--font-body); outline: none; resize: vertical;
+  transition: border-color .15s, box-shadow .15s;
+}
+.field input::placeholder, .field textarea::placeholder { color: var(--ink-3); }
+.field input:focus, .field textarea:focus { border-color: var(--gold); box-shadow: 0 0 0 4px color-mix(in srgb, var(--gold) 18%, transparent); }
+.why-actions { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; }
+
+.spark { position: fixed; z-index: 50; width: 9px; height: 9px; border-radius: 2px; pointer-events: none; }
 
 /* ---------- coming soon sheet ---------- */
 .sheet-wrap { position: fixed; inset: 0; z-index: 30; display: flex; align-items: flex-end; justify-content: center; }
@@ -416,6 +502,8 @@ button, a { -webkit-user-select: none; user-select: none; }
   <symbol id="i-quote" viewBox="0 0 24 24"><path fill="currentColor" stroke="none" d="M3 12.6C3 8.4 5.3 5.6 9.2 4.8l.6 2.1c-2.1.7-3.2 2-3.5 3.6h2.3a1.9 1.9 0 0 1 1.9 1.9v3.7A1.9 1.9 0 0 1 8.6 18H4.9A1.9 1.9 0 0 1 3 16.1Zm10.5 0c0-4.2 2.3-7 6.2-7.8l.6 2.1c-2.1.7-3.2 2-3.5 3.6h2.3a1.9 1.9 0 0 1 1.9 1.9v3.7a1.9 1.9 0 0 1-1.9 1.9h-3.7a1.9 1.9 0 0 1-1.9-1.9Z"/></symbol>
   <symbol id="i-flame" viewBox="0 0 24 24"><path d="M12 21.5c-4 0-7-2.7-7-6.5 0-3 1.7-4.9 3.2-6.4.2 1.6 1 2.8 2.3 3.3.2-3.4 1.9-6.5 5-8.4-.4 2.9.9 4.9 2.3 6.6 1.3 1.6 2.2 3.1 2.2 4.9 0 3.8-3 6.5-8 6.5Z"/><path d="M12 21.5c-1.7 0-3-1.2-3-2.9 0-1.5 1.1-2.5 2-3.5.3 1 .9 1.5 1.7 1.7.3-.9.9-1.6 1.6-2.1.5 1 .7 2.1.7 3.9 0 1.7-1.3 2.9-3 2.9Z"/></symbol>
   <symbol id="i-dumbbell" viewBox="0 0 24 24"><path d="M8.6 12h6.8"/><rect x="5.1" y="6.3" width="3.5" height="11.4" rx="1.3"/><rect x="15.4" y="6.3" width="3.5" height="11.4" rx="1.3"/><path d="M5.1 9.4H3.9a1.4 1.4 0 0 0-1.4 1.4v2.4a1.4 1.4 0 0 0 1.4 1.4h1.2M18.9 9.4h1.2a1.4 1.4 0 0 1 1.4 1.4v2.4a1.4 1.4 0 0 1-1.4 1.4h-1.2"/></symbol>
+  <symbol id="i-check" viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7.5"/></symbol>
+  <symbol id="i-swap" viewBox="0 0 24 24"><path d="M4.5 11.5a7.5 7.5 0 0 1 13-5.1l2 2.1M19.5 3.5v5h-5M19.5 12.5a7.5 7.5 0 0 1-13 5.1l-2-2.1M4.5 20.5v-5h5"/></symbol>
   <symbol id="i-back" viewBox="0 0 24 24"><path d="M14.5 5.5 8 12l6.5 6.5"/></symbol>
   <symbol id="i-next" viewBox="0 0 24 24"><path d="M4.5 12h15M13.5 6l6 6-6 6"/></symbol>
   <symbol id="i-heart" viewBox="0 0 24 24"><path d="M12 20.3s-7.6-4.6-7.6-10.3A4.2 4.2 0 0 1 12 7.5a4.2 4.2 0 0 1 7.6 2.5c0 5.7-7.6 10.3-7.6 10.3Z"/></symbol>
@@ -440,7 +528,7 @@ button, a { -webkit-user-select: none; user-select: none; }
     <div class="hero">
       <p class="eyebrow" id="greeting">Welcome</p>
       <h1 class="display hero-title" id="home-title" tabindex="-1"><span class="line"><span>Stronger</span></span><span class="line"><span class="gold">every day.</span></span></h1>
-      <p class="lede">Pick how you feel and get a quote for that exact moment. Motivation and workouts are on the way.</p>
+      <p class="lede">Get a quote for how you feel and a daily push to keep you going. Workouts are on the way.</p>
     </div>
 
     <nav class="menu" aria-label="Main menu">
@@ -449,10 +537,10 @@ button, a { -webkit-user-select: none; user-select: none; }
         <span class="menu-label">Quotes</span>
         <span class="menu-meta" id="menu-quotes-meta">By feeling</span>
       </button>
-      <button class="menu-item" type="button" data-soon="motivation" style="--h:14;--s:86%">
+      <button class="menu-item is-main" type="button" data-go="motivation" style="--h:14;--s:86%">
         <span class="menu-icon"><svg class="ic" aria-hidden="true"><use href="#i-flame"/></svg></span>
         <span class="menu-label">Motivation</span>
-        <span class="menu-meta">Coming soon</span>
+        <span class="menu-meta" id="menu-mo-meta">Daily push</span>
       </button>
       <button class="menu-item" type="button" data-soon="exercise" style="--h:196;--s:70%">
         <span class="menu-icon"><svg class="ic" aria-hidden="true"><use href="#i-dumbbell"/></svg></span>
@@ -528,6 +616,71 @@ button, a { -webkit-user-select: none; user-select: none; }
     </div>
   </section>
 
+  <!-- MOTIVATION -->
+  <section class="screen" id="screen-motivation" aria-labelledby="mo-title" hidden>
+    <div class="bar">
+      <button class="icon-btn" type="button" data-back aria-label="Back"><svg class="ic" aria-hidden="true"><use href="#i-back"/></svg></button>
+      <span class="bar-title">Motivation</span>
+      <span></span>
+    </div>
+    <div class="page-head">
+      <h1 class="display" id="mo-title" tabindex="-1">Keep the fire going</h1>
+      <p class="lede">One small push a day. Do it, tap done, and watch your streak grow.</p>
+    </div>
+    <div class="mo">
+      <section class="panel streak" aria-label="Your streak" style="--h:14;--s:86%">
+        <div class="streak-top">
+          <span class="streak-flame" id="streak-flame"><svg class="ic" aria-hidden="true"><use href="#i-flame"/></svg></span>
+          <div class="streak-count"><span class="streak-num" id="streak-num">0</span><span class="streak-label" id="streak-label">day streak</span></div>
+          <div class="streak-best"><span class="eyebrow">Best</span><span class="streak-best-num" id="streak-best">0</span></div>
+        </div>
+        <p class="streak-status" id="streak-status"></p>
+        <ol class="week" id="week" aria-label="The last 7 days"></ol>
+        <div class="meter-wrap">
+          <div class="meter" aria-hidden="true"><span id="meter-fill"></span></div>
+          <p class="meter-label" id="meter-label"></p>
+        </div>
+      </section>
+
+      <section class="panel push" id="push" aria-labelledby="push-eyebrow">
+        <div class="push-head"><p class="eyebrow" id="push-eyebrow">Today’s push</p><span class="feel-chip" id="push-cat"></span></div>
+        <div class="push-body" id="push-body">
+          <p class="push-text" id="push-text"></p>
+          <p class="push-tip" id="push-tip"></p>
+        </div>
+        <div class="push-actions" id="push-actions">
+          <button class="primary" type="button" id="push-done"><svg class="ic" aria-hidden="true"><use href="#i-check"/></svg>Mark done</button>
+          <button class="round-btn" type="button" id="push-swap" aria-label="Give me a different push"><svg class="ic" aria-hidden="true"><use href="#i-swap"/></svg></button>
+        </div>
+        <div class="push-done" id="push-doneblock" hidden>
+          <span class="push-check"><svg class="ic" aria-hidden="true"><use href="#i-check"/></svg></span>
+          <div><strong id="push-done-title">Done for today</strong><span>A new push is waiting tomorrow.</span></div>
+        </div>
+      </section>
+
+      <section class="panel hype" aria-labelledby="hype-eyebrow" style="--h:14;--s:86%">
+        <p class="eyebrow" id="hype-eyebrow">Need a push right now?</p>
+        <p class="hype-line" id="hype-line" aria-live="polite"></p>
+        <button class="ghost-btn" type="button" id="hype-btn"><svg class="ic" aria-hidden="true"><use href="#i-flame"/></svg>Hype me up</button>
+      </section>
+
+      <section class="panel why" aria-labelledby="why-eyebrow" style="--h:40;--s:88%">
+        <p class="eyebrow" id="why-eyebrow">Your why</p>
+        <div id="why-view" hidden>
+          <p class="why-goal" id="why-goal"></p>
+          <p class="why-reason" id="why-reason"></p>
+          <div class="why-meta"><span id="why-since"></span><button class="text-btn" type="button" id="why-edit">Edit</button></div>
+        </div>
+        <form class="why-form" id="why-form" novalidate>
+          <p class="why-ask">Write down what you’re working toward. It stays here as a reminder for the days it’s hard.</p>
+          <label class="field">What are you working toward?<input id="why-goal-in" maxlength="80" placeholder="Like “20 push-ups in a row”" autocomplete="off"></label>
+          <label class="field">Why does it matter to you?<textarea id="why-reason-in" maxlength="200" rows="3" placeholder="Like “I want to feel strong and proud of myself”"></textarea></label>
+          <div class="why-actions"><button class="primary" type="submit">Save my why</button><button class="text-btn" type="button" id="why-cancel" hidden>Cancel</button></div>
+        </form>
+      </section>
+    </div>
+  </section>
+
   <!-- SAVED -->
   <section class="screen" id="screen-saved" aria-labelledby="saved-title" hidden>
     <div class="bar">
@@ -535,7 +688,7 @@ button, a { -webkit-user-select: none; user-select: none; }
       <span class="bar-title">Saved</span>
       <span></span>
     </div>
-    <div class="saved-head">
+    <div class="page-head">
       <h1 class="display" id="saved-title" tabindex="-1">Saved quotes</h1>
       <p class="lede" id="saved-lede"></p>
     </div>
@@ -554,13 +707,13 @@ button, a { -webkit-user-select: none; user-select: none; }
   <div class="scrim" data-close></div>
   <div class="sheet" id="soon-sheet" role="dialog" aria-modal="true" aria-labelledby="soon-title" aria-describedby="soon-text">
     <span class="grip" aria-hidden="true"></span>
-    <span class="menu-icon"><svg class="ic" aria-hidden="true"><use id="soon-icon" href="#i-flame"/></svg></span>
+    <span class="menu-icon"><svg class="ic" aria-hidden="true"><use id="soon-icon" href="#i-dumbbell"/></svg></span>
     <p class="eyebrow">Coming soon</p>
     <h2 class="display" id="soon-title"></h2>
     <p class="sheet-text" id="soon-text"></p>
     <span class="build" aria-hidden="true"></span>
     <button class="primary" type="button" data-close id="soon-ok">Got it</button>
-    <button class="text-btn" type="button" id="soon-quotes">Open Quotes instead</button>
+    <button class="text-btn" type="button" id="soon-alt">Open Motivation instead</button>
   </div>
 </div>
 
@@ -893,8 +1046,98 @@ const FAMILIES = [
 ];
 
 const SOON = {
-  motivation: { title: 'Motivation', icon: '#i-flame', h: 14, s: '86%', text: 'A daily push to keep you going is being built. Until then, Quotes has words for every feeling.' },
-  exercise: { title: 'Exercise', icon: '#i-dumbbell', h: 196, s: '70%', text: 'Workouts to help you get stronger are being built. Check back soon.' }
+  exercise: { title: 'Exercise', icon: '#i-dumbbell', h: 196, s: '70%', text: 'Workouts to help you get stronger are being built. Until then, the daily push in Motivation will keep you moving.' }
+};
+
+/* Motivation: one small push a day. Each is [id, category, push, tip]. Ids are stored, so keep them stable. */
+const CATS = {
+  body: { name: 'Body', h: 14, s: '86%' },
+  mind: { name: 'Mind', h: 266, s: '58%' },
+  heart: { name: 'Heart', h: 345, s: '72%' },
+  reset: { name: 'Reset', h: 178, s: '56%' }
+};
+const CHALLENGES = [
+  ['pushups', 'body', 'Do 10 push-ups.', 'Knees on the floor counts. Good form beats more reps.'],
+  ['plank', 'body', 'Hold a plank for 30 seconds.', "Shaking means it's working. Rest, then try one more."],
+  ['squats', 'body', 'Do 20 squats.', "Sit back like there's a chair behind you, chest up."],
+  ['walk', 'body', 'Go for a 15-minute walk.', 'No destination needed. Just move.'],
+  ['stretch', 'body', 'Stretch for 5 minutes.', 'Neck, shoulders, back, legs. Breathe slowly the whole time.'],
+  ['stairs', 'body', 'Take the stairs every time you can today.', ''],
+  ['jacks', 'body', 'Do 20 jumping jacks, three times today.', 'Morning, afternoon and evening.'],
+  ['lunges', 'body', 'Do 10 lunges on each leg.', 'Step long and keep your front knee over your ankle.'],
+  ['wallsit', 'body', 'Hold a wall sit for 30 seconds.', "Back flat on the wall, knees bent like you're sitting on a chair."],
+  ['dance', 'body', 'Dance to one full song.', "Nobody's watching. Go all out."],
+  ['bridges', 'body', 'Do 15 glute bridges.', 'Lie on your back with your feet flat, then push your hips up.'],
+  ['maxpush', 'body', 'Do as many push-ups as you can, then write the number down.', 'Try to beat it next week.'],
+  ['read', 'mind', 'Read 10 pages of something.', "A book, an article, anything that isn't a feed."],
+  ['phone', 'mind', 'Put your phone in another room for one hour.', ''],
+  ['fivemin', 'mind', "Work on the thing you've been putting off for just 5 minutes.", 'Starting is the hardest part. After 5 minutes you can stop, or keep going.'],
+  ['plan', 'mind', 'Write down your top 3 tasks for tomorrow.', 'Tomorrow, just start at number 1.'],
+  ['learn', 'mind', 'Learn one new fact and tell someone about it.', ''],
+  ['skill', 'mind', 'Spend 10 minutes on a skill you want to get better at.', ''],
+  ['win', 'mind', 'Write down one thing you did well today.', 'Small wins count.'],
+  ['tidy', 'mind', 'Tidy one small space for 10 minutes.', 'A desk, a drawer, your bag.'],
+  ['notify', 'mind', 'Turn off notifications for an afternoon.', ''],
+  ['thanks', 'heart', 'Send a thank-you message to someone.', 'Say exactly what they did that helped.'],
+  ['compliment', 'heart', 'Give someone a real compliment.', ''],
+  ['grateful', 'heart', "Write down 3 things you're grateful for.", ''],
+  ['checkin', 'heart', "Check in on a friend you haven't talked to in a while.", ''],
+  ['help', 'heart', 'Help someone without being asked.', ''],
+  ['selftalk', 'heart', 'Say one kind thing to yourself, out loud.', "Talk to yourself the way you'd talk to a friend."],
+  ['together', 'heart', 'Spend 20 minutes with family or friends, phones away.', ''],
+  ['water', 'reset', 'Drink a glass of water as soon as you wake up.', ''],
+  ['outside', 'reset', 'Spend 10 minutes outside.', 'Fresh air clears your head.'],
+  ['sleep', 'reset', 'Go to bed 30 minutes earlier tonight.', ''],
+  ['breathe', 'reset', 'Take 10 slow, deep breaths.', 'In for 4, hold for 4, out for 6.'],
+  ['fruit', 'reset', 'Eat a piece of fruit today.', ''],
+  ['screens', 'reset', 'No screens for the last 30 minutes before bed.', ''],
+  ['swapdrink', 'reset', 'Swap one sugary drink for water today.', ''],
+  ['silence', 'reset', 'Sit in silence for 3 minutes.', 'No phone, no music. Just notice your breathing.']
+];
+const HYPE = [
+  'Start before you feel ready. Ready shows up later.',
+  'One rep, one page, one step. Small still counts.',
+  "You don't have to be great today. Just better than yesterday.",
+  'Tired is a feeling. Done is a decision.',
+  'Nobody is coming to do it for you. Good news: you can.',
+  "Strong isn't something you are. It's something you build.",
+  "The hard part is starting. You're about to do the hard part.",
+  'Future you is counting on what you do next.',
+  "Don't wait for motivation. Move, and it catches up.",
+  'Five minutes. Just start for five minutes.',
+  "You've made it through every bad day so far. You're undefeated.",
+  'Progress is quiet. Keep going anyway.',
+  "Excuses don't build muscle.",
+  'Discipline is just remembering what you want.',
+  'Every time you show up, you get harder to stop.',
+  "Your phone can wait. Your goals can't.",
+  'Slow is fine. Stopping is the only problem.',
+  "Do it badly. Then do it again. That's how better happens.",
+  "You're not behind. You're on your own clock.",
+  "Make today the day you didn't quit.",
+  "The weight doesn't get lighter. You get stronger.",
+  'Doubt is loud. Your effort is louder.',
+  'Win the next ten minutes.',
+  "Rest if you need to. Just don't quit.",
+  'Champions are people who kept training on the boring days.',
+  "Be the reason you're proud tonight.",
+  'Feeling stuck? Change one small thing.',
+  'Effort is never wasted. It all adds up.',
+  'Chase the feeling after, not the feeling before.',
+  "You can do hard things. You've done them before.",
+  "Show up, even if it's messy.",
+  'One good decision. Then another one.'
+];
+const MILESTONES = [3, 7, 14, 30, 60, 100, 180, 365];
+const MILESTONE_MSG = {
+  3: '3 days in a row! The habit is starting.',
+  7: 'A full week! 7 days in a row.',
+  14: "Two weeks straight. You're building something.",
+  30: '30 days! A whole month of showing up.',
+  60: '60 days. This is who you are now.',
+  100: '100 days. Legendary.',
+  180: 'Half a year of daily pushes!',
+  365: 'One full year. Unstoppable.'
 };
 
 /* ---------- helpers ---------- */
@@ -908,6 +1151,7 @@ const store = {
   set(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) {} }
 };
 const famStyle = (el, f) => { el.style.setProperty('--h', f.h); el.style.setProperty('--s', f.s); };
+const dayNum = d => Math.floor((d.getTime() - d.getTimezoneOffset() * 60000) / 864e5);
 
 const FEEL = {};
 let total = 0;
@@ -945,8 +1189,7 @@ function paintHome() {
   /* today's quote: the same one all day, drawn from the brighter families */
   const pool = [];
   for (const fam of FAMILIES) if (['bright', 'strong', 'peace'].includes(fam.id)) for (const f of fam.feelings) f.q.forEach((q, i) => pool.push({ f, i }));
-  const day = Math.floor((now.getTime() - now.getTimezoneOffset() * 60000) / 864e5);
-  const pick = pool[(day * 7919) % pool.length];
+  const pick = pool[(dayNum(now) * 7919) % pool.length];
   const q = pick.f.q[pick.i];
   const card = $('daily');
   famStyle(card, pick.f.fam);
@@ -1122,6 +1365,172 @@ function paintSaved() {
   });
 }
 
+/* ---------- motivation (this device only) ---------- */
+const MO_KEY = 'rise.motivation.v1';
+let mo = {};
+function loadMo() {
+  const m = store.get(MO_KEY, {});
+  mo = m && typeof m === 'object' ? m : {};
+  if (!mo.done || typeof mo.done !== 'object') mo.done = {};   /* 'YYYY-MM-DD' -> push id */
+  if (!mo.pick || typeof mo.pick !== 'object') mo.pick = {};   /* today's swapped push */
+}
+loadMo();
+const saveMo = () => store.set(MO_KEY, mo);
+const CH_INDEX = {};
+CHALLENGES.forEach((c, i) => { CH_INDEX[c[0]] = i; });
+
+const noon = d => { const x = new Date(d); x.setHours(12, 0, 0, 0); return x; };
+const addDays = (d, n) => { const x = new Date(d); x.setDate(x.getDate() + n); return x; };
+const keyOf = d => d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+const fromKey = k => { const [y, m, d] = k.split('-').map(Number); return new Date(y, m - 1, d, 12); };
+const todayKey = () => keyOf(new Date());
+const daysBetween = (a, b) => Math.round((noon(b) - noon(a)) / 864e5);
+
+function streak() {
+  const today = noon(new Date()), doneToday = !!mo.done[keyOf(today)];
+  let d = doneToday ? today : addDays(today, -1), count = 0;   /* an unfinished today doesn't break it yet */
+  while (mo.done[keyOf(d)]) { count++; d = addDays(d, -1); }
+  let best = 0, run = 0, prev = null;
+  Object.keys(mo.done).filter(k => /^\d{4}-\d\d-\d\d$/.test(k)).sort().forEach(k => {
+    const day = fromKey(k);
+    run = prev && daysBetween(prev, day) === 1 ? run + 1 : 1;
+    best = Math.max(best, run); prev = day;
+  });
+  return { count, doneToday, best: Math.max(best, count) };
+}
+
+function todayIdx() {
+  const k = todayKey();
+  if (mo.done[k] && CH_INDEX[mo.done[k]] != null) return CH_INDEX[mo.done[k]];
+  if (mo.pick[k] && CH_INDEX[mo.pick[k]] != null) return CH_INDEX[mo.pick[k]];
+  return (Math.imul(dayNum(new Date()), 2654435761) >>> 0) % CHALLENGES.length;
+}
+
+const hypeOrder = shuffle(HYPE.map((_, i) => i));
+let hypePos = 0, editingWhy = false;
+
+function paintMotivation() {
+  const st = streak(), k = todayKey();
+  $('streak-num').textContent = st.count;
+  $('streak-label').textContent = st.count ? 'day streak' : 'No streak yet';
+  $('streak-flame').classList.toggle('is-cold', !st.count);
+  $('streak-best').textContent = st.best;
+  $('streak-status').textContent = st.doneToday ? 'Today’s push is done. See you tomorrow.'
+    : st.count ? 'Do today’s push to keep your streak alive.' : 'Do today’s push to start your streak.';
+
+  const week = $('week'), today = noon(new Date());
+  week.textContent = '';
+  for (let i = 6; i >= 0; i--) {
+    const d = addDays(today, -i), done = !!mo.done[keyOf(d)];
+    const li = document.createElement('li');
+    li.className = 'day' + (done ? ' is-done' : '') + (i === 0 ? ' is-today' : '');
+    li.innerHTML = '<span class="day-dot" aria-hidden="true">' + (done ? '<svg class="ic"><use href="#i-flame"/></svg>' : '') + '</span><span aria-hidden="true"></span>';
+    li.lastChild.textContent = i === 0 ? 'Today' : d.toLocaleDateString(undefined, { weekday: 'narrow' });
+    li.setAttribute('aria-label', (i === 0 ? 'Today' : d.toLocaleDateString(undefined, { weekday: 'long' })) + (done ? ', done' : ', not done'));
+    week.append(li);
+  }
+
+  const next = MILESTONES.find(m => m > st.count), from = [0].concat(MILESTONES).filter(m => m <= st.count).pop();
+  const left = next ? next - st.count : 0;
+  $('meter-fill').style.width = (next ? (st.count - from) / (next - from) * 100 : 100) + '%';
+  $('meter-label').textContent = next ? left + (left === 1 ? ' more day' : ' more days') + ' to a ' + next + '-day streak' : 'Over a year of daily pushes. Legendary.';
+
+  const c = CHALLENGES[todayIdx()], cat = CATS[c[1]], done = !!mo.done[k];
+  famStyle($('push'), cat);
+  $('push-cat').textContent = cat.name;
+  $('push-text').textContent = smart(c[2]);
+  $('push-tip').textContent = smart(c[3]);
+  $('push-tip').hidden = !c[3];
+  $('push').classList.toggle('is-done', done);
+  $('push-actions').hidden = done;
+  $('push-doneblock').hidden = !done;
+  if (done) $('push-done-title').textContent = 'Done. That’s day ' + st.count + '.';
+
+  $('hype-line').textContent = smart(HYPE[hypeOrder[hypePos]]);
+  paintWhy();
+  $('menu-mo-meta').textContent = st.doneToday ? 'Done today' : st.count ? st.count + '-day streak' : 'Daily push';
+}
+
+function paintWhy() {
+  const w = mo.why, has = !!(w && w.goal), form = !has || editingWhy;
+  $('why-view').hidden = form;
+  $('why-form').hidden = !form;
+  $('why-cancel').hidden = !has;
+  if (!has) return;
+  $('why-goal').textContent = w.goal;
+  $('why-reason').textContent = w.reason || '';
+  $('why-reason').hidden = !w.reason;
+  const n = w.set ? daysBetween(fromKey(w.set), new Date()) : 0;
+  $('why-since').textContent = n <= 0 ? 'Set today' : n === 1 ? 'Set yesterday' : 'Set ' + n + ' days ago';
+}
+
+/* fade a block out, change it, fade it back in */
+function refresh(el, change, from) {
+  if (reduced || !el.animate) return change();
+  const out = el.animate([{ opacity: 1, transform: 'none' }, { opacity: 0, transform: 'translateY(-6px)' }], { duration: 130, easing: 'ease-in', fill: 'forwards' });
+  out.onfinish = () => {
+    change();
+    el.animate([{ opacity: 0, transform: from || 'translateY(8px)' }, { opacity: 1, transform: 'none' }], { duration: 320, easing: 'cubic-bezier(.2,.8,.2,1)' });
+    out.cancel();
+  };
+}
+
+function burst(r) {
+  if (reduced) return;
+  const cx = r.left + r.width / 2, cy = r.top + r.height / 2, hues = [40, 14, 28, 350];
+  for (let i = 0; i < 18; i++) {
+    const sp = document.createElement('span'), a = i / 18 * Math.PI * 2 + Math.random() * .4, dist = 60 + Math.random() * 70;
+    sp.className = 'spark';
+    sp.style.cssText = 'left:' + cx + 'px;top:' + cy + 'px;background:hsl(' + hues[i % 4] + ' 90% 60%)';
+    document.body.append(sp);
+    sp.animate([
+      { transform: 'translate(-50%,-50%)', opacity: 1 },
+      { transform: 'translate(calc(-50% + ' + Math.cos(a) * dist + 'px), calc(-50% + ' + (Math.sin(a) * dist - 30) + 'px)) rotate(' + Math.random() * 360 + 'deg) scale(.4)', opacity: 0 }
+    ], { duration: 700 + Math.random() * 300, easing: 'cubic-bezier(.15,.7,.3,1)' }).onfinish = () => sp.remove();
+  }
+}
+
+function markDone() {
+  const k = todayKey();
+  if (mo.done[k]) return;
+  const r = $('push-done').getBoundingClientRect();
+  mo.done[k] = CHALLENGES[todayIdx()][0];
+  mo.pick = mo.pick[k] ? { [k]: mo.pick[k] } : {};
+  saveMo();
+  const n = streak().count;
+  paintMotivation();
+  burst(r); buzz([14, 50, 22]);
+  if (!reduced) $('streak-num').animate([{ transform: 'scale(1)' }, { transform: 'scale(1.3)' }, { transform: 'scale(1)' }], { duration: 480, easing: 'cubic-bezier(.2,.8,.2,1)' });
+  toast(MILESTONE_MSG[n] || 'Day ' + n + ' done. Nice work.', 'Undo', () => { delete mo.done[k]; saveMo(); paintMotivation(); });
+}
+
+function swapPush() {
+  const k = todayKey(), cur = todayIdx();
+  if (mo.done[k]) return;
+  let j = cur;
+  while (j === cur) j = Math.floor(Math.random() * CHALLENGES.length);
+  buzz();
+  refresh($('push-body'), () => { mo.pick = { [k]: CHALLENGES[j][0] }; saveMo(); paintMotivation(); });
+}
+
+function hypeMe() {
+  hypePos = (hypePos + 1) % hypeOrder.length;
+  const b = $('hype-btn');
+  b.classList.remove('flare'); void b.offsetWidth; b.classList.add('flare');
+  buzz(15);
+  refresh($('hype-line'), () => { $('hype-line').textContent = smart(HYPE[hypeOrder[hypePos]]); }, 'scale(.92)');
+}
+
+function saveWhy(e) {
+  e.preventDefault();
+  const goal = $('why-goal-in').value.trim(), reason = $('why-reason-in').value.trim();
+  if (!goal) { toast('Write what you’re working toward first.'); $('why-goal-in').focus(); return; }
+  const set = mo.why && mo.why.goal === goal && mo.why.set ? mo.why.set : todayKey();
+  mo.why = { goal, reason, set };
+  saveMo(); editingWhy = false; paintWhy(); buzz(12);
+  toast('Saved your why');
+}
+
 /* ---------- coming soon sheet ---------- */
 let sheetReturn = null;
 function openSoon(key) {
@@ -1155,17 +1564,17 @@ function closeSoon(then) {
   };
 }
 
-/* ---------- routing: #feelings, #feel-<id>, #saved (plain names so the phone's back button works) ---------- */
-const SCREENS = { home: $('screen-home'), feelings: $('screen-feelings'), quote: $('screen-quote'), saved: $('screen-saved') };
-const LEVEL = { home: 0, feelings: 1, saved: 2, quote: 2 };
-const PARENT = { home: 'home', feelings: 'home', saved: 'feelings', quote: 'feelings' };
+/* ---------- routing: #feelings, #feel-<id>, #saved, #motivation (plain names so the phone's back button works) ---------- */
+const SCREENS = { home: $('screen-home'), feelings: $('screen-feelings'), quote: $('screen-quote'), saved: $('screen-saved'), motivation: $('screen-motivation') };
+const LEVEL = { home: 0, feelings: 1, motivation: 1, saved: 2, quote: 2 };
+const PARENT = { home: 'home', feelings: 'home', motivation: 'home', saved: 'feelings', quote: 'feelings' };
 const stack = [];
 let shown = null, replacing = false;
 
 const norm = h => (h || '').replace(/^#/, '') || 'home';
 function parse(h) {
   h = norm(h);
-  if (h === 'feelings' || h === 'saved') return { s: h, h };
+  if (h === 'feelings' || h === 'saved' || h === 'motivation') return { s: h, h };
   if (h.indexOf('feel-') === 0 && FEEL[h.slice(5)]) return { s: 'quote', id: h.slice(5), h };
   return { s: 'home', h: 'home' };
 }
@@ -1184,14 +1593,15 @@ function route() {
 
   if (r.s === 'quote') openFeeling(r.id, !(shown && shown.s === 'quote' && shown.id === r.id));
   if (r.s === 'saved') paintSaved();
+  if (r.s === 'motivation') paintMotivation();
   const amb = $('ambient');
-  if (r.s === 'quote') famStyle(amb, FEEL[r.id].fam); else { amb.style.setProperty('--h', 40); amb.style.setProperty('--s', '85%'); }
+  if (r.s === 'quote') famStyle(amb, FEEL[r.id].fam);
+  else famStyle(amb, r.s === 'motivation' ? CATS.body : { h: 40, s: '85%' });
 
   const next = SCREENS[r.s], prev = shown && SCREENS[shown.s];
   const dir = shown ? Math.sign(LEVEL[r.s] - LEVEL[shown.s]) || 1 : 0;
   if (prev !== next) {
-    if (prev) prev.hidden = true;
-    next.hidden = false;
+    for (const sc of Object.values(SCREENS)) sc.hidden = sc !== next;   /* home starts visible, so hide it on a direct link */
     next.classList.remove('in-fwd', 'in-back');
     if (dir && !reduced) { void next.offsetWidth; next.classList.add(dir > 0 ? 'in-fwd' : 'in-back'); }
     window.scrollTo(0, 0);
@@ -1213,7 +1623,17 @@ document.addEventListener('click', e => {
   if (t.dataset.go) { buzz(); go(t.dataset.go); }
 });
 
-$('soon-quotes').onclick = () => closeSoon(() => go('feelings'));
+$('soon-alt').onclick = () => closeSoon(() => go('motivation'));
+$('push-done').onclick = markDone;
+$('push-swap').onclick = swapPush;
+$('hype-btn').onclick = hypeMe;
+$('why-form').addEventListener('submit', saveWhy);
+$('why-edit').onclick = () => {
+  editingWhy = true;
+  $('why-goal-in').value = mo.why.goal; $('why-reason-in').value = mo.why.reason || '';
+  paintWhy(); $('why-goal-in').focus();
+};
+$('why-cancel').onclick = () => { editingWhy = false; paintWhy(); };
 $('feel-search').addEventListener('input', filterFeelings);
 $('search-clear').onclick = () => { $('feel-search').value = ''; filterFeelings(); $('feel-search').focus(); };
 $('surprise').onclick = () => {
@@ -1253,7 +1673,11 @@ document.addEventListener('keydown', e => {
     return;
   }
   const typing = /^(INPUT|TEXTAREA)$/.test(document.activeElement && document.activeElement.tagName);
-  if (e.key === 'Escape') { if (typing && $('feel-search').value) { $('search-clear').click(); return; } if (shown && shown.s !== 'home') back(); return; }
+  if (e.key === 'Escape') {
+    if (typing) { if (document.activeElement === $('feel-search') && $('feel-search').value) $('search-clear').click(); else document.activeElement.blur(); return; }
+    if (shown && shown.s !== 'home') back();
+    return;
+  }
   if (typing || !shown || shown.s !== 'quote') return;
   if (e.key === 'ArrowRight') swap(1);
   else if (e.key === 'ArrowLeft') swap(-1);
@@ -1261,11 +1685,19 @@ document.addEventListener('keydown', e => {
 
 window.addEventListener('scroll', onScroll, { passive: true });
 window.addEventListener('hashchange', route);
-window.addEventListener('storage', e => { if (e.key === SAVE_KEY) { saved = store.get(SAVE_KEY, []); paintSavedCount(); if (shown && shown.s === 'saved') paintSaved(); } });
+window.addEventListener('storage', e => {
+  if (e.key === SAVE_KEY) { saved = store.get(SAVE_KEY, []); paintSavedCount(); if (shown && shown.s === 'saved') paintSaved(); }
+  if (e.key === MO_KEY) { loadMo(); paintMotivation(); }
+});
+let lastDay = todayKey();   /* the app may stay open past midnight */
+document.addEventListener('visibilitychange', () => {
+  if (document.visibilityState === 'visible' && todayKey() !== lastDay) { lastDay = todayKey(); paintHome(); paintMotivation(); }
+});
 
 paintHome();
 buildFeelings();
 paintSavedCount();
+paintMotivation();
 route();
 setTimeout(() => document.body.classList.remove('intro'), 1600);
 })();

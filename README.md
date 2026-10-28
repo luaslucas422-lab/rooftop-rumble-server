@@ -16,7 +16,12 @@ Runs the online matches, player search, invites and parties for Rooftop Rumble.
 `game.js` must match the game version on the phones. It's updated here whenever the game is updated.
 
 ## Rise (motivational quotes app)
-`rise/index.html` is a separate phone app: pick how you feel and get a quote for it.
-Motivation and Exercise are marked "coming soon" for now.
+`rise/index.html` is a separate phone app:
+- Quotes: pick how you feel and get a quote for it.
+- Motivation: a small daily push to do, a streak for the days in a row you've done it,
+  a "Hype me up" button, and "Your why" (your goal and the reason behind it).
+- Exercise is marked "coming soon" for now.
+
+Saved quotes, streaks and "Your why" stay on the phone they were made on.
 Open it at your server link + `/rise` (like `https://rooftop-rumble-server.onrender.com/rise`),
 or open the file straight in a browser. On a phone, use "Add to Home Screen" to keep it like an app.
