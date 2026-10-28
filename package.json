@@ -1,9 +1,9 @@
 {
   "name": "rooftop-rumble-server",
   "version": "1.0.0",
-  "description": "Online game server for Rooftop Rumble",
+  "description": "Online game server for Rooftop Rumble, and the Rooftop Chess app",
   "main": "index.js",
-  "scripts": { "start": "node index.js" },
+  "scripts": { "start": "node index.js", "test": "node chess/test/chess.test.js && node chess/test/engine.test.js && node chess/test/coach.test.js && node chess/test/rating.test.js && node chess/test/multi.test.js && node chess/test/online.test.js index.js && node chess/test/online.test.js chess/server.js" },
   "engines": { "node": ">=18" },
   "dependencies": { "ws": "^8.18.0", "pg": "^8.13.1", "nodemailer": "^6.9.16" }
 }

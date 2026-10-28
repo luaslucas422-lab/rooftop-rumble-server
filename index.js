@@ -8,6 +8,7 @@ const path = require('path');
 const vm = require('vm');
 const { WebSocketServer } = require('ws');
 const { createAccounts } = require('./accounts');
+const { createChessServer } = require('./chess/chess-server');
 const RID = createAccounts({ cleanName: s => chatClean(String(s == null ? '' : s).replace(/[<>]/g, '').slice(0, 14)) });
 
 const PORT = process.env.PORT || 8080;
@@ -206,17 +207,27 @@ async function getBeta(force) {
   return betaCache.html;
 }
 
+/* ---------- Rooftop Chess (its own project in chess/): the app at /chess/, online games on /chess/ws ---------- */
+const CHESS = createChessServer({ cleanName: s => chatClean(String(s == null ? '' : s).replace(/[<>]/g, '').slice(0, 20)) });
+
 /* ---------- web server ---------- */
 const server = http.createServer((req, res) => {
+  const url = (req.url || '/').split('?')[0];
+  if (url === '/chess' || url.startsWith('/chess/')) return CHESS.serve(req, res, url);
   if (req.url && req.url.split('?')[0].replace(/\/+$/, '') === '/beta') {   /* Beta test: built from the source files in the Test Supply repo */
     getBeta(/[?&]fresh/.test(req.url)).then(html => {
       if (!html) { res.writeHead(404, { 'Content-Type': 'text/plain' }); res.end('No beta right now.'); return; }
       res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8', 'Cache-Control': 'no-cache', 'X-Beta-Source': betaCache.src || '' }); res.end(html); });
     return; }
   res.writeHead(200, { 'Content-Type': 'text/plain', 'Access-Control-Allow-Origin': '*' });
-  res.end('Rooftop Rumble server is running. Players online: ' + [...players.values()].filter(p => p.ws && p.ws.readyState === 1).length + ', matches: ' + matches.size + '\n');
+  res.end('Rooftop Rumble server is running. Players online: ' + [...players.values()].filter(p => p.ws && p.ws.readyState === 1).length + ', matches: ' + matches.size + '\n' +
+    'Rooftop Chess: /chess/ – online now: ' + CHESS.stats().online + ', games: ' + CHESS.stats().games + '\n');
 });
-const wss = new WebSocketServer({ server, maxPayload: 512 * 1024, perMessageDeflate: { threshold: 512, zlibDeflateOptions: { level: 3 } } });
+const wss = new WebSocketServer({ noServer: true, maxPayload: 512 * 1024, perMessageDeflate: { threshold: 512, zlibDeflateOptions: { level: 3 } } });
+server.on('upgrade', (req, socket, head) => {
+  if ((req.url || '').split('?')[0] === '/chess/ws') return CHESS.handleUpgrade(req, socket, head);
+  wss.handleUpgrade(req, socket, head, ws => wss.emit('connection', ws, req));
+});
 wss.on('connection', (ws, req) => {
   ws.ip = String((req && req.headers['x-forwarded-for']) || (req && req.socket && req.socket.remoteAddress) || '').split(',')[0].trim();
   ws.isAlive = true; ws.on('pong', () => { ws.isAlive = true; });
