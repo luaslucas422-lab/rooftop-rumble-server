@@ -1,0 +1,1274 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#0f1217" media="(prefers-color-scheme: dark)">
+<meta name="theme-color" content="#eef0f2" media="(prefers-color-scheme: light)">
+<meta name="description" content="Rise: a quote for every feeling, with motivation and workouts on the way.">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Rise">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%230f1217'/%3E%3Cpath d='M6 22h20M10 22a6 6 0 0 1 12 0M16 9v2.5M9.6 12.6l1.6 1.6M22.4 12.6l-1.6 1.6' stroke='%23f2b544' stroke-width='2.4' stroke-linecap='round' fill='none'/%3E%3C/svg%3E">
+<title>Rise</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@700;800&family=Hanken+Grotesk:wght@400;500;600;700&family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;1,6..72,400&display=swap">
+<style>
+/* Layout: one phone-width column. Home → Feelings → Quote screens slide over a shared ambient glow
+   that takes the color of the feeling family you picked. Iron and chalk, with first-light gold. */
+@property --h { syntax: "<number>"; inherits: true; initial-value: 40; }
+@property --s { syntax: "<percentage>"; inherits: true; initial-value: 85%; }
+
+:root {
+  color-scheme: dark;
+  --bg: #0f1217;          /* iron */
+  --raise: #161b22;
+  --card: #1a2029;
+  --line: #29313d;
+  --ink: #efeae1;         /* chalk */
+  --ink-2: #a8b0bc;
+  --ink-3: #747d8b;
+  --gold: #f2b544;        /* first light */
+  --gold-ink: #1d1404;
+  --gold-text: #f5c36a;
+  --scrim: rgb(4 6 9 / .62);
+  --shadow: 0 18px 40px -18px rgb(0 0 0 / .7);
+  --tone-l: 70%;          /* family color as text / icon */
+  --tint-l: 58%;          /* family color as a wash */
+  --tint-a: .12;
+  --edge-a: .28;
+  --glow-a: .32;
+
+  --font-display: "Big Shoulders Display", "Arial Narrow", "Roboto Condensed", sans-serif;
+  --font-body: "Hanken Grotesk", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --font-quote: "Newsreader", Georgia, "Times New Roman", serif;
+
+  --fs-xs: .75rem; --fs-s: .875rem; --fs-m: 1rem; --fs-l: 1.25rem; --fs-xl: 1.75rem;
+  --r-s: 12px; --r-m: 18px; --r-l: 26px;
+  --ease: cubic-bezier(.2, .8, .2, 1);
+  --h: 40; --s: 85%;
+}
+@media (prefers-color-scheme: light) {
+  :root:not([data-theme="dark"]) {
+    color-scheme: light;
+    --bg: #eef0f2; --raise: #f7f8f9; --card: #ffffff; --line: #d6dbe2;
+    --ink: #151a21; --ink-2: #4a5462; --ink-3: #737d8c;
+    --gold: #eba635; --gold-ink: #1d1404; --gold-text: #94600a;
+    --scrim: rgb(20 26 34 / .38); --shadow: 0 18px 36px -20px rgb(25 35 50 / .35);
+    --tone-l: 36%; --tint-l: 52%; --tint-a: .11; --edge-a: .3; --glow-a: .2;
+  }
+}
+:root[data-theme="light"] {
+  color-scheme: light;
+  --bg: #eef0f2; --raise: #f7f8f9; --card: #ffffff; --line: #d6dbe2;
+  --ink: #151a21; --ink-2: #4a5462; --ink-3: #737d8c;
+  --gold: #eba635; --gold-ink: #1d1404; --gold-text: #94600a;
+  --scrim: rgb(20 26 34 / .38); --shadow: 0 18px 36px -20px rgb(25 35 50 / .35);
+  --tone-l: 36%; --tint-l: 52%; --tint-a: .11; --edge-a: .3; --glow-a: .2;
+}
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --bg: #0f1217; --raise: #161b22; --card: #1a2029; --line: #29313d;
+  --ink: #efeae1; --ink-2: #a8b0bc; --ink-3: #747d8b;
+  --gold: #f2b544; --gold-ink: #1d1404; --gold-text: #f5c36a;
+  --scrim: rgb(4 6 9 / .62); --shadow: 0 18px 40px -18px rgb(0 0 0 / .7);
+  --tone-l: 70%; --tint-l: 58%; --tint-a: .12; --edge-a: .28; --glow-a: .32;
+}
+
+*, *::before, *::after { box-sizing: border-box; }
+[hidden] { display: none !important; }
+html {
+  height: 100%;
+  padding-top: env(safe-area-inset-top, 0px);
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+  -webkit-text-size-adjust: 100%;
+  -webkit-tap-highlight-color: transparent;
+}
+body {
+  margin: 0; min-height: 100%;
+  display: flex; flex-direction: column;
+  background: var(--bg); color: var(--ink);
+  font: 400 var(--fs-m)/1.5 var(--font-body);
+  -webkit-font-smoothing: antialiased;
+  overflow-x: clip;
+}
+body::before {   /* paints the band under the phone's status bar */
+  content: ""; position: fixed; inset: 0 0 auto; height: env(safe-area-inset-top, 0px);
+  z-index: 10; background: var(--bg);
+}
+button { font: inherit; color: inherit; }
+button, a { -webkit-user-select: none; user-select: none; }
+:focus-visible { outline: 2px solid var(--gold); outline-offset: 3px; }
+[tabindex="-1"]:focus { outline: none; }
+
+.ic { width: 24px; height: 24px; flex: none; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+
+/* ambient glow: a low sun behind the top of every screen */
+.ambient { position: fixed; inset: 0; z-index: 0; pointer-events: none; overflow: hidden; transition: --h .9s var(--ease), --s .9s var(--ease); }
+.ambient::before, .ambient::after { content: ""; position: absolute; border-radius: 50%; }
+.ambient::before {
+  width: 150vmax; height: 110vmax; left: 50%; top: -78vmax; translate: -50% 0;
+  background: radial-gradient(closest-side, hsl(var(--h) var(--s) 58% / var(--glow-a)), hsl(var(--h) var(--s) 50% / calc(var(--glow-a) * .35)) 55%, transparent);
+  animation: breathe 14s ease-in-out infinite alternate;
+}
+.ambient::after {
+  width: 90vmax; height: 90vmax; right: -45vmax; bottom: -55vmax;
+  background: radial-gradient(closest-side, hsl(calc(var(--h) + 24) var(--s) 55% / calc(var(--glow-a) * .45)), transparent);
+  animation: breathe 18s ease-in-out infinite alternate-reverse;
+}
+@keyframes breathe { to { transform: translateY(3vmax) scale(1.06); } }
+
+#app {
+  position: relative; z-index: 1;
+  flex: 1; display: flex; flex-direction: column;
+  width: 100%; max-width: 540px; margin-inline: auto;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+}
+.screen { flex: 1; display: flex; flex-direction: column; }
+.screen.in-fwd { animation: in-fwd .38s var(--ease); }
+.screen.in-back { animation: in-back .38s var(--ease); }
+@keyframes in-fwd { from { opacity: 0; transform: translateX(28px); } }
+@keyframes in-back { from { opacity: 0; transform: translateX(-28px); } }
+
+/* shared bits */
+.display { margin: 0; font-family: var(--font-display); font-weight: 800; text-transform: uppercase; letter-spacing: .01em; line-height: .92; text-wrap: balance; }
+.eyebrow { margin: 0; font-size: var(--fs-xs); font-weight: 600; letter-spacing: .14em; text-transform: uppercase; color: var(--ink-3); }
+.lede { margin: 0; color: var(--ink-2); max-width: 40ch; text-wrap: pretty; }
+
+.bar {
+  position: sticky; top: env(safe-area-inset-top, 0px); z-index: 5;
+  display: grid; grid-template-columns: 44px 1fr 44px; align-items: center; gap: 8px;
+  min-height: 60px;
+}
+.bar::before {
+  content: ""; position: absolute; inset: 0 calc(50% - 50vw); z-index: -1;
+  background: color-mix(in srgb, var(--bg) 78%, transparent);
+  -webkit-backdrop-filter: blur(16px); backdrop-filter: blur(16px);
+  border-bottom: 1px solid var(--line);
+  opacity: 0; transition: opacity .2s;
+}
+.scrolled .bar::before { opacity: 1; }
+.bar-title { justify-self: center; font-family: var(--font-display); font-weight: 700; font-size: 1.125rem; letter-spacing: .08em; text-transform: uppercase; color: var(--ink-2); }
+
+.icon-btn {
+  position: relative; width: 44px; height: 44px; display: grid; place-items: center;
+  border: 1px solid var(--line); border-radius: 50%; background: color-mix(in srgb, var(--card) 70%, transparent);
+  cursor: pointer; transition: transform .15s, background .15s, border-color .15s;
+}
+.icon-btn:hover { border-color: var(--ink-3); }
+.icon-btn:active { transform: scale(.93); }
+.badge {
+  position: absolute; top: -3px; right: -3px; min-width: 19px; height: 19px; padding-inline: 5px;
+  display: grid; place-items: center; border-radius: 99px;
+  background: var(--gold); color: var(--gold-ink); font-size: 11px; font-weight: 700; font-variant-numeric: tabular-nums;
+}
+
+.primary {
+  display: inline-flex; align-items: center; justify-content: center; gap: 10px;
+  min-height: 54px; padding-inline: 22px; border: 0; border-radius: 99px;
+  background: var(--gold); color: var(--gold-ink);
+  font-family: var(--font-display); font-weight: 800; font-size: 1.3rem; letter-spacing: .05em; text-transform: uppercase;
+  cursor: pointer; box-shadow: 0 10px 26px -12px color-mix(in srgb, var(--gold) 70%, transparent);
+  transition: transform .15s, filter .15s;
+}
+.primary:hover { filter: brightness(1.05); }
+.primary:active { transform: scale(.97); }
+.primary .ic { width: 22px; height: 22px; stroke-width: 2.2; }
+.text-btn { border: 0; background: none; padding: 10px 4px; color: var(--ink-2); font-weight: 600; cursor: pointer; text-decoration: underline; text-decoration-color: var(--line); text-underline-offset: 4px; }
+.text-btn:hover { color: var(--ink); }
+
+/* ---------- home ---------- */
+.home { gap: 28px; padding-block: 18px 32px; }
+.home-top { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.brand { display: flex; align-items: center; gap: 8px; font-family: var(--font-display); font-weight: 800; font-size: 1.5rem; letter-spacing: .12em; text-transform: uppercase; }
+.brand .ic { width: 30px; height: 30px; color: var(--gold); stroke-width: 2.1; }
+.today { margin: 0; font-size: var(--fs-s); color: var(--ink-3); font-variant-numeric: tabular-nums; }
+
+.hero { display: flex; flex-direction: column; gap: 14px; padding-top: 10px; }
+.hero-title { font-size: clamp(3.6rem, 2.5rem + 5.4vw, 5.4rem); }
+.hero-title .line { display: block; overflow: hidden; padding-bottom: .04em; }
+.hero-title .line > span { display: block; }
+.hero-title .gold { color: var(--gold); }
+.hero .lede { font-size: 1.0625rem; }
+
+.menu { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; }
+.menu-item {
+  position: relative; display: flex; flex-direction: column; align-items: center; gap: 12px;
+  padding: 20px 8px 16px; border-radius: var(--r-l);
+  border: 1px solid var(--line); background: color-mix(in srgb, var(--card) 88%, transparent);
+  text-align: center; cursor: pointer; box-shadow: var(--shadow);
+  transition: transform .18s var(--ease), border-color .18s, background .18s;
+}
+.menu-item:hover { border-color: hsl(var(--h) var(--s) var(--tint-l) / .55); }
+.menu-item:active { transform: scale(.96); }
+.menu-icon {
+  width: 60px; height: 60px; display: grid; place-items: center; border-radius: 20px;
+  background: hsl(var(--h) var(--s) var(--tint-l) / calc(var(--tint-a) * 1.7));
+  border: 1px solid hsl(var(--h) var(--s) var(--tint-l) / var(--edge-a));
+  color: hsl(var(--h) var(--s) var(--tone-l));
+}
+.menu-icon .ic { width: 30px; height: 30px; }
+.menu-label { font-family: var(--font-display); font-weight: 800; font-size: clamp(1.05rem, .62rem + 1.9vw, 1.45rem); letter-spacing: .04em; text-transform: uppercase; line-height: 1; }
+.menu-meta { font-size: var(--fs-xs); color: var(--ink-3); line-height: 1.2; }
+.menu-item.is-main .menu-meta { color: var(--gold-text); font-weight: 600; }
+
+.daily {
+  display: flex; flex-direction: column; gap: 14px; width: 100%;
+  padding: 20px 20px 18px; border-radius: var(--r-l);
+  border: 1px solid hsl(var(--h) var(--s) var(--tint-l) / var(--edge-a));
+  background: linear-gradient(160deg, hsl(var(--h) var(--s) var(--tint-l) / var(--tint-a)), transparent 70%), color-mix(in srgb, var(--card) 88%, transparent);
+  text-align: left; cursor: pointer; transition: transform .18s var(--ease);
+}
+.daily:active { transform: scale(.985); }
+.daily-head { display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap; }
+.daily-text { font-family: var(--font-quote); font-size: 1.375rem; line-height: 1.32; text-wrap: pretty; }
+.daily-text::before { content: "“"; color: hsl(var(--h) var(--s) var(--tone-l)); margin-right: .06em; }
+.daily-text::after { content: "”"; color: hsl(var(--h) var(--s) var(--tone-l)); margin-left: .04em; }
+.daily-foot { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.daily-by { color: var(--ink-2); font-size: var(--fs-s); }
+.daily-open { display: inline-flex; align-items: center; gap: 4px; font-size: var(--fs-s); font-weight: 600; color: hsl(var(--h) var(--s) var(--tone-l)); white-space: nowrap; }
+.daily-open .ic { width: 18px; height: 18px; }
+
+.feel-chip {
+  display: inline-flex; align-items: center; gap: 6px; padding: 4px 10px 4px 8px; border-radius: 99px;
+  background: hsl(var(--h) var(--s) var(--tint-l) / calc(var(--tint-a) * 1.4));
+  color: hsl(var(--h) var(--s) var(--tone-l)); font-size: var(--fs-xs); font-weight: 700; letter-spacing: .04em;
+  border: 1px solid hsl(var(--h) var(--s) var(--tint-l) / var(--edge-a));
+}
+
+/* intro: the one orchestrated moment, on first load only */
+.intro .brand .ic .sun { animation: sun-up 1.1s var(--ease) both; }
+.intro .hero-title .line > span { animation: line-up .9s var(--ease) both; }
+.intro .hero-title .line:nth-child(2) > span { animation-delay: .09s; }
+.intro .hero .lede { animation: fade-up .7s .25s var(--ease) both; }
+.intro .menu-item { animation: fade-up .6s var(--ease) both; }
+.intro .menu-item:nth-child(1) { animation-delay: .32s; }
+.intro .menu-item:nth-child(2) { animation-delay: .39s; }
+.intro .menu-item:nth-child(3) { animation-delay: .46s; }
+.intro .daily { animation: fade-up .7s .56s var(--ease) both; }
+@keyframes sun-up { from { transform: translateY(5px); } }
+@keyframes line-up { from { transform: translateY(102%); } }
+@keyframes fade-up { from { opacity: 0; transform: translateY(14px); } }
+
+/* ---------- feelings ---------- */
+.feel-head { display: flex; flex-direction: column; gap: 14px; padding-block: 6px 22px; }
+.feel-head .display { font-size: clamp(2.6rem, 1.9rem + 3.4vw, 3.5rem); }
+.find { display: flex; gap: 10px; flex-wrap: wrap; padding-top: 4px; }
+.search { position: relative; flex: 1 1 200px; min-width: 0; }
+.search .ic { position: absolute; left: 14px; top: 50%; translate: 0 -50%; color: var(--ink-3); width: 20px; height: 20px; pointer-events: none; }
+.search input {
+  width: 100%; height: 50px; padding: 0 44px 0 44px; border-radius: 99px;
+  border: 1px solid var(--line); background: color-mix(in srgb, var(--card) 85%, transparent); color: var(--ink);
+  font: 500 var(--fs-m) var(--font-body); outline: none; transition: border-color .15s, box-shadow .15s;
+}
+.search input::placeholder { color: var(--ink-3); }
+.search input:focus { border-color: var(--gold); box-shadow: 0 0 0 4px color-mix(in srgb, var(--gold) 18%, transparent); }
+.search input::-webkit-search-cancel-button { display: none; }
+.search-clear { position: absolute; right: 6px; top: 50%; translate: 0 -50%; width: 38px; height: 38px; display: grid; place-items: center; border: 0; border-radius: 50%; background: none; color: var(--ink-3); cursor: pointer; }
+.search-clear .ic { position: static; translate: none; width: 18px; height: 18px; }
+.surprise {
+  flex: 0 0 auto; display: inline-flex; align-items: center; gap: 8px; height: 50px; padding-inline: 16px 18px;
+  border-radius: 99px; border: 1px dashed color-mix(in srgb, var(--gold) 60%, var(--line)); background: color-mix(in srgb, var(--gold) 8%, transparent);
+  color: var(--gold-text); font-weight: 700; cursor: pointer; transition: transform .15s, background .15s;
+}
+.surprise:hover { background: color-mix(in srgb, var(--gold) 14%, transparent); }
+.surprise:active { transform: scale(.96); }
+.surprise .ic { width: 20px; height: 20px; }
+
+.groups { display: flex; flex-direction: column; gap: 26px; padding-bottom: 40px; }
+.group { display: flex; flex-direction: column; gap: 12px; }
+.group-head { display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap; margin: 0; }
+.group-name { font-family: var(--font-display); font-weight: 800; font-size: 1.45rem; letter-spacing: .05em; text-transform: uppercase; line-height: 1; color: hsl(var(--h) var(--s) var(--tone-l)); }
+.group-blurb { font-size: var(--fs-s); font-weight: 400; color: var(--ink-3); }
+.chips { display: flex; flex-wrap: wrap; gap: 8px; }
+.chip {
+  display: inline-flex; align-items: center; gap: 8px; min-height: 46px; padding: 6px 16px 6px 12px;
+  border-radius: 99px; border: 1px solid hsl(var(--h) var(--s) var(--tint-l) / var(--edge-a));
+  background: hsl(var(--h) var(--s) var(--tint-l) / var(--tint-a));
+  font-size: .9375rem; font-weight: 600; cursor: pointer;
+  transition: transform .15s var(--ease), background .15s, border-color .15s;
+}
+.chip:hover { background: hsl(var(--h) var(--s) var(--tint-l) / calc(var(--tint-a) * 2)); border-color: hsl(var(--h) var(--s) var(--tint-l) / .6); }
+.chip:active { transform: scale(.94); }
+.chip-emoji { font-size: 1.25rem; line-height: 1; }
+.no-match { margin: 0 0 40px; padding: 22px; border: 1px dashed var(--line); border-radius: var(--r-m); color: var(--ink-2); text-align: center; }
+
+/* ---------- quote ---------- */
+.q-main { flex: 1; display: flex; flex-direction: column; justify-content: center; gap: 26px; padding-block: 8px 9vh; touch-action: pan-y; }
+.q-feel { display: flex; align-items: center; gap: 14px; }
+.q-emoji {
+  width: 64px; height: 64px; flex: none; display: grid; place-items: center; border-radius: 22px; font-size: 2.1rem; line-height: 1;
+  background: hsl(var(--h) var(--s) var(--tint-l) / calc(var(--tint-a) * 1.6));
+  border: 1px solid hsl(var(--h) var(--s) var(--tint-l) / var(--edge-a));
+}
+.q-feel .eyebrow { color: hsl(var(--h) var(--s) var(--tone-l)); }
+.q-name { font-size: 2.6rem; margin-top: 4px; }
+
+.q-card { position: relative; margin: 0; display: flex; flex-direction: column; gap: 18px; padding-top: 50px; }
+.q-mark { position: absolute; top: -2px; left: -4px; font-family: var(--font-quote); font-size: 6rem; line-height: 1; color: hsl(var(--h) var(--s) var(--tone-l)); opacity: .55; pointer-events: none; }
+.q-text { margin: 0; font-family: var(--font-quote); font-weight: 400; font-size: clamp(1.65rem, 1.2rem + 2vw, 2.2rem); line-height: 1.26; letter-spacing: -.005em; white-space: pre-line; text-wrap: pretty; }
+.q-card[data-len="l"] .q-text { font-size: clamp(1.4rem, 1.1rem + 1.4vw, 1.8rem); }
+.q-card[data-len="xl"] .q-text { font-size: clamp(1.2rem, 1rem + 1vw, 1.5rem); line-height: 1.34; }
+.q-by { display: flex; flex-direction: column; gap: 2px; }
+.q-author { font-weight: 700; font-size: 1.0625rem; }
+.q-author::before { content: "— "; color: hsl(var(--h) var(--s) var(--tone-l)); }
+.q-source { font-family: var(--font-quote); font-style: italic; color: var(--ink-3); font-size: var(--fs-m); padding-left: 1.2em; }
+
+.q-progress { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.dots { display: flex; align-items: center; gap: 0; margin-left: -8px; }
+.dot { width: 28px; height: 28px; padding: 0; border: 0; background: none; cursor: pointer; display: grid; place-items: center; }
+.dot::before { content: ""; width: 8px; height: 8px; border-radius: 99px; background: var(--line); transition: width .3s var(--ease), background .3s; }
+.dot[aria-current="true"]::before { width: 22px; background: hsl(var(--h) var(--s) var(--tone-l)); }
+.q-count { font-size: var(--fs-s); color: var(--ink-3); font-variant-numeric: tabular-nums; }
+.q-hint { font-size: var(--fs-xs); color: var(--ink-3); }
+
+.care {
+  display: flex; gap: 12px; padding: 16px; border-radius: var(--r-m);
+  background: color-mix(in srgb, var(--card) 90%, transparent); border: 1px solid var(--line);
+  font-size: var(--fs-s); color: var(--ink-2);
+}
+.care .ic { color: hsl(var(--h) var(--s) var(--tone-l)); margin-top: 1px; }
+.care p { margin: 0; }
+.care strong { display: block; color: var(--ink); font-size: var(--fs-m); margin-bottom: 2px; }
+.care a { color: var(--gold-text); font-weight: 700; }
+
+.q-actions { display: flex; align-items: center; gap: 10px; padding-block: 8px 20px; }
+.round-btn {
+  width: 54px; height: 54px; flex: none; display: grid; place-items: center; border-radius: 50%;
+  border: 1px solid var(--line); background: color-mix(in srgb, var(--card) 88%, transparent); cursor: pointer;
+  transition: transform .15s, border-color .15s, color .15s;
+}
+.round-btn:hover { border-color: var(--ink-3); }
+.round-btn:active { transform: scale(.92); }
+.round-btn[aria-pressed="true"] { color: hsl(352 85% var(--tone-l)); border-color: hsl(352 85% 60% / .45); }
+.round-btn[aria-pressed="true"] .ic { fill: currentColor; }
+.round-btn.pop .ic { animation: pop .35s var(--ease); }
+@keyframes pop { 40% { transform: scale(1.3); } }
+.q-actions .primary { flex: 1; min-width: 0; }
+
+/* ---------- saved ---------- */
+.saved-head { display: flex; flex-direction: column; gap: 12px; padding-block: 6px 22px; }
+.saved-head .display { font-size: clamp(2.6rem, 1.9rem + 3.4vw, 3.5rem); }
+.saved-list { list-style: none; margin: 0; padding: 0 0 40px; display: flex; flex-direction: column; gap: 12px; }
+.saved-item {
+  display: flex; flex-direction: column; gap: 14px; padding: 18px; border-radius: var(--r-m);
+  border: 1px solid var(--line); background: color-mix(in srgb, var(--card) 90%, transparent);
+}
+.saved-text { margin: 0; font-family: var(--font-quote); font-size: 1.25rem; line-height: 1.34; text-wrap: pretty; white-space: pre-line; }
+.saved-meta { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+.saved-by { flex: 1 1 auto; min-width: 0; color: var(--ink-2); font-size: var(--fs-s); font-weight: 600; }
+.saved-meta .feel-chip { cursor: pointer; }
+.saved-meta .icon-btn { width: 40px; height: 40px; color: hsl(352 85% var(--tone-l)); }
+.saved-meta .icon-btn .ic { fill: currentColor; width: 20px; height: 20px; }
+.empty { display: flex; flex-direction: column; align-items: center; gap: 10px; padding: 40px 20px; border: 1px dashed var(--line); border-radius: var(--r-l); text-align: center; color: var(--ink-2); }
+.empty .ic { width: 34px; height: 34px; color: var(--ink-3); }
+.empty strong { color: var(--ink); font-size: var(--fs-l); }
+.empty p { margin: 0 0 8px; max-width: 30ch; }
+
+/* ---------- coming soon sheet ---------- */
+.sheet-wrap { position: fixed; inset: 0; z-index: 30; display: flex; align-items: flex-end; justify-content: center; }
+.scrim { position: absolute; inset: 0; background: var(--scrim); -webkit-backdrop-filter: blur(3px); backdrop-filter: blur(3px); }
+.sheet {
+  position: relative; width: 100%; max-width: 540px;
+  display: flex; flex-direction: column; align-items: center; gap: 12px; text-align: center;
+  padding-block: 10px calc(22px + env(safe-area-inset-bottom, 0px));
+  padding-left: max(22px, env(safe-area-inset-left, 0px));
+  padding-right: max(22px, env(safe-area-inset-right, 0px));
+  background: var(--raise); border: 1px solid var(--line); border-bottom: 0; border-radius: 30px 30px 0 0;
+  box-shadow: 0 -20px 50px -20px rgb(0 0 0 / .5);
+}
+.grip { width: 42px; height: 5px; border-radius: 99px; background: var(--line); margin-bottom: 14px; }
+.sheet .menu-icon { width: 76px; height: 76px; border-radius: 26px; }
+.sheet .menu-icon .ic { width: 38px; height: 38px; }
+.sheet .eyebrow { color: hsl(var(--h) var(--s) var(--tone-l)); margin-top: 6px; }
+.sheet .display { font-size: 3rem; }
+.sheet-text { margin: 0 0 8px; color: var(--ink-2); max-width: 34ch; text-wrap: pretty; }
+.build { width: min(220px, 70%); height: 6px; border-radius: 99px; background: var(--line); overflow: hidden; margin-bottom: 10px; }
+.build::before { content: ""; display: block; width: 38%; height: 100%; border-radius: inherit; background: hsl(var(--h) var(--s) var(--tone-l)); animation: build 1.8s ease-in-out infinite; }
+@keyframes build { from { transform: translateX(-100%); } to { transform: translateX(265%); } }
+.sheet .primary { width: 100%; }
+
+/* ---------- toast ---------- */
+.toast {
+  position: fixed; z-index: 40; left: 50%; bottom: calc(96px + env(safe-area-inset-bottom, 0px));
+  display: flex; align-items: center; gap: 14px; max-width: calc(100% - 32px);
+  padding: 12px 14px 12px 18px; border-radius: 99px;
+  background: var(--ink); color: var(--bg); font-weight: 600; font-size: var(--fs-s);
+  box-shadow: var(--shadow); translate: -50% 12px; opacity: 0; pointer-events: none;
+  transition: opacity .2s, translate .25s var(--ease);
+}
+.toast.show { opacity: 1; translate: -50% 0; pointer-events: auto; }
+.toast button { border: 0; background: none; color: inherit; font-weight: 800; cursor: pointer; padding: 4px 6px; text-decoration: underline; text-underline-offset: 3px; }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation: none !important; transition: none !important; }
+}
+@media (min-width: 700px) {
+  .home { padding-top: 40px; }
+}
+</style>
+</head>
+<body class="intro">
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <symbol id="i-quote" viewBox="0 0 24 24"><path fill="currentColor" stroke="none" d="M3 12.6C3 8.4 5.3 5.6 9.2 4.8l.6 2.1c-2.1.7-3.2 2-3.5 3.6h2.3a1.9 1.9 0 0 1 1.9 1.9v3.7A1.9 1.9 0 0 1 8.6 18H4.9A1.9 1.9 0 0 1 3 16.1Zm10.5 0c0-4.2 2.3-7 6.2-7.8l.6 2.1c-2.1.7-3.2 2-3.5 3.6h2.3a1.9 1.9 0 0 1 1.9 1.9v3.7a1.9 1.9 0 0 1-1.9 1.9h-3.7a1.9 1.9 0 0 1-1.9-1.9Z"/></symbol>
+  <symbol id="i-flame" viewBox="0 0 24 24"><path d="M12 21.5c-4 0-7-2.7-7-6.5 0-3 1.7-4.9 3.2-6.4.2 1.6 1 2.8 2.3 3.3.2-3.4 1.9-6.5 5-8.4-.4 2.9.9 4.9 2.3 6.6 1.3 1.6 2.2 3.1 2.2 4.9 0 3.8-3 6.5-8 6.5Z"/><path d="M12 21.5c-1.7 0-3-1.2-3-2.9 0-1.5 1.1-2.5 2-3.5.3 1 .9 1.5 1.7 1.7.3-.9.9-1.6 1.6-2.1.5 1 .7 2.1.7 3.9 0 1.7-1.3 2.9-3 2.9Z"/></symbol>
+  <symbol id="i-dumbbell" viewBox="0 0 24 24"><path d="M8.6 12h6.8"/><rect x="5.1" y="6.3" width="3.5" height="11.4" rx="1.3"/><rect x="15.4" y="6.3" width="3.5" height="11.4" rx="1.3"/><path d="M5.1 9.4H3.9a1.4 1.4 0 0 0-1.4 1.4v2.4a1.4 1.4 0 0 0 1.4 1.4h1.2M18.9 9.4h1.2a1.4 1.4 0 0 1 1.4 1.4v2.4a1.4 1.4 0 0 1-1.4 1.4h-1.2"/></symbol>
+  <symbol id="i-back" viewBox="0 0 24 24"><path d="M14.5 5.5 8 12l6.5 6.5"/></symbol>
+  <symbol id="i-next" viewBox="0 0 24 24"><path d="M4.5 12h15M13.5 6l6 6-6 6"/></symbol>
+  <symbol id="i-heart" viewBox="0 0 24 24"><path d="M12 20.3s-7.6-4.6-7.6-10.3A4.2 4.2 0 0 1 12 7.5a4.2 4.2 0 0 1 7.6 2.5c0 5.7-7.6 10.3-7.6 10.3Z"/></symbol>
+  <symbol id="i-copy" viewBox="0 0 24 24"><rect x="8.5" y="8.5" width="11.5" height="11.5" rx="2.6"/><path d="M15.5 8.5V6.6A2.6 2.6 0 0 0 12.9 4H6.6A2.6 2.6 0 0 0 4 6.6v6.3a2.6 2.6 0 0 0 2.6 2.6h1.9"/></symbol>
+  <symbol id="i-share" viewBox="0 0 24 24"><path d="M12 3.5v11.5M7.5 8 12 3.5 16.5 8M5 12.5v5.9A2.6 2.6 0 0 0 7.6 21h8.8a2.6 2.6 0 0 0 2.6-2.6v-5.9"/></symbol>
+  <symbol id="i-search" viewBox="0 0 24 24"><circle cx="10.8" cy="10.8" r="6.3"/><path d="m20 20-4.7-4.7"/></symbol>
+  <symbol id="i-close" viewBox="0 0 24 24"><path d="M6.5 6.5l11 11M17.5 6.5l-11 11"/></symbol>
+  <symbol id="i-spark" viewBox="0 0 24 24"><path d="M11 3.5l1.9 5.2 5.2 1.9-5.2 1.9L11 17.7l-1.9-5.2-5.2-1.9 5.2-1.9Z"/><path d="M18.5 15.2l.8 2 2 .8-2 .8-.8 2-.8-2-2-.8 2-.8Z"/></symbol>
+  <symbol id="i-hand" viewBox="0 0 24 24"><path d="M12 20.3s-7.6-4.6-7.6-10.3A4.2 4.2 0 0 1 12 7.5a4.2 4.2 0 0 1 7.6 2.5c0 5.7-7.6 10.3-7.6 10.3Z"/><path d="M9 12.2h6M12 9.2v6"/></symbol>
+</svg>
+
+<div class="ambient" id="ambient" aria-hidden="true"></div>
+
+<div id="app">
+  <!-- HOME -->
+  <section class="screen home" id="screen-home" aria-labelledby="home-title">
+    <header class="home-top">
+      <div class="brand"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M2.5 18.5h19"/><g class="sun"><path d="M6.8 18.5a5.2 5.2 0 0 1 10.4 0"/><path d="M12 6.2v2.4M5.9 9.4l1.6 1.6M18.1 9.4l-1.6 1.6"/></g></svg><span>Rise</span></div>
+      <p class="today" id="today"></p>
+    </header>
+
+    <div class="hero">
+      <p class="eyebrow" id="greeting">Welcome</p>
+      <h1 class="display hero-title" id="home-title" tabindex="-1"><span class="line"><span>Stronger</span></span><span class="line"><span class="gold">every day.</span></span></h1>
+      <p class="lede">Pick how you feel and get a quote for that exact moment. Motivation and workouts are on the way.</p>
+    </div>
+
+    <nav class="menu" aria-label="Main menu">
+      <button class="menu-item is-main" type="button" data-go="feelings" style="--h:40;--s:88%">
+        <span class="menu-icon"><svg class="ic" aria-hidden="true"><use href="#i-quote"/></svg></span>
+        <span class="menu-label">Quotes</span>
+        <span class="menu-meta" id="menu-quotes-meta">By feeling</span>
+      </button>
+      <button class="menu-item" type="button" data-soon="motivation" style="--h:14;--s:86%">
+        <span class="menu-icon"><svg class="ic" aria-hidden="true"><use href="#i-flame"/></svg></span>
+        <span class="menu-label">Motivation</span>
+        <span class="menu-meta">Coming soon</span>
+      </button>
+      <button class="menu-item" type="button" data-soon="exercise" style="--h:196;--s:70%">
+        <span class="menu-icon"><svg class="ic" aria-hidden="true"><use href="#i-dumbbell"/></svg></span>
+        <span class="menu-label">Exercise</span>
+        <span class="menu-meta">Coming soon</span>
+      </button>
+    </nav>
+
+    <button class="daily" type="button" id="daily" aria-label="Open today's quote">
+      <span class="daily-head"><span class="eyebrow">Today’s quote</span><span class="feel-chip" id="daily-chip"></span></span>
+      <span class="daily-text" id="daily-text"></span>
+      <span class="daily-foot"><span class="daily-by" id="daily-by"></span><span class="daily-open">More like this<svg class="ic" aria-hidden="true"><use href="#i-next"/></svg></span></span>
+    </button>
+  </section>
+
+  <!-- FEELINGS -->
+  <section class="screen" id="screen-feelings" aria-labelledby="feel-title" hidden>
+    <div class="bar">
+      <button class="icon-btn" type="button" data-back aria-label="Back"><svg class="ic" aria-hidden="true"><use href="#i-back"/></svg></button>
+      <span class="bar-title">Quotes</span>
+      <button class="icon-btn" type="button" data-go="saved" aria-label="Saved quotes"><svg class="ic" aria-hidden="true"><use href="#i-heart"/></svg><span class="badge" data-saved-count hidden>0</span></button>
+    </div>
+    <div class="feel-head">
+      <h1 class="display" id="feel-title" tabindex="-1">What are you feeling?</h1>
+      <p class="lede" id="feel-lede">Pick the one that’s closest. Every feeling has its own quotes.</p>
+      <div class="find">
+        <label class="search">
+          <svg class="ic" aria-hidden="true"><use href="#i-search"/></svg>
+          <input id="feel-search" type="search" aria-label="Search feelings" placeholder="Search, like “worried”" autocomplete="off" autocapitalize="off" spellcheck="false" enterkeyhint="search">
+          <button class="search-clear" type="button" id="search-clear" aria-label="Clear search" hidden><svg class="ic" aria-hidden="true"><use href="#i-close"/></svg></button>
+        </label>
+        <button class="surprise" type="button" id="surprise"><svg class="ic" aria-hidden="true"><use href="#i-spark"/></svg>Surprise me</button>
+      </div>
+    </div>
+    <div class="groups" id="groups"></div>
+    <p class="no-match" id="no-match" hidden></p>
+  </section>
+
+  <!-- QUOTE -->
+  <section class="screen" id="screen-quote" aria-labelledby="q-name" hidden>
+    <div class="bar">
+      <button class="icon-btn" type="button" data-back aria-label="Back to feelings"><svg class="ic" aria-hidden="true"><use href="#i-back"/></svg></button>
+      <span class="bar-title">Quotes</span>
+      <button class="icon-btn" type="button" data-go="saved" aria-label="Saved quotes"><svg class="ic" aria-hidden="true"><use href="#i-heart"/></svg><span class="badge" data-saved-count hidden>0</span></button>
+    </div>
+    <div class="q-main" id="q-main">
+      <div class="q-feel">
+        <span class="q-emoji" id="q-emoji" aria-hidden="true"></span>
+        <div>
+          <p class="eyebrow" id="q-family"></p>
+          <h1 class="display q-name" id="q-name" tabindex="-1"></h1>
+        </div>
+      </div>
+      <figure class="q-card" id="q-card" aria-live="polite">
+        <span class="q-mark" aria-hidden="true">“</span>
+        <blockquote class="q-text" id="q-text"></blockquote>
+        <figcaption class="q-by"><span class="q-author" id="q-author"></span><cite class="q-source" id="q-source"></cite></figcaption>
+      </figure>
+      <div class="q-progress">
+        <div class="dots" id="q-dots" role="group" aria-label="Choose a quote"></div>
+        <span class="q-count" id="q-count"></span>
+      </div>
+      <aside class="care" id="q-care" hidden>
+        <svg class="ic" aria-hidden="true"><use href="#i-hand"/></svg>
+        <p><strong>You don’t have to carry this alone.</strong>If you’re thinking about hurting yourself, reach out now. Talk to someone you trust, call your local emergency number, or find a free, confidential helpline at <a href="https://findahelpline.com" target="_blank" rel="noopener">findahelpline.com</a>.</p>
+      </aside>
+    </div>
+    <div class="q-actions">
+      <button class="round-btn" type="button" id="q-save" aria-pressed="false" aria-label="Save quote"><svg class="ic" aria-hidden="true"><use href="#i-heart"/></svg></button>
+      <button class="round-btn" type="button" id="q-copy" aria-label="Copy quote"><svg class="ic" aria-hidden="true"><use href="#i-copy"/></svg></button>
+      <button class="round-btn" type="button" id="q-share" aria-label="Share quote"><svg class="ic" aria-hidden="true"><use href="#i-share"/></svg></button>
+      <button class="primary" type="button" id="q-next">Another one<svg class="ic" aria-hidden="true"><use href="#i-next"/></svg></button>
+    </div>
+  </section>
+
+  <!-- SAVED -->
+  <section class="screen" id="screen-saved" aria-labelledby="saved-title" hidden>
+    <div class="bar">
+      <button class="icon-btn" type="button" data-back aria-label="Back"><svg class="ic" aria-hidden="true"><use href="#i-back"/></svg></button>
+      <span class="bar-title">Saved</span>
+      <span></span>
+    </div>
+    <div class="saved-head">
+      <h1 class="display" id="saved-title" tabindex="-1">Saved quotes</h1>
+      <p class="lede" id="saved-lede"></p>
+    </div>
+    <ul class="saved-list" id="saved-list"></ul>
+    <div class="empty" id="saved-empty" hidden>
+      <svg class="ic" aria-hidden="true"><use href="#i-heart"/></svg>
+      <strong>Nothing saved yet</strong>
+      <p>Tap the heart on any quote and it will wait for you here.</p>
+      <button class="primary" type="button" data-go="feelings">Find a quote</button>
+    </div>
+  </section>
+</div>
+
+<!-- COMING SOON -->
+<div class="sheet-wrap" id="soon" hidden>
+  <div class="scrim" data-close></div>
+  <div class="sheet" id="soon-sheet" role="dialog" aria-modal="true" aria-labelledby="soon-title" aria-describedby="soon-text">
+    <span class="grip" aria-hidden="true"></span>
+    <span class="menu-icon"><svg class="ic" aria-hidden="true"><use id="soon-icon" href="#i-flame"/></svg></span>
+    <p class="eyebrow">Coming soon</p>
+    <h2 class="display" id="soon-title"></h2>
+    <p class="sheet-text" id="soon-text"></p>
+    <span class="build" aria-hidden="true"></span>
+    <button class="primary" type="button" data-close id="soon-ok">Got it</button>
+    <button class="text-btn" type="button" id="soon-quotes">Open Quotes instead</button>
+  </div>
+</div>
+
+<div class="toast" id="toast" role="status" aria-live="polite"><span id="toast-msg"></span><button type="button" id="toast-act" hidden></button></div>
+
+<noscript><p style="position:relative;z-index:2;padding:24px;text-align:center">Rise needs JavaScript turned on.</p></noscript>
+
+<script>
+(() => {
+'use strict';
+
+/* Feelings, grouped into families. Each quote is [text, author, source?]. */
+const FAMILIES = [
+  { id: 'low', name: 'Low', blurb: 'When everything feels heavy', h: 214, s: '64%', feelings: [
+    { id: 'sad', name: 'Sad', e: '😢', syn: 'down unhappy upset blue crying cry miserable gloomy depressed', q: [
+      ["Rock bottom became the solid foundation on which I rebuilt my life.", "J.K. Rowling", "Harvard commencement speech, 2008"],
+      ["You may trod me in the very dirt\nBut still, like dust, I'll rise.", "Maya Angelou", "Still I Rise"],
+      ["The sun himself is weak when he first rises, and gathers strength and courage as the day gets on.", "Charles Dickens", "The Old Curiosity Shop"],
+      ["Happiness can be found, even in the darkest of times, if one only remembers to turn on the light.", "Albus Dumbledore", "Harry Potter and the Prisoner of Azkaban (film)"],
+      ["Sadness flies away on the wings of time.", "Jean de La Fontaine"],
+      ["Hope is being able to see that there is light despite all of the darkness.", "Desmond Tutu"]
+    ]},
+    { id: 'lonely', name: 'Lonely', e: '🥺', syn: 'alone isolated left out unwanted nobody no friends', q: [
+      ["We're all just walking each other home.", "Ram Dass"],
+      ["Friendship is born at that moment when one person says to another, 'What! You too? I thought I was the only one.'", "C.S. Lewis", "The Four Loves"],
+      ["Language has created the word 'loneliness' to express the pain of being alone. And it has created the word 'solitude' to express the glory of being alone.", "Paul Tillich", "The Eternal Now"],
+      ["The greatest thing in the world is to know how to belong to oneself.", "Michel de Montaigne", "Essays"],
+      ["You can't be lonely if you like the person you're alone with.", "Wayne Dyer"]
+    ]},
+    { id: 'heartbroken', name: 'Heartbroken', e: '💔', syn: 'breakup broken heart dumped lost love crush heartbreak ex', q: [
+      ["There is a crack in everything. That's how the light gets in.", "Leonard Cohen", "Anthem"],
+      ["’Tis better to have loved and lost than never to have loved at all.", "Alfred, Lord Tennyson", "In Memoriam A.H.H."],
+      ["The wound is the place where the Light enters you.", "Rumi"],
+      ["Some of us think holding on makes us strong, but sometimes it is letting go.", "Hermann Hesse"],
+      ["Letting go means to come to the realization that some people are a part of your history, but not a part of your destiny.", "Steve Maraboli"]
+    ]},
+    { id: 'disappointed', name: 'Disappointed', e: '😞', syn: 'let down failed lost failure did not make it didnt lose losing', q: [
+      ["We must accept finite disappointment, but never lose infinite hope.", "Martin Luther King Jr."],
+      ["Our greatest glory is not in never falling, but in rising every time we fall.", "Oliver Goldsmith"],
+      ["Ever tried. Ever failed. No matter. Try again. Fail again. Fail better.", "Samuel Beckett", "Worstward Ho"],
+      ["Fall seven times, stand up eight.", "Japanese proverb"],
+      ["Failure is simply the opportunity to begin again, this time more intelligently.", "Henry Ford"],
+      ["I've missed more than 9,000 shots in my career. I've lost almost 300 games. 26 times I've been trusted to take the game-winning shot and missed. I've failed over and over and over again in my life. And that is why I succeed.", "Michael Jordan"]
+    ]},
+    { id: 'grieving', name: 'Grieving', e: '🕯️', syn: 'grief loss someone died mourning miss someone death passed away funeral', q: [
+      ["Grief is the price we pay for love.", "Queen Elizabeth II"],
+      ["What we have once enjoyed we can never lose. All that we love deeply becomes a part of us.", "Helen Keller"],
+      ["Unable are the loved to die,\nfor love is immortality.", "Emily Dickinson"],
+      ["Grief, I've learned, is really just love. It's all the love you want to give, but cannot.", "Jamie Anderson"],
+      ["To live in hearts we leave behind is not to die.", "Thomas Campbell", "Hallowed Ground"]
+    ]},
+    { id: 'hurt', name: 'Hurt', e: '🩹', syn: 'pain wounded used bullied offended hurt feelings', q: [
+      ["The world breaks every one and afterward many are strong at the broken places.", "Ernest Hemingway", "A Farewell to Arms"],
+      ["You may not control all the events that happen to you, but you can decide not to be reduced by them.", "Maya Angelou", "Letter to My Daughter"],
+      ["Although the world is full of suffering, it is full also of the overcoming of it.", "Helen Keller", "Optimism"],
+      ["Pain is inevitable. Suffering is optional.", "Haruki Murakami", "What I Talk About When I Talk About Running"],
+      ["Turn your wounds into wisdom.", "Oprah Winfrey"]
+    ]},
+    { id: 'empty', name: 'Empty', e: '😶', care: true, syn: 'numb nothing hollow blank flat depressed dont feel anything', q: [
+      ["In the midst of winter, I found there was, within me, an invincible summer.", "Albert Camus", "Return to Tipasa"],
+      ["Start where you are. Use what you have. Do what you can.", "Arthur Ashe"],
+      ["This too shall pass.", "Persian adage"],
+      ["Nothing is permanent in this wicked world, not even our troubles.", "Charlie Chaplin"],
+      ["You are not a drop in the ocean. You are the entire ocean in a drop.", "Rumi"]
+    ]},
+    { id: 'hopeless', name: 'Hopeless', e: '🌧️', care: true, syn: 'give up giving up pointless no point despair worthless depressed', q: [
+      ["Once you choose hope, anything's possible.", "Christopher Reeve"],
+      ["However difficult life may seem, there is always something you can do and succeed at.", "Stephen Hawking"],
+      ["The darkest hour has only sixty minutes.", "Morris Mandel"],
+      ["Dum spiro, spero.\nWhile I breathe, I hope.", "Latin motto"],
+      ["Never give in, never give in, never, never, never, never.", "Winston Churchill", "Speech at Harrow School, 1941"]
+    ]},
+    { id: 'guilty', name: 'Guilty', e: '😣', syn: 'regret sorry my fault mistake messed up', q: [
+      ["Do the best you can until you know better. Then when you know better, do better.", "Maya Angelou"],
+      ["To err is human, to forgive divine.", "Alexander Pope", "An Essay on Criticism"],
+      ["Mistakes are a fact of life. It is the response to the error that counts.", "Nikki Giovanni"],
+      ["You can't go back and change the beginning, but you can start where you are and change the ending.", "James R. Sherman"],
+      ["Every saint has a past, and every sinner has a future.", "Oscar Wilde", "A Woman of No Importance"]
+    ]},
+    { id: 'ashamed', name: 'Ashamed', e: '🙈', syn: 'embarrassed humiliated shame cringe awkward', q: [
+      ["If we can share our story with someone who responds with empathy and understanding, shame can't survive.", "Brené Brown", "Daring Greatly"],
+      ["Owning our story can be hard but not nearly as difficult as spending our lives running from it.", "Brené Brown"],
+      ["You yourself, as much as anybody in the entire universe, deserve your love and affection.", "Sharon Salzberg"],
+      ["Shame dies when stories are told in safe places.", "Ann Voskamp"],
+      ["We are all in the gutter, but some of us are looking at the stars.", "Oscar Wilde", "Lady Windermere's Fan"]
+    ]}
+  ]},
+  { id: 'edge', name: 'On edge', blurb: 'Worry, fear and pressure', h: 266, s: '58%', feelings: [
+    { id: 'anxious', name: 'Anxious', e: '😰', syn: 'worried worry anxiety panic uneasy restless overthinking', q: [
+      ["We suffer more often in imagination than in reality.", "Seneca", "Letters to Lucilius"],
+      ["Feelings come and go like clouds in a windy sky. Conscious breathing is my anchor.", "Thich Nhat Hanh", "Stepping into Freedom"],
+      ["Anxiety does not empty tomorrow of its sorrows, but only empties today of its strength.", "Charles Spurgeon"],
+      ["You can't stop the waves, but you can learn to surf.", "Jon Kabat-Zinn", "Wherever You Go, There You Are"],
+      ["Nothing diminishes anxiety faster than action.", "Walter Anderson"]
+    ]},
+    { id: 'afraid', name: 'Afraid', e: '😨', syn: 'scared fear frightened terrified', q: [
+      ["I learned that courage was not the absence of fear, but the triumph over it.", "Nelson Mandela", "Long Walk to Freedom"],
+      ["The only thing we have to fear is fear itself.", "Franklin D. Roosevelt", "First inaugural address, 1933"],
+      ["Courage is resistance to fear, mastery of fear, not absence of fear.", "Mark Twain", "Pudd'nhead Wilson"],
+      ["You gain strength, courage, and confidence by every experience in which you really stop to look fear in the face.", "Eleanor Roosevelt", "You Learn by Living"],
+      ["Everything you've ever wanted is on the other side of fear.", "George Addair"]
+    ]},
+    { id: 'overwhelmed', name: 'Overwhelmed', e: '🤯', syn: 'too much swamped drowning busy exams homework', q: [
+      ["The best way out is always through.", "Robert Frost", "A Servant to Servants"],
+      ["How do you eat an elephant? One bite at a time.", "Proverb"],
+      ["You don't have to see the whole staircase, just take the first step.", "Martin Luther King Jr."],
+      ["It does not matter how slowly you go as long as you do not stop.", "Confucius"],
+      ["Rule number one is, don't sweat the small stuff. Rule number two is, it's all small stuff.", "Robert Eliot"]
+    ]},
+    { id: 'stressed', name: 'Stressed', e: '😫', syn: 'pressure tense exams deadline stress', q: [
+      ["The greatest weapon against stress is our ability to choose one thought over another.", "William James"],
+      ["Within you, there is a stillness and a sanctuary to which you can retreat at any time and be yourself.", "Hermann Hesse", "Siddhartha"],
+      ["Tension is who you think you should be. Relaxation is who you are.", "Chinese proverb"],
+      ["Sometimes the most important thing in a whole day is the rest we take between two deep breaths.", "Etty Hillesum"],
+      ["Slow down and everything you are chasing will come around and catch you.", "John De Paola"]
+    ]},
+    { id: 'insecure', name: 'Insecure', e: '🫣', syn: 'not good enough ugly self-conscious doubt compare low self esteem', q: [
+      ["No one can make you feel inferior without your consent.", "Eleanor Roosevelt"],
+      ["Today you are You, that is truer than true. There is no one alive who is Youer than You.", "Dr. Seuss", "Happy Birthday to You!"],
+      ["A flower does not think of competing with the flower next to it. It just blooms.", "Zen Shin"],
+      ["Be who you are and say what you feel, because those who mind don't matter and those who matter don't mind.", "Bernard Baruch"],
+      ["You have been criticizing yourself for years and it hasn't worked. Try approving of yourself and see what happens.", "Louise Hay"]
+    ]},
+    { id: 'nervous', name: 'Nervous', e: '😬', syn: 'butterflies big day test game day first day tryouts match', q: [
+      ["Pressure is a privilege.", "Billie Jean King"],
+      ["Life shrinks or expands in proportion to one's courage.", "Anaïs Nin"],
+      ["Courage is being scared to death, but saddling up anyway.", "John Wayne"],
+      ["You miss 100% of the shots you don't take.", "Wayne Gretzky"],
+      ["Do the thing you fear and the death of fear is certain.", "Ralph Waldo Emerson"]
+    ]},
+    { id: 'confused', name: 'Confused', e: '😕', syn: 'lost unsure dont know which way decision torn', q: [
+      ["Not all those who wander are lost.", "J.R.R. Tolkien", "The Fellowship of the Ring"],
+      ["Life can only be understood backwards; but it must be lived forwards.", "Søren Kierkegaard"],
+      ["Be patient toward all that is unsolved in your heart and try to love the questions themselves.", "Rainer Maria Rilke", "Letters to a Young Poet"],
+      ["When you come to a fork in the road, take it.", "Yogi Berra"],
+      ["Confusion is a word we have invented for an order which is not understood.", "Henry Miller", "Tropic of Capricorn"]
+    ]},
+    { id: 'rejected', name: 'Rejected', e: '🥀', syn: 'not picked ignored turned down left out unwanted cut', q: [
+      ["You can be the ripest, juiciest peach in the world, and there's still going to be somebody who hates peaches.", "Dita Von Teese"],
+      ["Rejection is merely a redirection; a course correction to your destiny.", "Bryant McGill"],
+      ["A champion is defined not by their wins but by how they can recover when they fall.", "Serena Williams"],
+      ["I was set free, because my greatest fear had been realised, and I was still alive, and I still had a daughter that I adored, and I had an old typewriter and a big idea.", "J.K. Rowling", "Harvard commencement speech, 2008"],
+      ["Don't let the noise of others' opinions drown out your own inner voice.", "Steve Jobs", "Stanford commencement speech, 2005"]
+    ]}
+  ]},
+  { id: 'heated', name: 'Heated', blurb: 'Anger and irritation', h: 4, s: '74%', feelings: [
+    { id: 'angry', name: 'Angry', e: '😠', syn: 'mad rage furious livid hate cross', q: [
+      ["When angry, count ten before you speak; if very angry, a hundred.", "Thomas Jefferson"],
+      ["Anybody can become angry, that is easy; but to be angry with the right person, to the right degree, at the right time, for the right purpose, and in the right way, that is not easy.", "Aristotle", "Nicomachean Ethics"],
+      ["The best fighter is never angry.", "Lao Tzu", "Tao Te Ching"],
+      ["He who angers you conquers you.", "Elizabeth Kenny"],
+      ["Whatever is begun in anger ends in shame.", "Benjamin Franklin", "Poor Richard's Almanack"]
+    ]},
+    { id: 'frustrated', name: 'Frustrated', e: '😤', syn: 'fed up nothing works impatient', q: [
+      ["A river cuts through rock not because of its power, but because of its persistence.", "Jim Watkins"],
+      ["The two most powerful warriors are patience and time.", "Leo Tolstoy", "War and Peace"],
+      ["Adopt the pace of nature: her secret is patience.", "Ralph Waldo Emerson"],
+      ["Many of life's failures are people who did not realize how close they were to success when they gave up.", "Thomas Edison"],
+      ["It always seems impossible until it's done.", "Nelson Mandela"]
+    ]},
+    { id: 'jealous', name: 'Jealous', e: '😒', syn: 'envy envious compare comparing unfair', q: [
+      ["Comparison is the thief of joy.", "Theodore Roosevelt"],
+      ["Envy is the art of counting the other fellow's blessings instead of your own.", "Harold Coffin"],
+      ["Never compare your beginning to someone else's middle.", "Jon Acuff", "Start"],
+      ["Blowing out someone else's candle doesn't make yours shine any brighter.", "Unknown"],
+      ["Of the seven deadly sins, only envy is no fun at all.", "Joseph Epstein", "Envy"]
+    ]},
+    { id: 'annoyed', name: 'Annoyed', e: '🙄', syn: 'irritated bugged ugh grumpy pet peeve', q: [
+      ["Life is 10% what happens to you and 90% how you react to it.", "Charles R. Swindoll"],
+      ["If you are irritated by every rub, how will your mirror be polished?", "Rumi"],
+      ["Everything that irritates us about others can lead us to an understanding of ourselves.", "Carl Jung", "Memories, Dreams, Reflections"],
+      ["Patience is not the ability to wait, but the ability to keep a good attitude while waiting.", "Joyce Meyer"],
+      ["Peace does not mean to be in a place where there is no noise, trouble, or hard work. It means to be in the midst of those things and still be calm in your heart.", "Unknown"]
+    ]},
+    { id: 'resentful', name: 'Resentful', e: '😑', syn: 'bitter grudge betrayed cant forgive revenge unfair', q: [
+      ["To forgive is to set a prisoner free and discover that the prisoner was you.", "Lewis B. Smedes", "Forgive and Forget"],
+      ["The weak can never forgive. Forgiveness is the attribute of the strong.", "Mahatma Gandhi"],
+      ["Forgiveness does not change the past, but it does enlarge the future.", "Paul Boese"],
+      ["Forgiveness is not an occasional act; it is a constant attitude.", "Martin Luther King Jr."],
+      ["When someone shows you who they are, believe them the first time.", "Maya Angelou"]
+    ]}
+  ]},
+  { id: 'drained', name: 'Drained', blurb: 'Out of energy or going nowhere', h: 28, s: '34%', feelings: [
+    { id: 'tired', name: 'Tired', e: '😴', syn: 'exhausted sleepy worn out no energy drained', q: [
+      ["Rest when you're weary. Refresh and renew yourself, your body, your mind, your spirit. Then get back to work.", "Ralph Marston"],
+      ["Take rest; a field that has rested gives a bountiful crop.", "Ovid"],
+      ["There is virtue in work and there is virtue in rest. Use both and overlook neither.", "Alan Cohen"],
+      ["Sleep is the best meditation.", "Dalai Lama"],
+      ["Hard days are the best because that's when champions are made.", "Gabby Douglas"]
+    ]},
+    { id: 'unmotivated', name: 'Unmotivated', e: '🫠', syn: 'lazy cant be bothered no motivation procrastinating meh', q: [
+      ["The miracle isn't that I finished. The miracle is that I had the courage to start.", "John Bingham"],
+      ["You don't have to be great to start, but you have to start to be great.", "Zig Ziglar"],
+      ["Motivation is what gets you started. Habit is what keeps you going.", "Jim Ryun"],
+      ["Don't watch the clock; do what it does. Keep going.", "Sam Levenson"],
+      ["A year from now you may wish you had started today.", "Karen Lamb"]
+    ]},
+    { id: 'bored', name: 'Bored', e: '🥱', syn: 'nothing to do dull boring same old', q: [
+      ["The cure for boredom is curiosity. There is no cure for curiosity.", "Ellen Parr"],
+      ["Boredom is the feeling that everything is a waste of time; serenity, that nothing is.", "Thomas Szasz"],
+      ["Life is either a daring adventure or nothing.", "Helen Keller", "The Open Door"],
+      ["The universe is full of magical things, patiently waiting for our wits to grow sharper.", "Eden Phillpotts", "A Shadow Passes"],
+      ["I have no special talents. I am only passionately curious.", "Albert Einstein"]
+    ]},
+    { id: 'stuck', name: 'Stuck', e: '🧱', syn: 'plateau going nowhere same place no progress trapped', q: [
+      ["Life is like riding a bicycle. To keep your balance, you must keep moving.", "Albert Einstein"],
+      ["If you change the way you look at things, the things you look at change.", "Wayne Dyer"],
+      ["The man who moves a mountain begins by carrying away small stones.", "Confucius"],
+      ["Progress is impossible without change, and those who cannot change their minds cannot change anything.", "George Bernard Shaw"],
+      ["Do something today that your future self will thank you for.", "Sean Patrick Flanery"]
+    ]},
+    { id: 'burnedout', name: 'Burned out', e: '🪫', syn: 'burnout burnt out done over it running on empty', q: [
+      ["Almost everything will work again if you unplug it for a few minutes, including you.", "Anne Lamott"],
+      ["Rest is not idleness, and to lie sometimes on the grass under trees on a summer's day, listening to the murmur of the water, or watching the clouds float across the sky, is by no means a waste of time.", "John Lubbock", "The Use of Life"],
+      ["Burnout is what happens when you try to avoid being human for too long.", "Michael Gungor"],
+      ["Caring for myself is not self-indulgence, it is self-preservation.", "Audre Lorde", "A Burst of Light"],
+      ["Self-care is how you take your power back.", "Lalah Delia"]
+    ]}
+  ]},
+  { id: 'bright', name: 'Bright', blurb: 'Good days worth holding on to', h: 46, s: '90%', feelings: [
+    { id: 'happy', name: 'Happy', e: '😊', syn: 'good great joy joyful cheerful glad', q: [
+      ["Enjoy the little things, for one day you may look back and realize they were the big things.", "Robert Brault"],
+      ["Happiness is a warm puppy.", "Charles M. Schulz"],
+      ["Write it on your heart that every day is the best day in the year.", "Ralph Waldo Emerson"],
+      ["Happiness is not something ready made. It comes from your own actions.", "Dalai Lama"],
+      ["Happiness is when what you think, what you say, and what you do are in harmony.", "Mahatma Gandhi"]
+    ]},
+    { id: 'excited', name: 'Excited', e: '🤩', syn: 'pumped hyped cant wait thrilled buzzing stoked', q: [
+      ["Nothing great was ever achieved without enthusiasm.", "Ralph Waldo Emerson", "Circles"],
+      ["You're off to Great Places! Today is your day! Your mountain is waiting. So... get on your way!", "Dr. Seuss", "Oh, the Places You'll Go!"],
+      ["Excitement is the more practical synonym for happiness.", "Tim Ferriss", "The 4-Hour Workweek"],
+      ["The future belongs to those who believe in the beauty of their dreams.", "Eleanor Roosevelt"],
+      ["Energy and persistence conquer all things.", "Benjamin Franklin"]
+    ]},
+    { id: 'grateful', name: 'Grateful', e: '🙏', syn: 'thankful blessed appreciative lucky thanks', q: [
+      ["Gratitude unlocks the fullness of life. It turns what we have into enough, and more.", "Melody Beattie"],
+      ["Gratitude is not only the greatest of virtues, but the parent of all the others.", "Cicero"],
+      ["When I started counting my blessings, my whole life turned around.", "Willie Nelson"],
+      ["Feeling gratitude and not expressing it is like wrapping a present and not giving it.", "William Arthur Ward"],
+      ["Acknowledging the good that you already have in your life is the foundation for all abundance.", "Eckhart Tolle"]
+    ]},
+    { id: 'proud', name: 'Proud', e: '🏅', syn: 'accomplished achieved won did it success pb pr', q: [
+      ["Success is peace of mind which is a direct result of self-satisfaction in knowing you did your best to become the best that you are capable of becoming.", "John Wooden"],
+      ["The harder the conflict, the more glorious the triumph.", "Thomas Paine", "The American Crisis"],
+      ["Celebrate what you've accomplished, but raise the bar a little higher each time you succeed.", "Mia Hamm"],
+      ["Act as if what you do makes a difference. It does.", "William James"],
+      ["Well done is better than well said.", "Benjamin Franklin", "Poor Richard's Almanack"]
+    ]},
+    { id: 'hopeful', name: 'Hopeful', e: '🌱', syn: 'optimistic looking forward better days new start hope', q: [
+      ["Hope is the thing with feathers\nThat perches in the soul.", "Emily Dickinson"],
+      ["Optimism is the faith that leads to achievement. Nothing can be done without hope and confidence.", "Helen Keller", "Optimism"],
+      ["Hope is a good thing, maybe the best of things, and no good thing ever dies.", "Andy Dufresne", "The Shawshank Redemption"],
+      ["Every day is a new day.", "Ernest Hemingway", "The Old Man and the Sea"],
+      ["There's some good in this world, Mr. Frodo, and it's worth fighting for.", "Samwise Gamgee", "The Lord of the Rings: The Two Towers (film)"]
+    ]},
+    { id: 'loved', name: 'Loved', e: '🥰', syn: 'love in love cared for crush appreciated', q: [
+      ["Being deeply loved by someone gives you strength, while loving someone deeply gives you courage.", "Lao Tzu"],
+      ["To love and be loved is to feel the sun from both sides.", "David Viscott"],
+      ["The best thing to hold onto in life is each other.", "Audrey Hepburn"],
+      ["Some people are worth melting for.", "Olaf", "Frozen"],
+      ["Love is composed of a single soul inhabiting two bodies.", "Aristotle"]
+    ]}
+  ]},
+  { id: 'strong', name: 'Strong', blurb: 'Ready to push', h: 150, s: '52%', feelings: [
+    { id: 'confident', name: 'Confident', e: '😎', syn: 'sure ready unstoppable self-assured cocky', q: [
+      ["Believe you can and you're halfway there.", "Theodore Roosevelt"],
+      ["Whether you think you can, or you think you can't, you're right.", "Henry Ford"],
+      ["I am the greatest. I said that even before I knew I was.", "Muhammad Ali"],
+      ["Trust yourself. You know more than you think you do.", "Benjamin Spock", "Baby and Child Care"],
+      ["Confidence comes not from always being right but from not fearing to be wrong.", "Peter T. McIntyre"]
+    ]},
+    { id: 'determined', name: 'Determined', e: '💪', syn: 'focused driven wont quit grind discipline strong', q: [
+      ["I hated every minute of training, but I said, 'Don't quit. Suffer now and live the rest of your life as a champion.'", "Muhammad Ali"],
+      ["Strength does not come from physical capacity. It comes from an indomitable will.", "Mahatma Gandhi"],
+      ["It's not whether you get knocked down, it's whether you get up.", "Vince Lombardi"],
+      ["We are what we repeatedly do. Excellence, then, is not an act, but a habit.", "Will Durant", "The Story of Philosophy"],
+      ["Hard work beats talent when talent doesn't work hard.", "Tim Notke"],
+      ["The difference between the impossible and the possible lies in a person's determination.", "Tommy Lasorda"]
+    ]},
+    { id: 'inspired', name: 'Inspired', e: '💡', syn: 'creative ideas dreaming amazed awe', q: [
+      ["The best way to predict the future is to invent it.", "Alan Kay"],
+      ["What you do makes a difference, and you have to decide what kind of difference you want to make.", "Jane Goodall"],
+      ["You can't use up creativity. The more you use, the more you have.", "Maya Angelou"],
+      ["Inspiration exists, but it has to find you working.", "Pablo Picasso"],
+      ["Somewhere, something incredible is waiting to be known.", "Sharon Begley"]
+    ]},
+    { id: 'brave', name: 'Brave', e: '🦁', syn: 'courageous bold fearless daring courage', q: [
+      ["Courage doesn't always roar. Sometimes courage is the quiet voice at the end of the day saying, 'I will try again tomorrow.'", "Mary Anne Radmacher"],
+      ["You're braver than you believe, and stronger than you seem, and smarter than you think.", "Christopher Robin", "Pooh's Grand Adventure"],
+      ["You must do the thing you think you cannot do.", "Eleanor Roosevelt", "You Learn by Living"],
+      ["Courage is grace under pressure.", "Ernest Hemingway"],
+      ["Fortune favors the bold.", "Virgil", "Aeneid"]
+    ]},
+    { id: 'motivated', name: 'Motivated', e: '🔥', syn: 'fired up lets go hungry gym workout pumped', q: [
+      ["Don't count the days, make the days count.", "Muhammad Ali"],
+      ["Don't wish it were easier. Wish you were better.", "Jim Rohn"],
+      ["Success isn't owned. It's leased, and rent is due every day.", "J.J. Watt"],
+      ["The successful warrior is the average man, with laser-like focus.", "Bruce Lee"],
+      ["The pain you feel today will be the strength you feel tomorrow.", "Unknown"]
+    ]}
+  ]},
+  { id: 'peace', name: 'At peace', blurb: 'Settled and still', h: 178, s: '56%', feelings: [
+    { id: 'calm', name: 'Calm', e: '😌', syn: 'relaxed chill peaceful zen quiet', q: [
+      ["Smile, breathe and go slowly.", "Thich Nhat Hanh"],
+      ["Nature does not hurry, yet everything is accomplished.", "Lao Tzu"],
+      ["Calmness is the cradle of power.", "Josiah Gilbert Holland"],
+      ["Empty your mind, be formless, shapeless, like water... Be water, my friend.", "Bruce Lee"],
+      ["Peace is every step.", "Thich Nhat Hanh", "Peace Is Every Step"]
+    ]},
+    { id: 'content', name: 'Content', e: '🙂', syn: 'satisfied fine okay ok good enough at ease', q: [
+      ["Be content with what you have; rejoice in the way things are. When you realize there is nothing lacking, the whole world belongs to you.", "Lao Tzu", "Tao Te Ching"],
+      ["Contentment is natural wealth; luxury is artificial poverty.", "Socrates"],
+      ["Contentment is the only real wealth.", "Alfred Nobel"],
+      ["Not what we have but what we enjoy constitutes our abundance.", "Epicurus"],
+      ["The present moment is filled with joy and happiness. If you are attentive, you will see it.", "Thich Nhat Hanh"]
+    ]},
+    { id: 'relieved', name: 'Relieved', e: '😮‍💨', syn: 'phew finally its over weight off passed', q: [
+      ["When you come out of the storm, you won't be the same person who walked in. That's what this storm's all about.", "Haruki Murakami", "Kafka on the Shore"],
+      ["Breathe. Let go. And remind yourself that this very moment is the only one you know you have for sure.", "Oprah Winfrey"],
+      ["Things that were hard to bear are sweet to remember.", "Seneca"],
+      ["Every storm runs out of rain.", "Gary Allan", "Every Storm (Runs Out of Rain)"]
+    ]},
+    { id: 'nostalgic', name: 'Nostalgic', e: '📼', syn: 'memories miss the old days throwback remember old times', q: [
+      ["We do not remember days, we remember moments.", "Cesare Pavese", "This Business of Living"],
+      ["I wish there was a way to know you're in the good old days before you've actually left them.", "Andy Bernard", "The Office"],
+      ["Memory is the diary that we all carry about with us.", "Oscar Wilde", "The Importance of Being Earnest"],
+      ["Life moves pretty fast. If you don't stop and look around once in a while, you could miss it.", "Ferris Bueller", "Ferris Bueller's Day Off"]
+    ]}
+  ]}
+];
+
+const SOON = {
+  motivation: { title: 'Motivation', icon: '#i-flame', h: 14, s: '86%', text: 'A daily push to keep you going is being built. Until then, Quotes has words for every feeling.' },
+  exercise: { title: 'Exercise', icon: '#i-dumbbell', h: 196, s: '70%', text: 'Workouts to help you get stronger are being built. Check back soon.' }
+};
+
+/* ---------- helpers ---------- */
+const $ = id => document.getElementById(id);
+const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
+const smart = s => s.replace(/\.\.\./g, '…').replace(/(^|[\s(—])'/g, '$1‘').replace(/'/g, '’');
+const buzz = ms => { try { if (navigator.vibrate) navigator.vibrate(ms || 8); } catch (e) {} };
+const shuffle = a => { for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; };
+const store = {
+  get(k, d) { try { const v = localStorage.getItem(k); return v ? JSON.parse(v) : d; } catch (e) { return d; } },
+  set(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) {} }
+};
+const famStyle = (el, f) => { el.style.setProperty('--h', f.h); el.style.setProperty('--s', f.s); };
+
+const FEEL = {};
+let total = 0;
+for (const fam of FAMILIES) for (const f of fam.feelings) { f.fam = fam; FEEL[f.id] = f; total += f.q.length; }
+const FEEL_COUNT = Object.keys(FEEL).length;
+
+/* ---------- saved quotes (this device only) ---------- */
+const SAVE_KEY = 'rise.saved.v1';
+let saved = store.get(SAVE_KEY, []);
+if (!Array.isArray(saved)) saved = [];
+const isSaved = (fid, t) => saved.some(x => x.f === fid && x.t === t);
+function setSaved(list) { saved = list; store.set(SAVE_KEY, saved); paintSavedCount(); }
+function paintSavedCount() {
+  document.querySelectorAll('[data-saved-count]').forEach(b => { b.textContent = saved.length; b.hidden = !saved.length; });
+}
+
+/* ---------- toast ---------- */
+let toastTimer = 0;
+function toast(msg, act, fn) {
+  const t = $('toast'), b = $('toast-act');
+  $('toast-msg').textContent = msg;
+  b.hidden = !act; b.textContent = act || ''; b.onclick = act ? () => { fn(); hideToast(); } : null;
+  t.classList.add('show');
+  clearTimeout(toastTimer); toastTimer = setTimeout(hideToast, act ? 4200 : 2000);
+}
+function hideToast() { $('toast').classList.remove('show'); }
+
+/* ---------- home ---------- */
+function paintHome() {
+  const now = new Date(), hr = now.getHours();
+  $('greeting').textContent = hr < 5 ? 'Up late' : hr < 12 ? 'Good morning' : hr < 18 ? 'Good afternoon' : 'Good evening';
+  $('today').textContent = now.toLocaleDateString(undefined, { weekday: 'long', day: 'numeric', month: 'long' });
+  $('menu-quotes-meta').textContent = FEEL_COUNT + ' feelings';
+
+  /* today's quote: the same one all day, drawn from the brighter families */
+  const pool = [];
+  for (const fam of FAMILIES) if (['bright', 'strong', 'peace'].includes(fam.id)) for (const f of fam.feelings) f.q.forEach((q, i) => pool.push({ f, i }));
+  const day = Math.floor((now.getTime() - now.getTimezoneOffset() * 60000) / 864e5);
+  const pick = pool[(day * 7919) % pool.length];
+  const q = pick.f.q[pick.i];
+  const card = $('daily');
+  famStyle(card, pick.f.fam);
+  $('daily-chip').textContent = pick.f.e + ' ' + pick.f.name;
+  $('daily-text').textContent = smart(q[0]).replace(/\n/g, ' ');
+  $('daily-by').textContent = '— ' + q[1];
+  card.onclick = () => { pending = { id: pick.f.id, i: pick.i }; buzz(); go('feel-' + pick.f.id); };
+}
+
+/* ---------- feelings ---------- */
+function buildFeelings() {
+  $('feel-lede').textContent = FEEL_COUNT + ' feelings, ' + total + ' quotes. Pick the one that’s closest.';
+  const wrap = $('groups');
+  for (const fam of FAMILIES) {
+    const sec = document.createElement('section');
+    sec.className = 'group'; famStyle(sec, fam); sec.dataset.fam = fam.id;
+    sec.setAttribute('aria-labelledby', 'fam-' + fam.id);
+    sec.innerHTML = '<h2 class="group-head" id="fam-' + fam.id + '"><span class="group-name"></span><span class="group-blurb"></span></h2><div class="chips"></div>';
+    sec.querySelector('.group-name').textContent = fam.name;
+    sec.querySelector('.group-blurb').textContent = fam.blurb;
+    const chips = sec.querySelector('.chips');
+    for (const f of fam.feelings) {
+      const b = document.createElement('button');
+      b.type = 'button'; b.className = 'chip'; b.dataset.feel = f.id;
+      b.innerHTML = '<span class="chip-emoji" aria-hidden="true"></span><span></span>';
+      b.firstChild.textContent = f.e; b.lastChild.textContent = f.name;
+      b.onclick = () => { buzz(); go('feel-' + f.id); };
+      chips.append(b);
+    }
+    wrap.append(sec);
+  }
+}
+
+function filterFeelings() {
+  const raw = $('feel-search').value.trim(), q = raw.toLowerCase().replace(/['’]/g, '');
+  $('search-clear').hidden = !raw;
+  let shown = 0;
+  document.querySelectorAll('.group').forEach(sec => {
+    const fam = FAMILIES.find(x => x.id === sec.dataset.fam);
+    const famHit = q && fam.name.toLowerCase().includes(q);
+    let n = 0;
+    sec.querySelectorAll('.chip').forEach(c => {
+      const f = FEEL[c.dataset.feel];
+      const hit = !q || famHit || f.name.toLowerCase().includes(q) || f.syn.includes(q);
+      c.hidden = !hit; if (hit) n++;
+    });
+    sec.hidden = !n; shown += n;
+  });
+  const nm = $('no-match');
+  nm.hidden = shown > 0;
+  if (!shown) nm.textContent = 'Nothing matches “' + raw + '”. Try another word, or tap Surprise me.';
+}
+
+/* ---------- quote ---------- */
+const order = {}, pos = {};
+let curFeel = null, pending = null, busy = false;
+
+function openFeeling(id, fresh) {
+  const f = FEEL[id];
+  if (!order[id]) { order[id] = shuffle(f.q.map((_, i) => i)); pos[id] = 0; }
+  else if (fresh) pos[id] = (pos[id] + 1) % f.q.length;   /* coming back shows the next one */
+  const card = $('q-card'); if (card.getAnimations) card.getAnimations().forEach(a => a.cancel());
+  busy = false;
+  if (pending && pending.id === id) { pos[id] = order[id].indexOf(pending.i); }
+  pending = null;
+  curFeel = id;
+
+  $('q-emoji').textContent = f.e;
+  $('q-family').textContent = f.fam.name;
+  $('q-name').textContent = f.name;
+  $('q-care').hidden = !f.care;
+  famStyle($('screen-quote'), f.fam);
+
+  const dots = $('q-dots'); dots.textContent = '';
+  f.q.forEach((_, k) => {
+    const d = document.createElement('button');
+    d.type = 'button'; d.className = 'dot'; d.setAttribute('aria-label', 'Quote ' + (k + 1) + ' of ' + f.q.length);
+    d.onclick = () => { if (k !== pos[id]) swap(k - pos[id], k); };
+    dots.append(d);
+  });
+  paintQuote();
+}
+
+function current() { const f = FEEL[curFeel]; return { f, q: f.q[order[curFeel][pos[curFeel]]] }; }
+
+function paintQuote() {
+  const { f, q } = current(), [t, a, s] = q;
+  $('q-text').textContent = smart(t);
+  $('q-author').textContent = a;
+  $('q-source').textContent = s ? smart(s) : '';
+  $('q-source').hidden = !s;
+  $('q-card').dataset.len = t.length > 175 ? 'xl' : t.length > 110 ? 'l' : '';
+  [...$('q-dots').children].forEach((d, k) => d.setAttribute('aria-current', k === pos[curFeel] ? 'true' : 'false'));
+  $('q-count').textContent = (pos[curFeel] + 1) + ' of ' + f.q.length;
+  const on = isSaved(f.id, t);
+  $('q-save').setAttribute('aria-pressed', on);
+  $('q-save').setAttribute('aria-label', on ? 'Remove from saved' : 'Save quote');
+}
+
+function swap(delta, to) {
+  if (busy) return;
+  const n = FEEL[curFeel].q.length;
+  const apply = () => { pos[curFeel] = to != null ? to : (pos[curFeel] + delta + n) % n; paintQuote(); };
+  const card = $('q-card'), dir = delta > 0 ? 1 : -1;
+  if (reduced || !card.animate) return apply();
+  busy = true;
+  const out = card.animate([{ opacity: 1, transform: 'none' }, { opacity: 0, transform: 'translateX(' + (-dir * 26) + 'px)' }], { duration: 140, easing: 'ease-in', fill: 'forwards' });
+  out.onfinish = () => {
+    apply();
+    const inA = card.animate([{ opacity: 0, transform: 'translateX(' + (dir * 26) + 'px)' }, { opacity: 1, transform: 'none' }], { duration: 340, easing: 'cubic-bezier(.2,.8,.2,1)' });
+    out.cancel();
+    inA.onfinish = () => { busy = false; };
+  };
+}
+
+const quoteLine = q => '“' + smart(q[0]).replace(/\n/g, ' ') + '” — ' + q[1];
+
+async function copyText(text) {
+  try { await navigator.clipboard.writeText(text); return true; }
+  catch (e) {
+    const ta = document.createElement('textarea');
+    ta.value = text; ta.setAttribute('readonly', ''); ta.style.cssText = 'position:fixed;top:0;left:0;opacity:0';
+    document.body.append(ta); ta.select();
+    let ok = false; try { ok = document.execCommand('copy'); } catch (x) {}
+    ta.remove(); return ok;
+  }
+}
+
+function toggleSave() {
+  const { f, q } = current(), btn = $('q-save');
+  if (isSaved(f.id, q[0])) {
+    setSaved(saved.filter(x => !(x.f === f.id && x.t === q[0])));
+    toast('Removed from saved');
+  } else {
+    setSaved([{ f: f.id, t: q[0], a: q[1], s: q[2] || '' }, ...saved]);
+    toast('Saved');
+    btn.classList.remove('pop'); void btn.offsetWidth; btn.classList.add('pop');
+  }
+  buzz(12); paintQuote();
+}
+
+/* ---------- saved screen ---------- */
+function paintSaved() {
+  const list = $('saved-list'); list.textContent = '';
+  $('saved-empty').hidden = saved.length > 0;
+  $('saved-lede').textContent = saved.length ? saved.length + (saved.length === 1 ? ' quote' : ' quotes') + ' kept on this device.' : 'Your favourite quotes, kept on this device.';
+  saved.forEach(item => {
+    const f = FEEL[item.f];
+    const li = document.createElement('li');
+    li.className = 'saved-item';
+    if (f) famStyle(li, f.fam);
+    li.innerHTML = '<p class="saved-text"></p><div class="saved-meta"><span class="saved-by"></span></div>';
+    li.querySelector('.saved-text').textContent = '“' + smart(item.t) + '”';
+    li.querySelector('.saved-by').textContent = '— ' + item.a;
+    const meta = li.querySelector('.saved-meta');
+    if (f) {
+      const chip = document.createElement('button');
+      chip.type = 'button'; chip.className = 'feel-chip'; chip.textContent = f.e + ' ' + f.name;
+      chip.setAttribute('aria-label', 'More quotes for feeling ' + f.name);
+      chip.onclick = () => { const i = f.q.findIndex(q => q[0] === item.t); if (i >= 0) pending = { id: f.id, i }; go('feel-' + f.id); };
+      meta.append(chip);
+    }
+    const rm = document.createElement('button');
+    rm.type = 'button'; rm.className = 'icon-btn'; rm.setAttribute('aria-label', 'Remove from saved');
+    rm.innerHTML = '<svg class="ic" aria-hidden="true"><use href="#i-heart"/></svg>';
+    rm.onclick = () => {
+      const before = saved.slice();
+      setSaved(saved.filter(x => x !== item)); paintSaved(); buzz(12);
+      toast('Removed', 'Undo', () => { setSaved(before); paintSaved(); });
+    };
+    meta.append(rm);
+    list.append(li);
+  });
+}
+
+/* ---------- coming soon sheet ---------- */
+let sheetReturn = null;
+function openSoon(key) {
+  const c = SOON[key], wrap = $('soon'), sheet = $('soon-sheet');
+  famStyle(sheet, c);
+  $('soon-icon').setAttribute('href', c.icon);
+  $('soon-title').textContent = c.title;
+  $('soon-text').textContent = c.text;
+  sheetReturn = document.activeElement;
+  wrap.hidden = false; $('app').inert = true;
+  document.documentElement.style.overflow = 'hidden';
+  if (!reduced && sheet.animate) {
+    sheet.animate([{ transform: 'translateY(100%)' }, { transform: 'none' }], { duration: 420, easing: 'cubic-bezier(.2,.9,.25,1)' });
+    wrap.querySelector('.scrim').animate([{ opacity: 0 }, { opacity: 1 }], { duration: 260 });
+  }
+  $('soon-ok').focus({ preventScroll: true });
+  buzz();
+}
+function closeSoon(then) {
+  const wrap = $('soon'), sheet = $('soon-sheet');
+  if (wrap.hidden) return;
+  const done = () => {
+    wrap.hidden = true; $('app').inert = false; document.documentElement.style.overflow = '';
+    if (sheetReturn && sheetReturn.focus) sheetReturn.focus({ preventScroll: true });
+    if (then) then();
+  };
+  if (reduced || !sheet.animate) return done();
+  wrap.querySelector('.scrim').animate([{ opacity: 1 }, { opacity: 0 }], { duration: 220, fill: 'forwards' });
+  sheet.animate([{ transform: 'none' }, { transform: 'translateY(100%)' }], { duration: 240, easing: 'ease-in', fill: 'forwards' }).onfinish = () => {
+    sheet.getAnimations().forEach(a => a.cancel()); wrap.querySelector('.scrim').getAnimations().forEach(a => a.cancel()); done();
+  };
+}
+
+/* ---------- routing: #feelings, #feel-<id>, #saved (plain names so the phone's back button works) ---------- */
+const SCREENS = { home: $('screen-home'), feelings: $('screen-feelings'), quote: $('screen-quote'), saved: $('screen-saved') };
+const LEVEL = { home: 0, feelings: 1, saved: 2, quote: 2 };
+const PARENT = { home: 'home', feelings: 'home', saved: 'feelings', quote: 'feelings' };
+const stack = [];
+let shown = null, replacing = false;
+
+const norm = h => (h || '').replace(/^#/, '') || 'home';
+function parse(h) {
+  h = norm(h);
+  if (h === 'feelings' || h === 'saved') return { s: h, h };
+  if (h.indexOf('feel-') === 0 && FEEL[h.slice(5)]) return { s: 'quote', id: h.slice(5), h };
+  return { s: 'home', h: 'home' };
+}
+function go(h) { if (norm(location.hash) === h) route(); else location.hash = h; }
+function back() {
+  buzz();
+  if (stack.length > 1) history.back();
+  else { replacing = true; const p = PARENT[shown ? shown.s : 'home']; try { location.replace('#' + p); } catch (e) { location.hash = p; } }
+}
+
+function route() {
+  const r = parse(location.hash);
+  if (replacing) { replacing = false; stack[stack.length - 1] = r.h; }
+  else if (stack.length > 1 && stack[stack.length - 2] === r.h) stack.pop();
+  else if (stack[stack.length - 1] !== r.h) stack.push(r.h);
+
+  if (r.s === 'quote') openFeeling(r.id, !(shown && shown.s === 'quote' && shown.id === r.id));
+  if (r.s === 'saved') paintSaved();
+  const amb = $('ambient');
+  if (r.s === 'quote') famStyle(amb, FEEL[r.id].fam); else { amb.style.setProperty('--h', 40); amb.style.setProperty('--s', '85%'); }
+
+  const next = SCREENS[r.s], prev = shown && SCREENS[shown.s];
+  const dir = shown ? Math.sign(LEVEL[r.s] - LEVEL[shown.s]) || 1 : 0;
+  if (prev !== next) {
+    if (prev) prev.hidden = true;
+    next.hidden = false;
+    next.classList.remove('in-fwd', 'in-back');
+    if (dir && !reduced) { void next.offsetWidth; next.classList.add(dir > 0 ? 'in-fwd' : 'in-back'); }
+    window.scrollTo(0, 0);
+    if (shown) { const hd = next.querySelector('h1[tabindex]'); if (hd) hd.focus({ preventScroll: true }); }
+  }
+  shown = r;
+  onScroll();
+}
+
+/* ---------- wiring ---------- */
+function onScroll() { document.body.classList.toggle('scrolled', window.scrollY > 6); }
+
+document.addEventListener('click', e => {
+  const t = e.target.closest('[data-go],[data-back],[data-soon],[data-close]');
+  if (!t) return;
+  if (t.hasAttribute('data-close')) return closeSoon();
+  if (t.hasAttribute('data-back')) return back();
+  if (t.dataset.soon) return openSoon(t.dataset.soon);
+  if (t.dataset.go) { buzz(); go(t.dataset.go); }
+});
+
+$('soon-quotes').onclick = () => closeSoon(() => go('feelings'));
+$('feel-search').addEventListener('input', filterFeelings);
+$('search-clear').onclick = () => { $('feel-search').value = ''; filterFeelings(); $('feel-search').focus(); };
+$('surprise').onclick = () => {
+  const ids = Object.keys(FEEL).filter(id => ['bright', 'strong', 'peace'].includes(FEEL[id].fam.id) && id !== curFeel);
+  buzz(); go('feel-' + ids[Math.floor(Math.random() * ids.length)]);
+};
+$('q-next').onclick = () => { buzz(); swap(1); };
+$('q-save').onclick = toggleSave;
+$('q-copy').onclick = () => {
+  copyText(quoteLine(current().q)).then(ok => toast(ok ? 'Copied' : 'Could not copy. Press and hold the quote to select it.'));
+};
+if (!navigator.share) $('q-share').hidden = true;
+$('q-share').onclick = () => {
+  navigator.share({ text: quoteLine(current().q) }).catch(err => {
+    if (!err || err.name !== 'AbortError') toast('Sharing is not available here. Use copy instead.');
+  });
+};
+
+/* swipe the quote left or right */
+let sx = null, sy = 0;
+const qm = $('q-main');
+qm.addEventListener('pointerdown', e => { if (e.pointerType !== 'mouse') { sx = e.clientX; sy = e.clientY; } });
+qm.addEventListener('pointerup', e => {
+  if (sx == null) return;
+  const dx = e.clientX - sx, dy = e.clientY - sy; sx = null;
+  if (Math.abs(dx) > 50 && Math.abs(dx) > Math.abs(dy) * 1.4) { buzz(); swap(dx < 0 ? 1 : -1); }
+});
+qm.addEventListener('pointercancel', () => { sx = null; });
+
+document.addEventListener('keydown', e => {
+  if (!$('soon').hidden) {
+    if (e.key === 'Escape') { e.preventDefault(); closeSoon(); }
+    else if (e.key === 'Tab') {   /* keep focus inside the sheet */
+      const f = [...$('soon-sheet').querySelectorAll('button')], i = f.indexOf(document.activeElement);
+      e.preventDefault(); f[(i + (e.shiftKey ? -1 : 1) + f.length) % f.length].focus();
+    }
+    return;
+  }
+  const typing = /^(INPUT|TEXTAREA)$/.test(document.activeElement && document.activeElement.tagName);
+  if (e.key === 'Escape') { if (typing && $('feel-search').value) { $('search-clear').click(); return; } if (shown && shown.s !== 'home') back(); return; }
+  if (typing || !shown || shown.s !== 'quote') return;
+  if (e.key === 'ArrowRight') swap(1);
+  else if (e.key === 'ArrowLeft') swap(-1);
+});
+
+window.addEventListener('scroll', onScroll, { passive: true });
+window.addEventListener('hashchange', route);
+window.addEventListener('storage', e => { if (e.key === SAVE_KEY) { saved = store.get(SAVE_KEY, []); paintSavedCount(); if (shown && shown.s === 'saved') paintSaved(); } });
+
+paintHome();
+buildFeelings();
+paintSavedCount();
+route();
+setTimeout(() => document.body.classList.remove('intro'), 1600);
+})();
+</script>
+</body>
+</html>

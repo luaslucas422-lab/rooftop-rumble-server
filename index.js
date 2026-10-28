@@ -213,6 +213,11 @@ const server = http.createServer((req, res) => {
       if (!html) { res.writeHead(404, { 'Content-Type': 'text/plain' }); res.end('No beta right now.'); return; }
       res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8', 'Cache-Control': 'no-cache', 'X-Beta-Source': betaCache.src || '' }); res.end(html); });
     return; }
+  if (req.url && req.url.split('?')[0].replace(/\/+$/, '') === '/rise') {   /* Rise: motivational quotes app (rise/index.html) */
+    fs.readFile(path.join(__dirname, 'rise', 'index.html'), (err, html) => {
+      if (err) { res.writeHead(404, { 'Content-Type': 'text/plain' }); res.end('Rise is not here right now.'); return; }
+      res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8', 'Cache-Control': 'no-cache' }); res.end(html); });
+    return; }
   res.writeHead(200, { 'Content-Type': 'text/plain', 'Access-Control-Allow-Origin': '*' });
   res.end('Rooftop Rumble server is running. Players online: ' + [...players.values()].filter(p => p.ws && p.ws.readyState === 1).length + ', matches: ' + matches.size + '\n');
 });
